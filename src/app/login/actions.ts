@@ -38,7 +38,7 @@ export async function signup(formData: FormData) {
     return redirect("/login?message=Could not authenticate user");
   }
 
-  return revalidatePath("/", "layout"), redirect("/");
+  return redirect("/auth/confirm");
 }
 
 export async function logout() {

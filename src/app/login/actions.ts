@@ -17,7 +17,7 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
-    return redirect("/login?message=Could not authenticate user");
+    return redirect("/welcome?message=Could not authenticate user");
   }
 
   return revalidatePath("/", "layout"), redirect("/");
@@ -64,7 +64,7 @@ export async function logout() {
   await supabase.auth.signOut();
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/welcome");
 }
 
 export async function googleLogin() {

@@ -27,7 +27,21 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // If the user is not logged in and trying to access protected routes
+  if (!user && request.nextUrl.pathname === "/") {
+    const redirectUrl = new URL('/welcome', request.url)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // If the user is logged in and trying to access /welcome
+  if (user && request.nextUrl.pathname === "/welcome") {
+    const redirectUrl = new URL('/', request.url)
+    return NextResponse.redirect(redirectUrl)
+  }
 
   return supabaseResponse
 }
@@ -39,7 +53,6 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
      */
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],

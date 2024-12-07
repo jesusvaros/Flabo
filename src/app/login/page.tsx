@@ -1,6 +1,5 @@
 "use server";
 import { createClient } from "../../../utils/supabase/client";
-import React from "react";
 import AuthForm from "./authForm";
 
 export default async function LoginPage({

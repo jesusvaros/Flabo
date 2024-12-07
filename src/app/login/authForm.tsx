@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import { login, signup, googleLogin, logout } from "./actions";
 
 const AuthForm = ({ session, message }) => {

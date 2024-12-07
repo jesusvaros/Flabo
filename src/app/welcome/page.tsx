@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 export default async function WelcomePage({
   searchParams,
 }: {
-  searchParams: { message?: string }
+  searchParams: { message?: string; email?: string }
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -39,7 +39,11 @@ export default async function WelcomePage({
         </div>
       )}
       <div style={{ width: '100%', maxWidth: '400px' }}>
-        <AuthForm session={null} message={null} />
+        <AuthForm 
+          session={null} 
+          message={null} 
+          defaultEmail={searchParams.email}
+        />
       </div>
     </div>
   );

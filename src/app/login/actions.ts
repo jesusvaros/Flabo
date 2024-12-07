@@ -14,19 +14,10 @@ export async function login(formData: FormData) {
     password: formData.get("password") as string,
   };
 
-  const { data: authData, error } = await supabase.auth.signInWithPassword(data);
+  const { error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
     return redirect("/login?message=Could not authenticate user");
-  }
-
-  // Check if email is verified
-  if (!authData?.user?.email_confirmed_at) {
-    // Send verification email
-    await supabase.auth.signInWithOtp({
-      email: data.email,
-    });
-    return redirect("/auth/confirm?message=Please check your email to verify your account");
   }
 
   return revalidatePath("/", "layout"), redirect("/");
@@ -42,13 +33,29 @@ export async function signup(formData: FormData) {
     password: formData.get("password") as string,
   };
 
-  const { error } = await supabase.auth.signUp(data);
+  const { error } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+    options: {
+      emailRedirectTo: null,  // Disable email redirect
+      data: {
+        email_confirm: false
+      }
+    }
+  });
 
   if (error) {
-    return redirect("/login?message=Could not authenticate user");
+    return redirect("/login?message=Could not create user");
   }
 
-  return redirect("/auth/confirm");
+  // Sign in immediately after signup
+  const { error: signInError } = await supabase.auth.signInWithPassword(data);
+  
+  if (signInError) {
+    return redirect("/login?message=Account created but could not sign in");
+  }
+
+  return revalidatePath("/", "layout"), redirect("/");
 }
 
 export async function logout() {

@@ -10,8 +10,6 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as EmailOtpType | null;
   const next = searchParams.get("next") ?? "/";
 
-  console.log('womoloingo',searchParams,token_hash,type,next);
-
   if (token_hash && type) {
     const supabase = await createClient();
 
@@ -20,11 +18,9 @@ export async function GET(request: NextRequest) {
       token_hash,
     });
     if (!error) {
-      // redirect user to specified redirect URL or root of app
       redirect(next);
     }
   }
 
-  // redirect the user to an error page with some instructions
   redirect("/error");
 }

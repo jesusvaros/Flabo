@@ -6,7 +6,7 @@ import AuthForm from "./authForm";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { message: string }
+  searchParams?: { message?: string }
 }) {
   const supabase = createClient();
   const user = await supabase.auth.getUser();

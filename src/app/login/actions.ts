@@ -14,11 +14,21 @@ export async function login(formData: FormData) {
     password: formData.get("password") as string,
   };
 
-  const { error } = await supabase.auth.signInWithPassword(data);
+  const { data: authData, error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
     return redirect("/login?message=Could not authenticate user");
   }
+
+  // Check if email is verified
+  if (!authData?.user?.email_confirmed_at) {
+    // Send verification email
+    await supabase.auth.signInWithOtp({
+      email: data.email,
+    });
+    return redirect("/auth/confirm?message=Please check your email to verify your account");
+  }
+
   return revalidatePath("/", "layout"), redirect("/");
 }
 

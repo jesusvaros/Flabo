@@ -1,6 +1,8 @@
 "use client";
 import { login, signup } from "./actions";
 import { useFormState } from "./formState";
+import { useTheme } from '../styles/theme/ThemeProvider';
+import { Form, ErrorMessage, FormGroup, Input, ButtonRow, Button } from "./styles";
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -8,6 +10,7 @@ interface AuthFormProps {
 
 const AuthForm = ({ onSuccess }: AuthFormProps) => {
   const { email, error, setEmail, setError } = useFormState();
+  const { theme } = useTheme();
 
   const handleLogin = async (formData: FormData) => {
     const result = await login(formData);
@@ -29,118 +32,83 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
     }
   };
 
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    const form = e.currentTarget.form!;
+    const formData = new FormData(form);
+    handleLogin(formData);
+  };
+
+  const handleSignupSubmit = async (e: any) => {
+    e.preventDefault();
+    const form = e.currentTarget.form!;
+    const formData = new FormData(form);
+    handleSignup(formData);
+  };
+
   return (
-    <form className="auth-form">
+    <Form onSubmit={handleSubmit}>
       {error && (
-        <div className="error-message">
+        <ErrorMessage
+          style={{
+            backgroundColor: theme.colors.background.tertiary,
+            color: theme.colors.text.primary,
+            border: `1px solid ${theme.colors.border.primary}`
+          }}
+        >
           {error}
-        </div>
+        </ErrorMessage>
       )}
-      <div className="form-row">
-        <input 
+      <FormGroup>
+        <Input 
           name="email" 
           type="email" 
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          style={{
+            backgroundColor: theme.colors.background.tertiary,
+            color: theme.colors.text.primary,
+            border: `1px solid ${theme.colors.border.primary}`
+          }}
           required 
         />
-        <input 
+        <Input 
           name="password" 
           type="password" 
           placeholder="Password"
+          style={{
+            backgroundColor: theme.colors.background.tertiary,
+            color: theme.colors.text.primary,
+            border: `1px solid ${theme.colors.border.primary}`
+          }}
           required 
         />
-      </div>
-      <div className="button-row">
-        <button 
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            const form = e.currentTarget.form!;
-            const formData = new FormData(form);
-            handleLogin(formData);
+      </FormGroup>
+      <ButtonRow>
+        <Button 
+          type="submit"
+          style={{
+            backgroundColor: theme.colors.background.secondary,
+            color: theme.colors.text.primary,
+            border: `1px solid ${theme.colors.border.primary}`
           }}
         >
           Log in
-        </button>
-        <button 
+        </Button>
+        <Button 
           type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            const form = e.currentTarget.form!;
-            const formData = new FormData(form);
-            handleSignup(formData);
+          onClick={handleSignupSubmit}
+          style={{
+            backgroundColor: theme.colors.background.secondary,
+            color: theme.colors.text.primary,
+            border: `1px solid ${theme.colors.border.primary}`
           }}
         >
           Sign up
-        </button>
-      </div>
-      <style jsx>{`
-        .auth-form {
-          width: 100%;
-        }
-
-        .error-message {
-          background-color: #fee2e2;
-          border: 1px solid #ef4444;
-          border-radius: 4px;
-          color: #dc2626;
-          padding: 0.5rem;
-          margin-bottom: 0.5rem;
-          font-size: 0.875rem;
-          text-align: center;
-        }
-
-        .form-row {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          margin-bottom: 1rem;
-        }
-
-        input {
-          width: 100%;
-          padding: 0.75rem;
-          border: 1px solid #e2e8f0;
-          border-radius: 4px;
-          font-size: 1rem;
-        }
-
-        .button-row {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        button {
-          flex: 1;
-          padding: 0.75rem;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 1rem;
-          transition: background-color 0.2s;
-        }
-
-        button:first-of-type {
-          background-color: #3b82f6;
-          color: white;
-        }
-
-        button:first-of-type:hover {
-          background-color: #2563eb;
-        }
-
-        button:last-of-type {
-          background-color: #10b981;
-          color: white;
-        }
-
-        button:last-of-type:hover {
-          background-color: #059669;
-        }
-      `}</style>
-    </form>
+        </Button>
+      </ButtonRow>
+    </Form>
   );
 };
 

@@ -1,27 +1,45 @@
-import { createClient } from "../../../utils/supabase/server";
-import AuthForm from "../login/authForm";
-import { redirect } from "next/navigation";
+'use client';
 
-export default async function WelcomePage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { ParallaxProvider } from 'react-scroll-parallax';
+import { useEffect, useState } from 'react';
+import { Header } from './components/Header';
+import { HeroSection } from './components/HeroSection';
+import { RestaurantFeatures } from './components/RestaurantFeatures';
+import { HomeCooksFeatures } from './components/HomeCooksFeatures';
+import { styles } from './styles';
 
-  // If user is logged in, redirect to home
-  if (user) {
-    redirect("/");
+export default function WelcomePage() {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    async function checkUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setIsLoading(false);
+      
+      if (user) {
+        window.location.href = '/';
+      }
+    }
+    checkUser();
+  }, [supabase]);
+
+  if (isLoading) {
+    return null;
   }
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center',
-      padding: '2rem'
-    }}>
-      <h1 style={{ marginBottom: '2rem' }}>Welcome to Flabo</h1>
-      <div style={{ width: '100%', maxWidth: '400px' }}>
-        <AuthForm />
+    <ParallaxProvider>
+      <div className="landing-page">
+        <Header />
+        <HeroSection />
+        <RestaurantFeatures />
+        <HomeCooksFeatures />
+        <style jsx global>{styles}</style>
       </div>
-    </div>
+    </ParallaxProvider>
   );
 }

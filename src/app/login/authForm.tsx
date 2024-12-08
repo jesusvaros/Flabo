@@ -2,7 +2,11 @@
 import { login, signup } from "./actions";
 import { useFormState } from "./formState";
 
-const AuthForm = () => {
+interface AuthFormProps {
+  onSuccess?: () => void;
+}
+
+const AuthForm = ({ onSuccess }: AuthFormProps) => {
   const { email, error, setEmail, setError } = useFormState();
 
   const handleLogin = async (formData: FormData) => {
@@ -10,6 +14,8 @@ const AuthForm = () => {
     if (result?.error) {
       setError(result.error);
       setEmail(result.email);
+    } else {
+      onSuccess?.();
     }
   };
 
@@ -18,56 +24,35 @@ const AuthForm = () => {
     if (result?.error) {
       setError(result.error);
       setEmail(result.email);
+    } else {
+      onSuccess?.();
     }
   };
 
   return (
-    <form>
+    <form className="auth-form">
       {error && (
-        <div style={{
-          padding: '1rem',
-          marginBottom: '1rem',
-          backgroundColor: '#fee2e2',
-          border: '1px solid #ef4444',
-          borderRadius: '4px',
-          color: '#dc2626',
-          width: '100%',
-          textAlign: 'center'
-        }}>
+        <div className="error-message">
           {error}
         </div>
       )}
-      <label htmlFor="email">Email:</label>
-      <input 
-        id="email" 
-        name="email" 
-        type="email" 
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required 
-        style={{
-          width: '100%',
-          padding: '0.5rem',
-          marginBottom: '1rem',
-          borderRadius: '4px',
-          border: '1px solid #ccc'
-        }}
-      />
-      <label htmlFor="password">Password:</label>
-      <input 
-        id="password" 
-        name="password" 
-        type="password" 
-        required 
-        style={{
-          width: '100%',
-          padding: '0.5rem',
-          marginBottom: '1rem',
-          borderRadius: '4px',
-          border: '1px solid #ccc'
-        }}
-      />
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
+      <div className="form-row">
+        <input 
+          name="email" 
+          type="email" 
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required 
+        />
+        <input 
+          name="password" 
+          type="password" 
+          placeholder="Password"
+          required 
+        />
+      </div>
+      <div className="button-row">
         <button 
           type="button"
           onClick={(e) => {
@@ -75,15 +60,6 @@ const AuthForm = () => {
             const form = e.currentTarget.form!;
             const formData = new FormData(form);
             handleLogin(formData);
-          }}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            flex: 1
           }}
         >
           Log in
@@ -96,19 +72,74 @@ const AuthForm = () => {
             const formData = new FormData(form);
             handleSignup(formData);
           }}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: '#10b981',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            flex: 1
-          }}
         >
           Sign up
         </button>
       </div>
+      <style jsx>{`
+        .auth-form {
+          width: 100%;
+        }
+
+        .error-message {
+          background-color: #fee2e2;
+          border: 1px solid #ef4444;
+          border-radius: 4px;
+          color: #dc2626;
+          padding: 0.5rem;
+          margin-bottom: 0.5rem;
+          font-size: 0.875rem;
+          text-align: center;
+        }
+
+        .form-row {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
+        }
+
+        input {
+          width: 100%;
+          padding: 0.75rem;
+          border: 1px solid #e2e8f0;
+          border-radius: 4px;
+          font-size: 1rem;
+        }
+
+        .button-row {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        button {
+          flex: 1;
+          padding: 0.75rem;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 1rem;
+          transition: background-color 0.2s;
+        }
+
+        button:first-of-type {
+          background-color: #3b82f6;
+          color: white;
+        }
+
+        button:first-of-type:hover {
+          background-color: #2563eb;
+        }
+
+        button:last-of-type {
+          background-color: #10b981;
+          color: white;
+        }
+
+        button:last-of-type:hover {
+          background-color: #059669;
+        }
+      `}</style>
     </form>
   );
 };

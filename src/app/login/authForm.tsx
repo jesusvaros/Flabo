@@ -1,15 +1,49 @@
 "use client";
-import { login, signup, googleLogin, logout } from "./actions";
+import { login, signup } from "./actions";
+import { useFormState } from "./formState";
 
-const AuthForm = ({ session, message, defaultEmail = '' }) => {
+const AuthForm = () => {
+  const { email, error, setEmail, setError } = useFormState();
+
+  const handleLogin = async (formData: FormData) => {
+    const result = await login(formData);
+    if (result?.error) {
+      setError(result.error);
+      setEmail(result.email);
+    }
+  };
+
+  const handleSignup = async (formData: FormData) => {
+    const result = await signup(formData);
+    if (result?.error) {
+      setError(result.error);
+      setEmail(result.email);
+    }
+  };
+
   return (
     <form>
+      {error && (
+        <div style={{
+          padding: '1rem',
+          marginBottom: '1rem',
+          backgroundColor: '#fee2e2',
+          border: '1px solid #ef4444',
+          borderRadius: '4px',
+          color: '#dc2626',
+          width: '100%',
+          textAlign: 'center'
+        }}>
+          {error}
+        </div>
+      )}
       <label htmlFor="email">Email:</label>
       <input 
         id="email" 
         name="email" 
         type="email" 
-        defaultValue={defaultEmail}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         required 
         style={{
           width: '100%',
@@ -35,7 +69,13 @@ const AuthForm = ({ session, message, defaultEmail = '' }) => {
       />
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         <button 
-          formAction={login}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            const form = e.currentTarget.form!;
+            const formData = new FormData(form);
+            handleLogin(formData);
+          }}
           style={{
             padding: '0.5rem 1rem',
             backgroundColor: '#3b82f6',
@@ -49,7 +89,13 @@ const AuthForm = ({ session, message, defaultEmail = '' }) => {
           Log in
         </button>
         <button 
-          formAction={signup}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            const form = e.currentTarget.form!;
+            const formData = new FormData(form);
+            handleSignup(formData);
+          }}
           style={{
             padding: '0.5rem 1rem',
             backgroundColor: '#10b981',
@@ -63,7 +109,6 @@ const AuthForm = ({ session, message, defaultEmail = '' }) => {
           Sign up
         </button>
       </div>
-      {message && <div> error: {message}</div>}
     </form>
   );
 };

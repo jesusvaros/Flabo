@@ -11,8 +11,8 @@ export async function login(formData: FormData) {
   const password = formData.get("password") as string;
 
   // Input validation
-  if (!email) return redirect(`/welcome?message=Email is required&email=${encodeURIComponent(email || '')}`);
-  if (!password) return redirect(`/welcome?message=Password is required&email=${encodeURIComponent(email || '')}`);
+  if (!email) return { error: "Email is required", email };
+  if (!password) return { error: "Password is required", email };
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -22,14 +22,14 @@ export async function login(formData: FormData) {
   if (error) {
     switch (error.message) {
       case "Invalid login credentials":
-        return redirect(`/welcome?message=Invalid email or password&email=${encodeURIComponent(email)}`);
+        return { error: "Invalid email or password", email };
       case "Email not confirmed":
-        return redirect(`/welcome?message=Please verify your email first&email=${encodeURIComponent(email)}`);
+        return { error: "Please verify your email first", email };
       case "Invalid email or password":
-        return redirect(`/welcome?message=Invalid email or password&email=${encodeURIComponent(email)}`);
+        return { error: "Invalid email or password", email };
       default:
         console.error("Login error:", error);
-        return redirect(`/welcome?message=${encodeURIComponent(error.message)}&email=${encodeURIComponent(email)}`);
+        return { error: error.message, email };
     }
   }
 
@@ -43,9 +43,9 @@ export async function signup(formData: FormData) {
   const password = formData.get("password") as string;
 
   // Input validation
-  if (!email) return redirect(`/welcome?message=Email is required&email=${encodeURIComponent(email || '')}`);
-  if (!password) return redirect(`/welcome?message=Password is required&email=${encodeURIComponent(email || '')}`);
-  if (password.length < 6) return redirect(`/welcome?message=Password must be at least 6 characters&email=${encodeURIComponent(email)}`);
+  if (!email) return { error: "Email is required", email };
+  if (!password) return { error: "Password is required", email };
+  if (password.length < 6) return { error: "Password must be at least 6 characters", email };
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -61,14 +61,14 @@ export async function signup(formData: FormData) {
   if (error) {
     switch (error.message) {
       case "User already registered":
-        return redirect(`/welcome?message=This email is already registered&email=${encodeURIComponent(email)}`);
+        return { error: "This email is already registered", email };
       case "Password should be at least 6 characters":
-        return redirect(`/welcome?message=Password must be at least 6 characters&email=${encodeURIComponent(email)}`);
+        return { error: "Password must be at least 6 characters", email };
       case "Invalid email":
-        return redirect(`/welcome?message=Please enter a valid email address&email=${encodeURIComponent(email)}`);
+        return { error: "Please enter a valid email address", email };
       default:
         console.error("Signup error:", error);
-        return redirect(`/welcome?message=${encodeURIComponent(error.message)}&email=${encodeURIComponent(email)}`);
+        return { error: error.message, email };
     }
   }
 
@@ -80,7 +80,7 @@ export async function signup(formData: FormData) {
   
   if (signInError) {
     console.error("Auto-login error:", signInError);
-    return redirect(`/welcome?message=Account created but could not sign in automatically&email=${encodeURIComponent(email)}`);
+    return { error: "Account created but could not sign in automatically", email };
   }
 
   return revalidatePath("/", "layout"), redirect("/");
@@ -105,12 +105,12 @@ export async function googleLogin() {
   if (error) {
     switch (error.message) {
       case "Access denied":
-        return redirect("/welcome?message=Access denied");
+        return { error: "Access denied" };
       case "Invalid grant":
-        return redirect("/welcome?message=Invalid grant");
+        return { error: "Invalid grant" };
       default:
         console.error("Google login error:", error);
-        return redirect(`/welcome?message=${encodeURIComponent(error.message)}`);
+        return { error: error.message };
     }
   }
 

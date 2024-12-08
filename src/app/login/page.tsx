@@ -1,16 +1,18 @@
 "use server";
+import { redirect } from "next/navigation";
 import { createClient } from "../../../utils/supabase/client";
 import AuthForm from "./authForm";
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams?: { message?: string }
-}) {
+export default async function LoginPage() {
   const supabase = createClient();
-  const user = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const message = searchParams?.message;
-
-  return <AuthForm session={user} message={message}/>;
+  // If user is logged in, redirect to home
+  if (user) {
+    redirect("/");
+  } else {
+    redirect("/welcome");
+  }
 }

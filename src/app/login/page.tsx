@@ -1,7 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../utils/supabase/client";
-import AuthForm from "./authForm";
 
 export default async function LoginPage() {
   const supabase = createClient();

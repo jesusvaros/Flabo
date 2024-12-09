@@ -3,17 +3,19 @@ import { createClient } from "../../utils/supabase/server";
 import { logout } from "./login/actions";
 import { LogoutButton } from "./components/LogoutButton/LogoutButton";
 
+
 export default async function Home() {
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const { data: tickets } = await supabase.from("tickets").select("*");
 
   if (!user) {
     redirect("/welcome");
   }
+
+  const { data: tickets } = await supabase.from("tickets").select("*,auth.user(email)");
 
   return (
     <div>
@@ -40,6 +42,7 @@ export default async function Home() {
             padding: "1rem",
             borderRadius: "4px",
             marginTop: "1rem",
+            color:'black'
           }}
         >
           {JSON.stringify(tickets, null, 2)}

@@ -3,7 +3,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "../../styles/theme/ThemeProvider";
-import { ModalOverlay, ModalContent, ModalHeader, CloseButton, ModalBody } from "./styles";
+import {
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  CloseButton,
+  ModalBody,
+} from "./styles";
 
 type ModalProps = {
   isOpen: boolean;
@@ -66,7 +72,7 @@ export const Modal = ({
 
         // Position the modal below the trigger button
         let top = triggerRect.bottom + 8; // 8px gap
-        
+
         // Check if modal would go off the bottom of the viewport
         if (top + modalRect.height > viewportHeight) {
           // Position above the trigger if it would fit better
@@ -82,7 +88,7 @@ export const Modal = ({
           )
         );
 
-        modalRef.current.style.position = 'fixed';
+        modalRef.current.style.position = "fixed";
         modalRef.current.style.top = `${top}px`;
         modalRef.current.style.left = `${left}px`;
       }
@@ -92,11 +98,11 @@ export const Modal = ({
       // Wait for next frame to ensure modal is rendered
       requestAnimationFrame(positionModal);
       // Also handle window resize
-      window.addEventListener('resize', positionModal);
+      window.addEventListener("resize", positionModal);
     }
 
     return () => {
-      window.removeEventListener('resize', positionModal);
+      window.removeEventListener("resize", positionModal);
     };
   }, [isOpen, triggerRef]);
 
@@ -109,13 +115,13 @@ export const Modal = ({
   }
 
   return createPortal(
-    <ModalOverlay theme={theme}>
-      <ModalContent ref={modalRef} theme={theme}>
-        <ModalHeader theme={theme}>
+    <ModalOverlay>
+      <ModalContent ref={modalRef}>
+        <ModalHeader>
           {title && <h2>{title}</h2>}
-          <CloseButton theme={theme} onClick={onClose}>×</CloseButton>
+          <CloseButton onClick={onClose}>×</CloseButton>
         </ModalHeader>
-        <ModalBody theme={theme}>{children}</ModalBody>
+        <ModalBody>{children}</ModalBody>
       </ModalContent>
     </ModalOverlay>,
     document.body

@@ -15,7 +15,7 @@ export default async function Home() {
     redirect("/welcome");
   }
 
-  const { data: tickets } = await supabase.from("tickets").select("*,auth.user(email)");
+  const { data: tickets } = await supabase.from("tickets").select("*,users(*)");
 
   return (
     <div>

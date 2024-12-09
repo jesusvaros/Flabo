@@ -12,7 +12,9 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
   const { email, error, setEmail, setError } = useFormState();
   const { theme } = useTheme();
 
-  const handleLogin = async (formData: FormData) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     const result = await login(formData);
     if (result?.error) {
       setError(result.error);
@@ -22,7 +24,9 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
     }
   };
 
-  const handleSignup = async (formData: FormData) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     const result = await signup(formData);
     if (result?.error) {
       setError(result.error);
@@ -32,22 +36,8 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
     }
   };
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    const form = e.currentTarget.form!;
-    const formData = new FormData(form);
-    handleLogin(formData);
-  };
-
-  const handleSignupSubmit = async (e: any) => {
-    e.preventDefault();
-    const form = e.currentTarget.form!;
-    const formData = new FormData(form);
-    handleSignup(formData);
-  };
-
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleLogin}>
       {error && (
         <ErrorMessage
           style={{
@@ -64,7 +54,7 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
           name="email" 
           type="email" 
           placeholder="Email"
-          value={email}
+          defaultValue={email}
           onChange={(e) => setEmail(e.target.value)}
           style={{
             backgroundColor: theme.colors.background.tertiary,
@@ -98,7 +88,7 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
         </Button>
         <Button 
           type="button"
-          onClick={handleSignupSubmit}
+          onClick={(e) => handleSignup(e as any)}
           style={{
             backgroundColor: theme.colors.background.secondary,
             color: theme.colors.text.primary,

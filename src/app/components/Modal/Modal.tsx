@@ -58,22 +58,46 @@ export const Modal = ({
   }, [isOpen, onClose, triggerRef]);
 
   useEffect(() => {
-    if (isOpen && modalRef.current && triggerRef?.current) {
-      const triggerRect = triggerRef.current.getBoundingClientRect();
-      const modalRect = modalRef.current.getBoundingClientRect();
+    const positionModal = () => {
+      if (isOpen && modalRef.current && triggerRef?.current) {
+        const triggerRect = triggerRef.current.getBoundingClientRect();
+        const modalRect = modalRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
 
-      // Position the modal below the trigger button
-      const top = triggerRect.bottom + 8; // 8px gap
-      const left = Math.max(
-        Math.min(
-          triggerRect.left,
-          window.innerWidth - modalRect.width - 8 // keep 8px from right edge
-        )
-      );
+        // Position the modal below the trigger button
+        let top = triggerRect.bottom + 8; // 8px gap
+        
+        // Check if modal would go off the bottom of the viewport
+        if (top + modalRect.height > viewportHeight) {
+          // Position above the trigger if it would fit better
+          top = Math.max(8, triggerRect.top - modalRect.height - 8);
+        }
 
-      modalRef.current.style.top = `${top}px`;
-      modalRef.current.style.left = `${left}px`;
+        // Center horizontally relative to trigger
+        const left = Math.max(
+          8, // Minimum 8px from left edge
+          Math.min(
+            triggerRect.left + (triggerRect.width - modalRect.width) / 2,
+            window.innerWidth - modalRect.width - 8 // Keep 8px from right edge
+          )
+        );
+
+        modalRef.current.style.position = 'fixed';
+        modalRef.current.style.top = `${top}px`;
+        modalRef.current.style.left = `${left}px`;
+      }
+    };
+
+    if (isOpen) {
+      // Wait for next frame to ensure modal is rendered
+      requestAnimationFrame(positionModal);
+      // Also handle window resize
+      window.addEventListener('resize', positionModal);
     }
+
+    return () => {
+      window.removeEventListener('resize', positionModal);
+    };
   }, [isOpen, triggerRef]);
 
   if (!mounted) {
@@ -88,7 +112,7 @@ export const Modal = ({
     <ModalOverlay theme={theme}>
       <ModalContent ref={modalRef} theme={theme}>
         <ModalHeader theme={theme}>
-          {title && <h2 >{title}</h2>}
+          {title && <h2>{title}</h2>}
           <CloseButton theme={theme} onClick={onClose}>×</CloseButton>
         </ModalHeader>
         <ModalBody theme={theme}>{children}</ModalBody>

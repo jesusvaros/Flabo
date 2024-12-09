@@ -6,39 +6,34 @@ export const ModalOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
-  align-items: center;
-  backdrop-filter: blur(5px);
-  background-color: ${({ theme }) => `${theme.colors.background.primary}80`};
+  z-index: 1000;
 `;
 
 export const ModalContent = styled.div`
-  position: relative;
-  padding: 1rem;
+  position: fixed;
+  background-color: ${({ theme }) => theme.colors.background.primary};
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  width: 90%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 300px;
+  max-width: 90vw;
   max-height: 90vh;
-  overflow-y: auto;
-  background-color: ${({ theme }) => theme.colors.background.secondary};
-  color: ${({ theme }) => theme.colors.text.primary};
-  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  overflow: auto;
+  z-index: 1001;
 `;
 
 export const ModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
+  padding: 16px;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.primary};
 
   h2 {
     margin: 0;
-    font-size: 1.5rem;
     color: ${({ theme }) => theme.colors.text.primary};
+    font-size: 1.2rem;
   }
 `;
 
@@ -47,11 +42,16 @@ export const CloseButton = styled.button`
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  padding: 0;
-  line-height: 1;
   color: ${({ theme }) => theme.colors.text.secondary};
+  padding: 4px 8px;
+  border-radius: 4px;
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.background.secondary};
+  }
 `;
 
 export const ModalBody = styled.div`
-  position: relative;
+  padding: 16px;
+  color: ${({ theme }) => theme.colors.text.primary};
 `;

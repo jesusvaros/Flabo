@@ -1,10 +1,28 @@
-"use client";
-import { IngredientsTable } from '../Tables/IngredientsTable';
+import { createClient } from "../../../../utils/supabase/server";
+import { IngredientsTable } from "../Tables/IngredientsTable";
+import { SuspenseTab } from "./SuspenseTab";
 
-interface IngredientsTabProps {
-  ingredients: any[];
-}
 
-export const IngredientsTab: React.FC<IngredientsTabProps> = ({ ingredients }) => {
+export const IngredientsTabSuspense = () => {
+  return (
+    <SuspenseTab label="Ingredients">
+      <IngredientsTab />
+    </SuspenseTab>
+  );
+};
+
+
+const IngredientsTab = async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: ingredients = [] } = await supabase
+    .from("ingredients")
+    .select("*")
+    .eq("creator_id", user?.id);
+    
+
   return <IngredientsTable ingredients={ingredients} />;
 };

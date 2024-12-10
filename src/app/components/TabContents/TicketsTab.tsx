@@ -1,27 +1,31 @@
-"use client";
-import styled from 'styled-components';
-import { TicketCard } from '../Cards/TicketCard';
+import { TicketCard } from "../Cards/TicketCard";
+import { createClient } from "../../../../utils/supabase/server";
+import { Grid } from "./CollectionsTab.styles";
+import { SuspenseTab } from "./SuspenseTab";
 
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  padding: 20px;
-`;
+export const TicktetsTabSuspense = () => {
+  return (
+    <SuspenseTab label="Tickets">
+      <TicketsTab />
+    </SuspenseTab>
+  );
+};
 
-interface TicketsTabProps {
-  tickets: any[];
-}
+export const TicketsTab = async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-export const TicketsTab: React.FC<TicketsTabProps> = ({ tickets }) => {
+  const { data: tickets } = await supabase
+    .from("tickets")
+    .select("*")
+    .eq("creator_id", user?.id);
+
   return (
     <Grid>
       {tickets.map((ticket) => (
-        <TicketCard
-          key={ticket.id}
-          ticket={ticket}
-          onClick={(ticket) => console.log('Clicked ticket:', ticket)}
-        />
+        <TicketCard key={ticket.id} ticket={ticket} />
       ))}
     </Grid>
   );

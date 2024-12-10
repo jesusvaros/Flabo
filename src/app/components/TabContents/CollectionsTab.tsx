@@ -1,28 +1,32 @@
-"use client";
-import styled from 'styled-components';
-import { CollectionCard } from '../Cards/CollectionCard';
+import { createClient } from "../../../../utils/supabase/server";
+import { CollectionCard } from "../Cards/CollectionCard";
+import { Grid } from "./CollectionsTab.styles";
+import { SuspenseTab } from "./SuspenseTab";
 
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  padding: 20px;
-`;
-
-interface CollectionsTabProps {
-  collections: any[];
+export function CollectionTabSuspense() {
+  return (
+    <SuspenseTab label="Collections">
+      <CollectionsTab />
+    </SuspenseTab>
+  );
 }
 
-export const CollectionsTab: React.FC<CollectionsTabProps> = ({ collections }) => {
+async function CollectionsTab() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: collections } = await supabase
+    .from("collections")
+    .select("*")
+    .eq("creator_id", user?.id);
+
   return (
     <Grid>
-      {collections.map((collection) => (
-        <CollectionCard
-          key={collection.id}
-          collection={collection}
-          onClick={(collection) => console.log('Clicked collection:', collection)}
-        />
+      {collections?.map((collection) => (
+        <CollectionCard key={collection.id} collection={collection} />
       ))}
     </Grid>
   );
-};
+}

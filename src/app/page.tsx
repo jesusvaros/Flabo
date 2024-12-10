@@ -2,9 +2,15 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
 import { LogoutButton } from "./components/LogoutButton/LogoutButton";
 import { Tabs, TabPanel } from "./components/Tabs/Tabs";
-import { IngredientsTab } from "./components/TabContents/IngredientsTab";
-import { CollectionsTab } from "./components/TabContents/CollectionsTab";
-import { TicketsTab } from "./components/TabContents/TicketsTab";
+import { CollectionTabSuspense } from "./components/TabContents/CollectionsTab";
+import {
+  TicketsTab,
+  TicktetsTabSuspense,
+} from "./components/TabContents/TicketsTab";
+import {
+  IngredientsTab,
+  IngredientsTabSuspense,
+} from "./components/TabContents/IngredientsTab";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -16,22 +22,6 @@ export default async function Home() {
   if (!user) {
     redirect("/welcome");
   }
-
-  // Fetch data for each tab
-  const { data: collections } = await supabase
-    .from("collections")
-    .select("*")
-    .eq("creator_id", user.id);
-
-  const { data: tickets } = await supabase
-    .from("tickets")
-    .select("*")
-    .eq("creator_id", user.id);
-
-  const { data: ingredients } = await supabase
-    .from("ingredients")
-    .select("*")
-    .eq("creator_id", user.id);
 
   return (
     <div>
@@ -51,15 +41,9 @@ export default async function Home() {
       </div>
 
       <Tabs>
-        <TabPanel label="Collections">
-          <CollectionsTab collections={collections || []} />
-        </TabPanel>
-        <TabPanel label="Tickets">
-          <TicketsTab tickets={tickets || []} />
-        </TabPanel>
-        <TabPanel label="Ingredients">
-          <IngredientsTab ingredients={ingredients || []} />
-        </TabPanel>
+        <CollectionTabSuspense />
+        <TicktetsTabSuspense />
+        <IngredientsTabSuspense />
       </Tabs>
     </div>
   );

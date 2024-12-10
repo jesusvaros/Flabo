@@ -8,23 +8,25 @@ const TabContainer = styled.div`
 `;
 
 const TabList = styled.div`
-  display: flex;
-  border-bottom: 1px solid #e0e0e0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background-color: #e0e0e0;
   margin-bottom: 20px;
 `;
 
 const TabButton = styled.button<{ active: boolean }>`
-  padding: 10px 20px;
+  padding: 15px 20px;
   border: none;
-  background: none;
+  background: ${props => props.active ? '#1a73e8' : 'white'};
   cursor: pointer;
   font-size: 16px;
-  color: ${props => props.active ? '#1a73e8' : '#666'};
-  border-bottom: 2px solid ${props => props.active ? '#1a73e8' : 'transparent'};
+  color: ${props => props.active ? 'white' : '#666'};
   transition: all 0.3s ease;
+  width: 100%;
 
   &:hover {
-    color: #1a73e8;
+    background: ${props => props.active ? '#1a73e8' : '#f5f5f5'};
   }
 `;
 

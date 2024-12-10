@@ -1,5 +1,5 @@
 "use client";
-import styled from 'styled-components';
+import styled from "styled-components";
 
 const Table = styled.table`
   width: 100%;
@@ -7,7 +7,7 @@ const Table = styled.table`
   background: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const Th = styled.th`
@@ -43,7 +43,9 @@ interface IngredientsTableProps {
   ingredients: Ingredient[];
 }
 
-export const IngredientsTable: React.FC<IngredientsTableProps> = ({ ingredients }) => {
+export const IngredientsTable: React.FC<IngredientsTableProps> = ({
+  ingredients,
+}) => {
   return (
     <Table>
       <thead>
@@ -55,14 +57,20 @@ export const IngredientsTable: React.FC<IngredientsTableProps> = ({ ingredients 
         </tr>
       </thead>
       <tbody>
-        {ingredients.map((ingredient) => (
-          <Tr key={ingredient.id}>
-            <Td>{ingredient.name}</Td>
-            <Td>{ingredient.category}</Td>
-            <Td>{ingredient.unit}</Td>
-            <Td>{new Date(ingredient.created_at).toLocaleDateString()}</Td>
+        {ingredients ? (
+          ingredients.map((ingredient) => (
+            <Tr key={ingredient.id}>
+              <Td>{ingredient.name}</Td>
+              <Td>{ingredient.category}</Td>
+              <Td>{ingredient.unit}</Td>
+              <Td>{new Date(ingredient.created_at).toLocaleDateString()}</Td>
+            </Tr>
+          ))
+        ) : (
+          <Tr>
+            <Td colSpan={4}>Add ingredients</Td>
           </Tr>
-        ))}
+        )}
       </tbody>
     </Table>
   );

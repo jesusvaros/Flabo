@@ -8,7 +8,7 @@ export const RestaurantFeatures = () => (
       <h2>For Restaurants</h2>
       <div className="feature-grid">
         <div className="feature-item">
-          <h3>Recipe Standardization</h3>
+          <h3>Ticket Standardization</h3>
           <p>Maintain consistency across all your locations</p>
         </div>
         <div className="feature-item">

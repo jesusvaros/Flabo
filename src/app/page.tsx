@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
-import { logout } from "./login/actions";
 import { LogoutButton } from "./components/LogoutButton/LogoutButton";
-
+import { Tabs, TabPanel } from "./components/Tabs/Tabs";
+import { IngredientsTab } from "./components/TabContents/IngredientsTab";
+import { CollectionsTab } from "./components/TabContents/CollectionsTab";
+import { TicketsTab } from "./components/TabContents/TicketsTab";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -15,7 +17,21 @@ export default async function Home() {
     redirect("/welcome");
   }
 
-  const { data: tickets } = await supabase.from("tickets").select("*,users(*)");
+  // Fetch data for each tab
+  const { data: collections } = await supabase
+    .from("collections")
+    .select("*")
+    .eq("creator_id", user.id);
+
+  const { data: tickets } = await supabase
+    .from("tickets")
+    .select("*")
+    .eq("creator_id", user.id);
+
+  const { data: ingredients } = await supabase
+    .from("ingredients")
+    .select("*")
+    .eq("creator_id", user.id);
 
   return (
     <div>
@@ -34,20 +50,17 @@ export default async function Home() {
         </div>
       </div>
 
-      <div style={{ padding: "1rem" }}>
-        <h2>Your Tickets:</h2>
-        <pre
-          style={{
-            backgroundColor: "#f5f5f5",
-            padding: "1rem",
-            borderRadius: "4px",
-            marginTop: "1rem",
-            color:'black'
-          }}
-        >
-          {JSON.stringify(tickets, null, 2)}
-        </pre>
-      </div>
+      <Tabs>
+        <TabPanel label="Collections">
+          <CollectionsTab collections={collections || []} />
+        </TabPanel>
+        <TabPanel label="Tickets">
+          <TicketsTab tickets={tickets || []} />
+        </TabPanel>
+        <TabPanel label="Ingredients">
+          <IngredientsTab ingredients={ingredients || []} />
+        </TabPanel>
+      </Tabs>
     </div>
   );
 }

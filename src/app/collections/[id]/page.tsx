@@ -9,13 +9,6 @@ export default async function CollectionPage({
 }) {
   const supabase = await createClient();
 
-  // Get collection details
-  const { data: collection } = await supabase
-    .from("collections")
-    .select("*")
-    .eq("id", params.id)
-    .single();
-
   // Get tickets in this collection using the junction table
   const { data: collectionDetails } = await supabase
     .from(`collections`)
@@ -28,8 +21,8 @@ export default async function CollectionPage({
   return (
     <Container>
       <Header>
-        <Title>{collection?.title}</Title>
-        <Description>{collection?.description}</Description>
+        <Title>{collectionDetails?.title}</Title>
+        <Description>description</Description>
       </Header>
 
       <Grid>

@@ -10,12 +10,12 @@ export const Header = styled.div`
 `;
 
 export const Title = styled.h1`
-  color: #333;
+  color: ${({theme}) => theme.colors.text.primary };
   margin-bottom: 10px;
 `;
 
 export const Description = styled.p`
-  color: #666;
+  color: ${({theme}) => theme.colors.text.primary };;
   font-size: 16px;
 `;
 

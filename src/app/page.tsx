@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
-import { logout } from "./login/actions";
 import { LogoutButton } from "./components/LogoutButton/LogoutButton";
-
+import { Tabs } from "./components/Tabs/Tabs";
+import { CollectionTabSuspense } from "./components/TabContents/CollectionsTab";
+import { TicktetsTabSuspense } from "./components/TabContents/TicketsTab";
+import { IngredientsTabSuspense } from "./components/TabContents/IngredientsTab";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -14,8 +16,6 @@ export default async function Home() {
   if (!user) {
     redirect("/welcome");
   }
-
-  const { data: tickets } = await supabase.from("tickets").select("*,auth.user(email)");
 
   return (
     <div>
@@ -34,20 +34,11 @@ export default async function Home() {
         </div>
       </div>
 
-      <div style={{ padding: "1rem" }}>
-        <h2>Your Tickets:</h2>
-        <pre
-          style={{
-            backgroundColor: "#f5f5f5",
-            padding: "1rem",
-            borderRadius: "4px",
-            marginTop: "1rem",
-            color:'black'
-          }}
-        >
-          {JSON.stringify(tickets, null, 2)}
-        </pre>
-      </div>
+      <Tabs>
+        <CollectionTabSuspense />
+        <TicktetsTabSuspense />
+        <IngredientsTabSuspense />
+      </Tabs>
     </div>
   );
 }

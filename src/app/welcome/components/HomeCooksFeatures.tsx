@@ -8,8 +8,8 @@ export const HomeCooksFeatures = () => (
       <h2>For Home Cooks</h2>
       <div className="feature-grid">
         <div className="feature-item">
-          <h3>Recipe Collection</h3>
-          <p>Store and organize your favorite recipes</p>
+          <h3>Ticket Collection</h3>
+          <p>Store and organize your favorite tickets</p>
         </div>
         <div className="feature-item">
           <h3>Meal Planning</h3>

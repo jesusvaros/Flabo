@@ -46,7 +46,7 @@ export const lightTheme = {
       primary: colors.gray[900],
       secondary: colors.gray[700],
       tertiary: colors.gray[500],
-      inverse: colors.white,
+      inverse: colors.black,
     },
     border: {
       primary: colors.gray[200],

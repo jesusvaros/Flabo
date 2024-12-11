@@ -8,14 +8,17 @@ export default async function CollectionPage({
   params: { id: string };
 }) {
   const supabase = await createClient();
-
   // Get tickets in this collection using the junction table
-  const { data: collectionDetails } = await supabase
+  const { data: collectionDetails, error } = await supabase
     .from(`collections`)
     .select(`id, title, tickets ( id, content)`)
+    .eq("id", params.id)
     .single();
 
-  console.log("collection", collectionDetails);
+  if (error) {
+    return null;
+  }
+
   const tickets = collectionDetails.tickets;
 
   return (

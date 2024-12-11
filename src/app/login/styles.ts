@@ -1,9 +1,6 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
-export const Form = styled.form`
-  width: 100%;
-  padding: 1rem;
-`;
+export const Form = styled.form``;
 
 export const ErrorMessage = styled.div`
   border-radius: 4px;
@@ -11,7 +8,7 @@ export const ErrorMessage = styled.div`
   margin-bottom: 0.5rem;
   font-size: 0.875rem;
   background-color: ${({ theme }) => theme.colors.background.tertiary};
-  color: ${({ theme }) => theme.colors.text.primary};
+  color: ${({ theme }) => theme.colors.error[1]};
   border: 1px solid ${({ theme }) => theme.colors.border.primary};
 `;
 
@@ -20,8 +17,8 @@ export const FormGroup = styled.div`
 `;
 
 export const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
+  width: calc(100% - 24px);
+  padding: 10px 12px ;
   border-radius: 4px;
   font-size: 1rem;
   margin-bottom: 1rem;

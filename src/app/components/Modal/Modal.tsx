@@ -84,7 +84,7 @@ export const Modal = ({
           8, // Minimum 8px from left edge
           Math.min(
             triggerRect.left + (triggerRect.width - modalRect.width) / 2,
-            window.innerWidth - modalRect.width - 8 // Keep 8px from right edge
+            window.innerWidth - modalRect.width - 20// Keep 8px from right edge
           )
         );
 

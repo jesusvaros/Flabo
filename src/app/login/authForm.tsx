@@ -1,8 +1,15 @@
 "use client";
 import { login, signup } from "./actions";
 import { useFormState } from "./formState";
-import { useTheme } from '../styles/theme/ThemeProvider';
-import { Form, ErrorMessage, FormGroup, Input, ButtonRow, Button } from "./styles";
+import { useTheme } from "../styles/theme/ThemeProvider";
+import {
+  Form,
+  ErrorMessage,
+  FormGroup,
+  Input,
+  ButtonRow,
+  Button,
+} from "./styles";
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -38,63 +45,26 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
 
   return (
     <Form onSubmit={handleLogin}>
-      {error && (
-        <ErrorMessage
-          style={{
-            backgroundColor: theme.colors.background.tertiary,
-            color: theme.colors.text.primary,
-            border: `1px solid ${theme.colors.border.primary}`
-          }}
-        >
-          {error}
-        </ErrorMessage>
-      )}
+      {error && <ErrorMessage>{error}</ErrorMessage>}
       <FormGroup>
-        <Input 
-          name="email" 
-          type="email" 
+        <Input
+          name="email"
+          type="email"
           placeholder="Email"
           defaultValue={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={{
-            backgroundColor: theme.colors.background.tertiary,
-            color: theme.colors.text.primary,
-            border: `1px solid ${theme.colors.border.primary}`
-          }}
-          required 
+          required
         />
-        <Input 
-          name="password" 
-          type="password" 
+        <Input
+          name="password"
+          type="password"
           placeholder="Password"
-          style={{
-            backgroundColor: theme.colors.background.tertiary,
-            color: theme.colors.text.primary,
-            border: `1px solid ${theme.colors.border.primary}`
-          }}
-          required 
+          required
         />
       </FormGroup>
       <ButtonRow>
-        <Button 
-          type="submit"
-          style={{
-            backgroundColor: theme.colors.background.secondary,
-            color: theme.colors.text.primary,
-            border: `1px solid ${theme.colors.border.primary}`
-          }}
-        >
-          Log in
-        </Button>
-        <Button 
-          type="button"
-          onClick={(e) => handleSignup(e as any)}
-          style={{
-            backgroundColor: theme.colors.background.secondary,
-            color: theme.colors.text.primary,
-            border: `1px solid ${theme.colors.border.primary}`
-          }}
-        >
+        <Button type="submit">Log in</Button>
+        <Button type="button" onClick={(e) => handleSignup(e as any)}>
           Sign up
         </Button>
       </ButtonRow>

@@ -1,6 +1,6 @@
 "use client";
-import { useState } from 'react';
-import styled from 'styled-components';
+import { useState } from "react";
+import styled from "styled-components";
 
 const TabContainer = styled.div`
   width: 100%;
@@ -10,23 +10,23 @@ const TabContainer = styled.div`
 const TabList = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background-color: #e0e0e0;
-  margin-bottom: 20px;
+  gap: 12px;
 `;
 
 const TabButton = styled.button<{ active: boolean }>`
   padding: 15px 20px;
   border: none;
-  background: ${props => props.active ? '#1a73e8' : 'white'};
+  background: ${(props) => (props.active ? props.theme.colors.background.secondary : "white")};
   cursor: pointer;
   font-size: 16px;
-  color: ${props => props.active ? 'white' : '#666'};
+  color: ${(props) => (props.active ? props.theme.colors.text.primary : props.theme.colors.text.inverse)};
   transition: all 0.3s ease;
   width: 100%;
+  border-radius: 16px;
+
 
   &:hover {
-    background: ${props => props.active ? '#1a73e8' : '#f5f5f5'};
+    opacity: ${(props) => (props.active ? "1" : " 0.6")};
   }
 `;
 
@@ -54,13 +54,14 @@ export const Tabs: React.FC<TabsProps> = ({ children }) => {
           </TabButton>
         ))}
       </TabList>
-      <TabContent>
-        {children[activeTab]}
-      </TabContent>
+      <TabContent>{children[activeTab]}</TabContent>
     </TabContainer>
   );
 };
 
-export const TabPanel: React.FC<{ label: string; children: React.ReactNode }> = ({ children }) => {
+export const TabPanel: React.FC<{
+  label: string;
+  children: React.ReactNode;
+}> = ({ children }) => {
   return <div>{children}</div>;
 };

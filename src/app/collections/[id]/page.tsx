@@ -1,6 +1,7 @@
 import { createClient } from "../../../../utils/supabase/server";
 import { TicketCard } from "../../components/Cards/TicketCard";
-import { Container, Description, Grid, Header, Title } from "./styles";
+import { CollectionsSidebar } from "../../components/collections/CollectionsSidebar";
+import { Container, Description, Grid, Header, Title, MainContent } from "./styles";
 
 export default async function CollectionPage({
   params,
@@ -8,6 +9,12 @@ export default async function CollectionPage({
   params: { id: string };
 }) {
   const supabase = await createClient();
+  
+  // Get all collections for the sidebar
+  const { data: collections } = await supabase
+    .from('collections')
+    .select('id, title');
+
   // Get tickets in this collection using the junction table
   const { data: collectionDetails, error } = await supabase
     .from(`collections`)
@@ -23,16 +30,25 @@ export default async function CollectionPage({
 
   return (
     <Container>
-      <Header>
-        <Title>{collectionDetails?.title}</Title>
-        <Description>description</Description>
-      </Header>
+      <CollectionsSidebar 
+        collections={collections?.map(col => ({ 
+          id: col.id, 
+          name: col.title 
+        })) || []}
+        currentCollectionId={params.id}
+      />
+      <MainContent>
+        <Header>
+          <Title>{collectionDetails?.title}</Title>
+          <Description>description</Description>
+        </Header>
 
-      <Grid>
-        {tickets.map((ticket) => (
-          <TicketCard key={ticket.id} ticket={ticket} />
-        ))}
-      </Grid>
+        <Grid>
+          {tickets?.map((ticket: any) => (
+            <TicketCard key={ticket.id} ticket={ticket} />
+          ))}
+        </Grid>
+      </MainContent>
     </Container>
   );
 }

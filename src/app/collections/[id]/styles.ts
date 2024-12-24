@@ -2,26 +2,32 @@
 import { styled } from "styled-components";
 
 export const Container = styled.div`
-  padding: 20px;
+  display: flex;
+  min-height: 100vh;
 `;
 
-export const Header = styled.div`
-  margin-bottom: 30px;
+export const MainContent = styled.main`
+  flex: 1;
+  margin-left: 250px;
+  padding: 2rem;
+`;
+
+export const Header = styled.header`
+  margin-bottom: 2rem;
 `;
 
 export const Title = styled.h1`
-  color: #333;
-  margin-bottom: 10px;
+  color: ${({theme}) => theme.colors.text[900] };
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
 `;
 
 export const Description = styled.p`
-  color: #666;
-  font-size: 16px;
+  color: ${({theme}) => theme.colors.text[500] };
 `;
 
 export const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  padding: 20px 0;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
 `;

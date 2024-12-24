@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { ThemeProvider } from './styles/theme';
-import { StyledComponentsProvider } from './styles/StyledComponentsProvider';
 import StyledComponentsRegistry from './registry';
+import Providers from './providers';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,11 +28,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
         <StyledComponentsRegistry>
-          <ThemeProvider>
-            <StyledComponentsProvider>
-              {children}
-            </StyledComponentsProvider>
-          </ThemeProvider>
+          <Providers>
+            {children}
+          </Providers>
         </StyledComponentsRegistry>
       </body>
     </html>

@@ -1,5 +1,6 @@
 import { createClient } from "../../../../utils/supabase/server";
 import { CollectionCard } from "../Cards/CollectionCard";
+import { CreateCollectionCard } from "../collections/CreateCollectionCard";
 import { Grid } from "./CollectionsTab.styles";
 import { SuspenseTab } from "./SuspenseTab";
 
@@ -23,10 +24,13 @@ async function CollectionsTab() {
     .eq("creator_id", user?.id);
 
   return (
-    <Grid>
-      {collections?.map((collection) => (
-        <CollectionCard key={collection.id} collection={collection} />
-      ))}
-    </Grid>
+    <div>
+      <Grid>
+      <CreateCollectionCard />
+        {collections?.map((collection) => (
+          <CollectionCard key={collection.id} collection={collection} />
+        ))}
+      </Grid>
+    </div>
   );
 }

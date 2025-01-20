@@ -1,21 +1,19 @@
 "use client";
-
 import styled from "styled-components";
-import { Card } from "../Cards/TicketCard.styles";
+import { Card } from "../Cards/CollectionCard.styles";
 
 export const CreateCard = styled(Card)`
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   font-size: 48px;
   color: ${({ theme }) => theme.colors.text.secondary};
   background-color: ${({ theme }) => theme.colors.background.secondary};
-  transition: all 0.2s;
 
   &:hover {
-    transform: scale(1.02);
-    color: ${({ theme }) => theme.colors.primaryDark};
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
@@ -38,16 +36,14 @@ export const Label = styled.label`
   color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
-export const TextArea = styled.textarea`
+export const Input = styled.input`
   width: 100%;
-  min-height: 150px;
   padding: 16px;
   border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.colors.border};
   background-color: ${({ theme }) => theme.colors.background.secondary};
   color: ${({ theme }) => theme.colors.text.primary};
   font-size: 16px;
-  resize: vertical;
   line-height: 1.5;
 
   &:focus {

@@ -10,6 +10,7 @@ import {
   ButtonRow,
   Button,
 } from "./styles";
+import { useState } from "react";
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -18,23 +19,12 @@ interface AuthFormProps {
 const AuthForm = ({ onSuccess }: AuthFormProps) => {
   const { email, error, setEmail, setError } = useFormState();
   const { theme } = useTheme();
+  const [isLogin, setIsLogin] = useState(true);
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const result = await login(formData);
-    if (result?.error) {
-      setError(result.error);
-      setEmail(result.email);
-    } else {
-      onSuccess?.();
-    }
-  };
-
-  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const result = await signup(formData);
+    const result = await (isLogin ? login(formData) : signup(formData));
     if (result?.error) {
       setError(result.error);
       setEmail(result.email);
@@ -44,7 +34,7 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
   };
 
   return (
-    <Form onSubmit={handleLogin}>
+    <Form onSubmit={handleSubmit}>
       {error && <ErrorMessage>{error}</ErrorMessage>}
       <FormGroup>
         <Input
@@ -63,9 +53,11 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
         />
       </FormGroup>
       <ButtonRow>
-        <Button type="submit">Log in</Button>
-        <Button type="button" onClick={(e) => handleSignup(e as any)}>
-          Sign up
+        <Button type="submit">
+          {isLogin ? "Log in" : "Sign up"}
+        </Button>
+        <Button type="button" onClick={() => setIsLogin(!isLogin)}>
+          {isLogin ? "Need an account? Sign up" : "Have an account? Log in"}
         </Button>
       </ButtonRow>
     </Form>

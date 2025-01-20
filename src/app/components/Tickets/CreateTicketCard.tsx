@@ -23,12 +23,17 @@ export const CreateTicketCard = () => {
 
     if (!user) return;
 
-    await supabase.from("tickets").insert([
+    const error = await supabase.from("tickets").insert([
       {
         content: content.trim(),
         creator_id: user.id,
       },
     ]);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
 
     setContent("");
     setIsModalOpen(false);

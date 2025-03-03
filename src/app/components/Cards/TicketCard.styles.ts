@@ -9,6 +9,8 @@ export const Card = styled.div`
   cursor: pointer;
   transition: transform 0.2s;
   width: 280px;
+  user-select: none;
+  outline: none;
 
   &:hover {
     transform: translateY(-4px);
@@ -19,12 +21,14 @@ export const Card = styled.div`
 export const Title = styled.h3`
   margin: 0 0 8px 0;
   color: #333;
+  user-select: none;
 `;
 
 export const Details = styled.div`
   color: #666;
   font-size: 14px;
   margin: 8px 0;
+  user-select: none;
 `;
 
 export const Tag = styled.span`
@@ -33,4 +37,5 @@ export const Tag = styled.span`
   border-radius: 12px;
   font-size: 12px;
   margin-right: 8px;
+  user-select: none;
 `;

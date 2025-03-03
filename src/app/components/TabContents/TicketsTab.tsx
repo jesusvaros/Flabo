@@ -2,10 +2,11 @@ import { TicketCard } from "../Cards/TicketCard";
 import { createClient } from "../../../../utils/supabase/server";
 import { Grid } from "./CollectionsTab.styles";
 import { SuspenseTab } from "./SuspenseTab";
+import { CreateTicketCard } from "../Tickets/CreateTicketCard";
 
 export const TicktetsTabSuspense = () => {
   return (
-    <SuspenseTab label="Tickets">
+    <SuspenseTab label="Tickets" id="tickets">
       <TicketsTab />
     </SuspenseTab>
   );
@@ -24,7 +25,8 @@ export const TicketsTab = async () => {
 
   return (
     <Grid>
-      {tickets.map((ticket) => (
+      <CreateTicketCard />
+      {tickets?.map((ticket) => (
         <TicketCard key={ticket.id} ticket={ticket} />
       ))}
     </Grid>

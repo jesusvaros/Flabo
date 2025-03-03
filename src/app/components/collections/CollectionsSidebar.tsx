@@ -6,7 +6,7 @@ import {
   CollectionsList,
   CollectionItem,
   HomeButton,
-} from "./CollectionsSidebar.styled";
+} from "./CollectionsSidebar.styles";
 
 interface Collection {
   id: string;

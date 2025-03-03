@@ -1,6 +1,7 @@
 import { createClient } from "../../../../utils/supabase/server";
 import { redirect } from "next/navigation";
 import { Container, Title, Content, Metadata } from "../styles";
+import { BackButton } from "../../components/Navigation/BackButton";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -34,12 +35,13 @@ export default async function TicketPage(props: Props) {
     .eq("creator_id", user.id)
     .single();
 
-    if (ticket === null) {
-      redirect("/tickets");
-    }
+  if (ticket === null) {
+    redirect("/tickets");
+  }
 
   return (
     <Container>
+      <BackButton />
       <Title>{ticket.content}</Title>
       <Content>
         <p>{ticket.content}</p>

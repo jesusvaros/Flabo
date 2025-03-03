@@ -4,9 +4,15 @@ import { useState } from "react";
 import { Modal } from "../Modal";
 import { createClient } from "../../../../utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { ButtonGroup, CancelButton, CreateCard, Form, FormSection, Label, SaveButton, TextArea } from "./CreateTiccketCard.styles";
-
-
+import { Button } from "@/components/ui/button";
+import {
+  CreateCard,
+  Form,
+  FormSection,
+  Label,
+  TextArea,
+  ButtonGroup,
+} from "./CreateTicketCard.styles";
 
 export const CreateTicketCard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,15 +21,15 @@ export const CreateTicketCard = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!content.trim()) return;
 
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) return;
-
-    console.log(content.trim(),user.id);
 
     const { error } = await supabase.from("tickets").insert([
       {
@@ -44,9 +50,7 @@ export const CreateTicketCard = () => {
 
   return (
     <>
-      <CreateCard onClick={() => setIsModalOpen(true)}>
-        +
-      </CreateCard>
+      <CreateCard onClick={() => setIsModalOpen(true)}>+</CreateCard>
 
       <Modal
         isOpen={isModalOpen}
@@ -65,12 +69,10 @@ export const CreateTicketCard = () => {
             />
           </FormSection>
           <ButtonGroup>
-            <CancelButton type="button" onClick={() => setIsModalOpen(false)}>
+            <Button type="button" onClick={() => setIsModalOpen(false)}>
               Cancel
-            </CancelButton>
-            <SaveButton type="submit">
-              Save
-            </SaveButton>
+            </Button>
+            <Button type="submit">Save</Button>
           </ButtonGroup>
         </Form>
       </Modal>

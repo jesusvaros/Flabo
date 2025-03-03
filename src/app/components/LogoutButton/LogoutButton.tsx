@@ -1,21 +1,14 @@
 "use client";
 import { logout } from "../../login/actions";
+import { Button } from "@/components/ui/button";
 
 export const LogoutButton = () => {
   return (
-    <button
+    <Button
       onClick={logout}
       type="submit"
-      style={{
-        padding: "0.5rem 1rem",
-        backgroundColor: "#ff4444",
-        color: "white",
-        border: "none",
-        borderRadius: "4px",
-        cursor: "pointer",
-      }}
     >
       Logout
-    </button>
+    </Button>
   );
 };

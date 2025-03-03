@@ -4,15 +4,14 @@ import { useState } from "react";
 import { Modal } from "../Modal";
 import { createClient } from "../../../../utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import {
-  ButtonGroup,
-  CancelButton,
   CreateCard,
   Form,
   FormSection,
   Input,
   Label,
-  SaveButton,
+  ButtonGroup,
 } from "./CreateCollectionCard.styles";
 
 export const CreateCollectionCard = () => {
@@ -22,11 +21,13 @@ export const CreateCollectionCard = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim()) return;
 
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) return;
 
@@ -49,9 +50,7 @@ export const CreateCollectionCard = () => {
 
   return (
     <>
-      <CreateCard onClick={() => setIsModalOpen(true)}>
-        +
-      </CreateCard>
+      <CreateCard onClick={() => setIsModalOpen(true)}>+</CreateCard>
 
       <Modal
         isOpen={isModalOpen}
@@ -70,12 +69,10 @@ export const CreateCollectionCard = () => {
             />
           </FormSection>
           <ButtonGroup>
-            <CancelButton type="button" onClick={() => setIsModalOpen(false)}>
+            <Button type="button" onClick={() => setIsModalOpen(false)}>
               Cancel
-            </CancelButton>
-            <SaveButton type="submit">
-              Create Collection
-            </SaveButton>
+            </Button>
+            <Button type="submit">Create Collection</Button>
           </ButtonGroup>
         </Form>
       </Modal>

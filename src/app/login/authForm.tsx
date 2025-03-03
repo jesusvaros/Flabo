@@ -2,15 +2,9 @@
 import { login, signup } from "./actions";
 import { useFormState } from "./formState";
 import { useTheme } from "../styles/theme/ThemeProvider";
-import {
-  Form,
-  ErrorMessage,
-  FormGroup,
-  Input,
-  ButtonRow,
-  Button,
-} from "./styles";
+import { Form, ErrorMessage, FormGroup, Input, ButtonRow } from "./styles";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -53,9 +47,7 @@ const AuthForm = ({ onSuccess }: AuthFormProps) => {
         />
       </FormGroup>
       <ButtonRow>
-        <Button type="submit">
-          {isLogin ? "Log in" : "Sign up"}
-        </Button>
+        <Button type="submit">{isLogin ? "Log in" : "Sign up"}</Button>
         <Button type="button" onClick={() => setIsLogin(!isLogin)}>
           {isLogin ? "Need an account? Sign up" : "Have an account? Log in"}
         </Button>

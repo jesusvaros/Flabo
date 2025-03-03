@@ -1,50 +1,69 @@
 import { createClient } from "../../../../utils/supabase/server";
 import { TicketCard } from "../../components/Cards/TicketCard";
 import { CollectionsSidebar } from "../../components/Collections/CollectionsSidebar";
-import { Container, Description, Grid, Header, Title, MainContent } from "./styles";
+import { redirect } from "next/navigation";
+import {
+  Container,
+  Description,
+  Grid,
+  Header,
+  Title,
+  MainContent,
+} from "./styles";
 
-export default async function CollectionPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+type Props = {
+  params: Promise<{ id: string }>;
+}
+
+export default async function CollectionPage(props: Props) {
+  const params = await props.params;
+  const collectionId = params.id;
   const supabase = await createClient();
-  
-  // Get all collections for the sidebar
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/");
+  }
+
+  // Get all collections for the sidebar, filtered by user_id
   const { data: collections } = await supabase
-    .from('collections')
-    .select('id, title');
+    .from("collections")
+    .select("id, title")
+    .eq("creator_id", user.id);
 
   // Get tickets in this collection using the junction table
   const { data: collectionDetails, error } = await supabase
-    .from(`collections`)
-    .select(`id, title, tickets ( id, content)`)
-    .eq("id", params.id)
+    .from("collections")
+    .select("id, title, tickets ( id, content)")
+    .eq("id", collectionId)
+    .eq("creator_id", user.id) // Also ensure the collection belongs to the user
     .single();
 
-  if (error) {
-    return null;
+  if (error || !collectionDetails) {
+    return <div>Collection not found</div>;
   }
-
-  const tickets = collectionDetails.tickets;
 
   return (
     <Container>
-      <CollectionsSidebar 
-        collections={collections?.map(col => ({ 
-          id: col.id, 
-          name: col.title 
-        })) || []}
-        currentCollectionId={params.id}
+      <CollectionsSidebar
+        collections={
+          collections?.map((col) => ({
+            id: col.id,
+            name: col.title,
+          })) || []
+        }
+        currentCollectionId={collectionId}
       />
       <MainContent>
         <Header>
-          <Title>{collectionDetails?.title}</Title>
-          <Description>description</Description>
+          <Title>{collectionDetails.title}</Title>
+          <Description>Collection description goes here</Description>
         </Header>
-
         <Grid>
-          {tickets?.map((ticket: any) => (
+          {collectionDetails.tickets?.map((ticket) => (
             <TicketCard key={ticket.id} ticket={ticket} />
           ))}
         </Grid>

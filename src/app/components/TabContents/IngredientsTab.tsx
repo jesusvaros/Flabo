@@ -2,15 +2,13 @@ import { createClient } from "../../../../utils/supabase/server";
 import { IngredientsTable } from "../Tables/IngredientsTable";
 import { SuspenseTab } from "./SuspenseTab";
 
-
 export const IngredientsTabSuspense = () => {
   return (
-    <SuspenseTab label="Ingredients">
+    <SuspenseTab label="Ingredients" id="ingredients">
       <IngredientsTab />
     </SuspenseTab>
   );
 };
-
 
 const IngredientsTab = async () => {
   const supabase = await createClient();

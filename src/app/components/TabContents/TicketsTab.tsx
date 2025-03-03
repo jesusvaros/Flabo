@@ -6,7 +6,7 @@ import { CreateTicketCard } from "../Tickets/CreateTicketCard";
 
 export const TicktetsTabSuspense = () => {
   return (
-    <SuspenseTab label="Tickets">
+    <SuspenseTab label="Tickets" id="tickets">
       <TicketsTab />
     </SuspenseTab>
   );

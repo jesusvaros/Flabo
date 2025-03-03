@@ -4,13 +4,13 @@ import { CreateCollectionCard } from "../Collections/CreateCollectionCard";
 import { Grid } from "./CollectionsTab.styles";
 import { SuspenseTab } from "./SuspenseTab";
 
-export function CollectionTabSuspense() {
+export const CollectionTabSuspense = () => {
   return (
-    <SuspenseTab label="Collections">
+    <SuspenseTab label="Collections" id="collections">
       <CollectionsTab />
     </SuspenseTab>
   );
-}
+};
 
 async function CollectionsTab() {
   const supabase = await createClient();

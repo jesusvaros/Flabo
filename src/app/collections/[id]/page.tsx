@@ -1,6 +1,6 @@
 import { createClient } from "../../../../utils/supabase/server";
 import { TicketCard } from "../../components/Cards/TicketCard";
-import { CollectionsSidebar } from "../../components/collections/CollectionsSidebar";
+import { CollectionsSidebar } from "../../components/Collections/CollectionsSidebar";
 import { Container, Description, Grid, Header, Title, MainContent } from "./styles";
 
 export default async function CollectionPage({

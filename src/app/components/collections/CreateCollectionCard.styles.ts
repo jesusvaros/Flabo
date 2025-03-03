@@ -1,6 +1,6 @@
 "use client";
 import styled from "styled-components";
-import { Card } from "../Cards/CollectionCard.styles";
+import { Card } from "../Cards/TicketCard.styles";
 
 export const CreateCard = styled(Card)`
   display: flex;
@@ -45,6 +45,7 @@ export const Input = styled.input`
   color: ${({ theme }) => theme.colors.text.primary};
   font-size: 16px;
   line-height: 1.5;
+  user-select: none;
 
   &:focus {
     outline: none;
@@ -61,6 +62,7 @@ export const ButtonGroup = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  user-select: none;
 `;
 
 export const Button = styled.button`

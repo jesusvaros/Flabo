@@ -23,7 +23,9 @@ export const CreateTicketCard = () => {
 
     if (!user) return;
 
-    const error = await supabase.from("tickets").insert([
+    console.log(content.trim(),user.id);
+
+    const { error } = await supabase.from("tickets").insert([
       {
         content: content.trim(),
         creator_id: user.id,

@@ -1,6 +1,6 @@
 import { createClient } from "../../../../utils/supabase/server";
 import { CollectionCard } from "../Cards/CollectionCard";
-import { CreateCollectionCard } from "../collections/CreateCollectionCard";
+import { CreateCollectionCard } from "../Collections/CreateCollectionCard";
 import { Grid } from "./CollectionsTab.styles";
 import { SuspenseTab } from "./SuspenseTab";
 

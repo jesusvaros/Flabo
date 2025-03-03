@@ -1,44 +1,36 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import AuthForm from "../../login/authForm";
-import { Modal } from "../../components/Modal";
-import { useTheme } from "../../styles/theme/ThemeProvider";
-import { HeaderContainer, HeaderContent, Logo, LoginButton } from "./styles";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export const Header = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const { theme } = useTheme();
+  const [open, setOpen] = useState(false);
 
   return (
-    <HeaderContainer
-      style={{ backgroundColor: theme.colors.background.primary }}
-    >
-      <HeaderContent>
-        <Logo style={{ color: theme.colors.text.primary }}>Flabo</Logo>
+    <header className="fixed top-0 left-0 right-0 backdrop-blur-lg z-50 p-4 bg-background/80">
+      <div className="max-w-[1200px] mx-auto flex justify-between items-center md:flex-row flex-col md:gap-0 gap-4">
+        <div className="text-2xl font-bold text-foreground">Flabo</div>
 
-        <LoginButton
-          ref={buttonRef}
-          onClick={() => setIsModalOpen(true)}
-          style={{
-            backgroundColor: theme.colors.background.secondary,
-            color: theme.colors.text.primary,
-            border: `1px solid ${theme.colors.border.primary}`,
-          }}
-        >
-          Log in / Sign up
-        </LoginButton>
-      </HeaderContent>
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Welcome to Flabo"
-        triggerRef={buttonRef}
-      >
-        <AuthForm onSuccess={() => setIsModalOpen(false)} />
-      </Modal>
-    </HeaderContainer>
+        <Dialog modal open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline">Log in / Sign up</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Welcome to Flabo</DialogTitle>
+            </DialogHeader>
+            <AuthForm onSuccess={() => setOpen(false)} />
+          </DialogContent>
+        </Dialog>
+      </div>
+    </header>
   );
 };

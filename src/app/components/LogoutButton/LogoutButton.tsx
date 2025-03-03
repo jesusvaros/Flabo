@@ -3,10 +3,19 @@ import { logout } from "../../login/actions";
 import { Button } from "@/components/ui/button";
 
 export const LogoutButton = () => {
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
   return (
     <Button
-      onClick={logout}
-      type="submit"
+      onClick={handleLogout}
+      type="button"
+      variant="destructive"
     >
       Logout
     </Button>

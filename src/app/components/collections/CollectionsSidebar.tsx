@@ -1,7 +1,22 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
+import { ChevronLeft, ChevronRight, Home, Library } from "lucide-react";
 
 interface Collection {
   id: string;
@@ -17,37 +32,93 @@ export const CollectionsSidebar: React.FC<CollectionsSidebarProps> = ({
   collections,
   currentCollectionId,
 }) => {
+  const { state, toggleSidebar } = useSidebar();
+  const isCollapsed = state === "collapsed";
+
   return (
-    <aside className="w-64 h-screen bg-background border-r border-border p-4 flex flex-col gap-4">
-      <Link href="/" className="no-underline">
-        <Button variant="outline" className="w-full">
-          Back to Home
+    <Sidebar 
+      collapsible="icon"
+      className={cn(
+        "border-r bg-background",
+        "transition-[width] duration-200 ease-linear"
+      )}
+    >
+      <div className="flex h-[52px] items-center justify-end px-4">
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={toggleSidebar}
+          className="h-6 w-6"
+        >
+          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
-      </Link>
-      
-      <h2 className="text-lg font-semibold text-foreground">Collections</h2>
-      
-      <nav className="flex flex-col gap-2">
-        {collections.map((collection) => (
-          <Link
-            key={collection.id}
-            href={`/collections/${collection.id}`}
-            className="no-underline"
-          >
-            <div
-              className={cn(
-                "px-4 py-2 rounded-md transition-colors",
-                "hover:bg-accent hover:text-accent-foreground",
-                collection.id === currentCollectionId
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground"
-              )}
-            >
-              {collection.name}
-            </div>
-          </Link>
-        ))}
-      </nav>
-    </aside>
+      </div>
+      <Separator />
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link 
+                    href="/" 
+                    className={cn(
+                      "no-underline flex items-center gap-2",
+                      "transition-[width] duration-200 ease-linear"
+                    )}
+                  >
+                    <Home className="h-4 w-4" />
+                    <span className={cn(
+                      "transition-opacity duration-200",
+                      isCollapsed ? "opacity-0 w-0" : "opacity-100"
+                    )}>
+                      Home
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <Separator className="my-4" />
+        <SidebarGroup>
+          <SidebarGroupLabel className={cn(
+            "transition-opacity duration-200",
+            isCollapsed ? "opacity-0 h-0" : "opacity-100"
+          )}>
+            Collections
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {collections.map((collection) => (
+                <SidebarMenuItem key={collection.id}>
+                  <SidebarMenuButton 
+                    asChild
+                    isActive={collection.id === currentCollectionId}
+                  >
+                    <Link 
+                      href={`/collections/${collection.id}`}
+                      className={cn(
+                        "no-underline flex items-center gap-2",
+                        "transition-[width] duration-200 ease-linear"
+                      )}
+                      title={collection.name}
+                    >
+                      <Library className="h-4 w-4" />
+                      <span className={cn(
+                        "transition-opacity duration-200",
+                        isCollapsed ? "opacity-0 w-0" : "opacity-100"
+                      )}>
+                        {collection.name}
+                      </span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
 };

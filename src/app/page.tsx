@@ -18,27 +18,24 @@ export default async function Home() {
   }
 
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1rem",
-        }}
-      >
-        <h1>Welcome to Flabo</h1>
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+    <div className="flex flex-col h-screen w-full">
+      <div className="flex justify-between items-center p-4 border-b bg-background">
+        <h1 className="text-2xl font-bold">Welcome to Flabo</h1>
+        <div className="flex gap-4 items-center">
           <span>{user.email}</span>
           <LogoutButton />
         </div>
       </div>
 
-      <Tabs>
-        <CollectionTabSuspense />
-        <TicktetsTabSuspense />
-        <IngredientsTabSuspense />
-      </Tabs>
+      <div className="flex-1 p-4 overflow-auto w-full">
+        <div className="h-full w-full">
+          <Tabs>
+            <CollectionTabSuspense />
+            <TicktetsTabSuspense />
+            <IngredientsTabSuspense />
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 }

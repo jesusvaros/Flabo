@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "../../../../utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
 
 export const CreateTicketCard = () => {
   const [content, setContent] = useState("");
@@ -49,9 +51,15 @@ export const CreateTicketCard = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <div className="bg-white rounded-lg shadow-sm p-4 m-2 cursor-pointer transition-all duration-200 w-[280px] select-none outline-none flex items-center justify-center text-5xl text-text-500 hover:text-primary-500 hover:scale-102 hover:shadow-md">
-          +
-        </div>
+        <Card className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-[280px] m-2 select-none">
+          <CardHeader className="flex flex-row items-center justify-center">
+            <Plus className="h-6 w-6" />
+            <span className="ml-2">Create Ticket</span>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground text-center">
+            Add a new ticket
+          </CardContent>
+        </Card>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

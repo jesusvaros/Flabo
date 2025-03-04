@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
@@ -16,6 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { createClient } from "../../../../utils/supabase/client";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 export const CreateCollectionCard = () => {
   const [title, setTitle] = useState("");
@@ -56,10 +56,15 @@ export const CreateCollectionCard = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full flex items-center gap-2">
-          <Plus className="h-5 w-5" />
-          Create Collection
-        </Button>
+        <Card className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-full m-2 select-none">
+          <CardHeader className="flex flex-row items-center justify-center">
+            <Plus className="h-6 w-6" />
+            <span className="ml-2">Create Collection</span>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground text-center">
+            Add a new collection
+          </CardContent>
+        </Card>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

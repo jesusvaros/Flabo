@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogPortal,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -19,16 +20,18 @@ export const Header = () => {
       <div className="max-w-[1200px] mx-auto flex justify-between items-center md:flex-row flex-col md:gap-0 gap-4">
         <div className="text-2xl font-bold text-foreground">Flabo</div>
 
-        <Dialog modal open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="outline">Log in / Sign up</Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Welcome to Flabo</DialogTitle>
-            </DialogHeader>
-            <AuthForm onSuccess={() => setOpen(false)} />
-          </DialogContent>
+          <DialogPortal>
+            <DialogContent className="fixed left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%] z-[100]">
+              <DialogHeader>
+                <DialogTitle>Welcome to Flabo</DialogTitle>
+              </DialogHeader>
+              <AuthForm onSuccess={() => setOpen(false)} />
+            </DialogContent>
+          </DialogPortal>
         </Dialog>
       </div>
     </header>

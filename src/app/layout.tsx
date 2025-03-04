@@ -1,17 +1,8 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "Flabo web",
@@ -25,8 +16,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`} suppressHydrationWarning>
-        {children}
+      <body
+        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased min-h-screen bg-background text-foreground`}
+        suppressHydrationWarning
+      >
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -20,6 +20,7 @@ export default async function CollectionPage() {
     .eq("creator_id", user.id);
 
   return (
+    <div className="flex min-h-screen">
       <CollectionsView
         collections={
           collections?.map((col) => ({
@@ -28,5 +29,6 @@ export default async function CollectionPage() {
           })) || []
         }
       />
+    </div>
   );
 }

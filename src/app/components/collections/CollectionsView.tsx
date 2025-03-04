@@ -1,57 +1,42 @@
 "use client";
 
-import { TicketCard } from "../Cards/TicketCard";
+import { useParams } from "next/navigation";
 import { CollectionsSidebar } from "./CollectionsSidebar";
-import { Container, MainContent, Header, Title, Description, Grid } from "../../collections/styles";
+import { CreateCollectionCard } from "./CreateCollectionCard";
 
 interface Collection {
   id: string;
   name: string;
 }
 
-interface Ticket {
-  id: string;
-  content: string;
-}
-
-interface CollectionDetails {
-  id: string;
-  title: string;
-  tickets: Ticket[];
-}
-
 interface CollectionsViewProps {
   collections: Collection[];
-  selectedCollection?: CollectionDetails | null;
 }
 
 export const CollectionsView: React.FC<CollectionsViewProps> = ({
   collections,
-  selectedCollection,
 }) => {
+  const params = useParams();
+  const currentCollectionId = params?.collectionId as string;
+
   return (
-    <Container>
+    <>
       <CollectionsSidebar
         collections={collections}
-        currentCollectionId={selectedCollection?.id}
+        currentCollectionId={currentCollectionId}
       />
-      <MainContent>
-        <Header>
-          <Title>
-            {selectedCollection ? selectedCollection.title : "My Collections"}
-          </Title>
-          <Description>
-            {selectedCollection
-              ? "Collection description goes here"
-              : "Select a collection to view its tickets"}
-          </Description>
-        </Header>
-        <Grid>
-          {selectedCollection?.tickets?.map((ticket) => (
-            <TicketCard key={ticket.id} ticket={ticket} />
-          ))}
-        </Grid>
-      </MainContent>
-    </Container>
+      <main className="flex-1 ml-64 p-8">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-2">Collections</h1>
+          <p className="text-muted-foreground">
+            Create and manage your collections
+          </p>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <CreateCollectionCard />
+        </div>
+      </main>
+    </>
   );
 };

@@ -3,7 +3,7 @@ export interface Ticket {
   content: string;
 }
 
-export interface Collection {
+export interface CollectionProps {
   id: string;
   title: string;
   creator_id: string;
@@ -15,5 +15,5 @@ export interface CollectionViewProps {
     id: string;
     name: string;
   }[];
-  selectedCollection?: Collection | null;
+  selectedCollection?: CollectionProps | null;
 }

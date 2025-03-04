@@ -51,7 +51,7 @@ export const CreateTicketCard = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Card className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-[280px] m-2 select-none">
+        <Card className="hover:-translate-y-1 transition-transform duration-200 cursor-pointerw-full m-2 select-none">
           <CardHeader className="flex flex-row items-center justify-center">
             <Plus className="h-6 w-6" />
             <span className="ml-2">Create Ticket</span>

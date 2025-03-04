@@ -61,9 +61,6 @@ export const CreateCollectionCard = () => {
             <Plus className="h-6 w-6" />
             <span className="ml-2">Create Collection</span>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground text-center">
-            Add a new collection
-          </CardContent>
         </Card>
       </DialogTrigger>
       <DialogContent>

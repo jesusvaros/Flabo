@@ -2,6 +2,7 @@ import { SuspenseTab } from "@/app/components/TabContents/SuspenseTab";
 import { createClient } from "../../../../utils/supabase/server";
 import { CreateCollectionCard } from "./CreateCollectionCard";
 import { CollectionCard } from "./CollectionCard";
+import { CollectionProps } from "@/types/collections";
 
 export const CollectionTabSuspense = () => {
   return (
@@ -26,7 +27,7 @@ async function CollectionsTab() {
     <div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5 p-5">
         <CreateCollectionCard />
-        {collections?.map((collection) => (
+        {collections?.map((collection: CollectionProps) => (
           <CollectionCard key={collection.id} collection={collection} />
         ))}
       </div>

@@ -27,7 +27,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket }) => {
   return (
     <Card 
       onClick={handleClick} 
-      className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-[280px] m-2 select-none"
+      className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-full m-2 select-none"
     >
       <CardHeader>
         <CardTitle className="text-base">{ticket.content}</CardTitle>

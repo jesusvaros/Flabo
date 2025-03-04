@@ -5,25 +5,19 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-
-interface Collection {
-  id: string;
-  title: string;
-  description: string;
-  created_at: string;
-}
+import { CollectionProps } from '@/types/collections';
 
 interface CollectionCardProps {
-  collection: Collection;
+  collection: CollectionProps;
 }
 
 export const CollectionCard: React.FC<CollectionCardProps> = ({ collection }) => {
   return (
     <Link href={`/collections/${collection.id}`} className="block no-underline">
-      <Card className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-[280px] m-2">
+      <Card className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-full m-2">
         <CardHeader>
           <CardTitle className="text-base">{collection.title}</CardTitle>
-          <CardDescription>{collection.description}</CardDescription>
+          <CardDescription>{collection.title}</CardDescription>
         </CardHeader>
       </Card>
     </Link>

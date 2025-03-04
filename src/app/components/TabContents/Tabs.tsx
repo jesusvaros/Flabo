@@ -41,7 +41,7 @@ export const Tabs: React.FC<TabsProps> = ({ children }) => {
       onValueChange={setActiveTab}
       className="w-full h-full"
     >
-      <div className="border-b w-full">
+      <div className=" w-full">
         <TabsList className="w-full h-14 items-center justify-start bg-transparent">
           {children.map((child) => (
             <TabsTrigger
@@ -58,7 +58,7 @@ export const Tabs: React.FC<TabsProps> = ({ children }) => {
         <TabsContent
           key={child.props.id}
           value={child.props.id}
-          className="mt-6 border rounded-lg p-4 w-full"
+          className="mt-6  p-4 w-full"
         >
           {child}
         </TabsContent>

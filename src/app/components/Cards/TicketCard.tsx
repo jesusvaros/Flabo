@@ -1,7 +1,12 @@
 "use client";
 
-import { Card, Title, Details } from "./TicketCard.styles";
 import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
 
 interface Ticket {
   id: string;
@@ -20,9 +25,16 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket }) => {
   };
 
   return (
-    <Card onClick={handleClick}>
-      <Title>{ticket.content}</Title>
-      <Details>details</Details>
+    <Card 
+      onClick={handleClick} 
+      className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-[280px] m-2 select-none"
+    >
+      <CardHeader>
+        <CardTitle className="text-base">{ticket.content}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">details</p>
+      </CardContent>
     </Card>
   );
 };

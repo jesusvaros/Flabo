@@ -1,30 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import styled from "styled-components";
-
-const BackLink = styled.button`
-  display: inline-block;
-  margin-bottom: 24px;
-  color: #666;
-  text-decoration: none;
-  font-size: 14px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  
-  &:hover {
-    color: #000;
-  }
-`;
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export const BackButton = () => {
   const router = useRouter();
   
   return (
-    <BackLink onClick={() => router.back()}>
-      ← Back
-    </BackLink>
+    <Button 
+      variant="ghost" 
+      onClick={() => router.back()}
+      className="mb-6 p-0 hover:bg-transparent"
+    >
+      <ArrowLeft className="mr-2 h-4 w-4" />
+      Back
+    </Button>
   );
 };

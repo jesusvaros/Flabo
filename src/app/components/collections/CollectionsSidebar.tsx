@@ -10,7 +10,7 @@ interface Collection {
 
 interface CollectionsSidebarProps {
   collections: Collection[];
-  currentCollectionId: string;
+  currentCollectionId?: string;
 }
 
 export const CollectionsSidebar: React.FC<CollectionsSidebarProps> = ({

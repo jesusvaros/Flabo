@@ -1,6 +1,7 @@
 import { createClient } from "../../../../utils/supabase/server";
 import { redirect } from "next/navigation";
 import { CollectionsView } from "../../components/Collections/CollectionsView";
+import { Collection } from "@/types/collections";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -26,9 +27,9 @@ export default async function CollectionPage(props: Props) {
     .eq("creator_id", user.id);
 
   // Get the selected collection details
-  const { data: collectionDetails } = await supabase
+  const { data: selectedCollection } = await supabase
     .from("collections")
-    .select("id, title, tickets ( id, content)")
+    .select("id, title, creator_id, tickets (id, content)")
     .eq("id", collectionId)
     .eq("creator_id", user.id)
     .single();
@@ -41,7 +42,7 @@ export default async function CollectionPage(props: Props) {
           name: col.title,
         })) || []
       }
-      selectedCollection={collectionDetails}
+      selectedCollection={selectedCollection}
     />
   );
 }

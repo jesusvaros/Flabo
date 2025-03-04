@@ -1,5 +1,5 @@
 import { createClient } from "../../../utils/supabase/server";
-import { CollectionsView } from "../components/Collections/CollectionsView";
+import { CollectionsView } from "./components/CollectionsView";
 import { redirect } from "next/navigation";
 
 export default async function CollectionPage() {

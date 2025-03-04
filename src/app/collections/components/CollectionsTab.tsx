@@ -1,7 +1,7 @@
+import { SuspenseTab } from "@/app/components/TabContents/SuspenseTab";
 import { createClient } from "../../../../utils/supabase/server";
-import { CollectionCard } from "../Cards/CollectionCard";
-import { CreateCollectionCard } from "../Collections/CreateCollectionCard";
-import { SuspenseTab } from "./SuspenseTab";
+import { CreateCollectionCard } from "./CreateCollectionCard";
+import { CollectionCard } from "./CollectionCard";
 
 export const CollectionTabSuspense = () => {
   return (

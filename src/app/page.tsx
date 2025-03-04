@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
-import { LogoutButton } from "./components/LogoutButton/LogoutButton";
-import { Tabs } from "./components/Tabs/Tabs";
-import { CollectionTabSuspense } from "./components/TabContents/CollectionsTab";
-import { TicktetsTabSuspense } from "./components/TabContents/TicketsTab";
-import { IngredientsTabSuspense } from "./components/TabContents/IngredientsTab";
+import { Tabs } from "./components/TabContents/Tabs";
+import { TicktetsTabSuspense } from "./tickets/components/TicketsTab";
+import { LogoutButton } from "./components/auth/LogoutButton";
+import { IngredientsTabSuspense } from "./ingredients/components/IngredientsTab";
+import { CollectionTabSuspense } from "./collections/components/CollectionsTab";
 
 export default async function Home() {
   const supabase = await createClient();

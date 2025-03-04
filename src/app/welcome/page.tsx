@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  createClientComponentClient,
-  User,
-} from "@supabase/auth-helpers-nextjs";
+import { User } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState } from "react";
 import { Header } from "./components/Header";
 import { HeroSection } from "./components/HeroSection";
@@ -14,7 +11,6 @@ import { createClient } from "../../../utils/supabase/client";
 export default function WelcomePage() {
   const [user, setUser] = useState<null | User>(null);
   const [isLoading, setIsLoading] = useState(true);
-
 
   useEffect(() => {
     async function checkUser() {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import AuthForm from "../../login/authForm";
+import AuthForm from "@/app/auth/confirm/login/authForm";
 import {
   Dialog,
   DialogContent,

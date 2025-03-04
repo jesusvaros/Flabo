@@ -1,6 +1,6 @@
 import { createClient } from "../../../../utils/supabase/server";
 import { redirect } from "next/navigation";
-import { CollectionsView } from "../../components/Collections/CollectionsView";
+import { CollectionsView } from "../components/CollectionsView";
 import { Collection } from "@/types/collections";
 
 type Props = {

@@ -1,7 +1,8 @@
-import { TicketCard } from "../Cards/TicketCard";
+
+import { SuspenseTab } from "@/app/components/TabContents/SuspenseTab";
 import { createClient } from "../../../../utils/supabase/server";
-import { SuspenseTab } from "./SuspenseTab";
-import { CreateTicketCard } from "../Tickets/CreateTicketCard";
+import { CreateTicketCard } from "./CreateTicketCard";
+import { TicketCard } from "./TicketCard";
 
 export const TicktetsTabSuspense = () => {
   return (

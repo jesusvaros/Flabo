@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import "./globals.css";
 import Providers from "./providers";
 
@@ -20,13 +19,9 @@ export default function RootLayout({
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased min-h-screen bg-background text-foreground w-full`}
       >
-        <SidebarProvider>
-          <Providers>
-            <div className="w-full">
-              {children}
-            </div>
-          </Providers>
-        </SidebarProvider>
+        <Providers>
+          <div className="w-full">{children}</div>
+        </Providers>
       </body>
     </html>
   );

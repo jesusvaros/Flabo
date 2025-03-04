@@ -1,7 +1,6 @@
+import { BackButton } from "@/app/components/navigation/BackButton";
 import { createClient } from "../../../../utils/supabase/server";
 import { redirect } from "next/navigation";
-import { BackButton } from "../../components/Navigation/BackButton";
-import { cn } from "@/lib/utils";
 
 type Props = {
   params: Promise<{ id: string }>;

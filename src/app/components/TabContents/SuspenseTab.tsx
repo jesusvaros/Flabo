@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { TabPanel } from "../Tabs/Tabs";
+import { TabPanel } from "./Tabs";
 import { LoadingTab } from "./LoadingTab";
 
 interface SuspenseTabProps {

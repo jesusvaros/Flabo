@@ -1,54 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --background-rgb: 240, 240, 240;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --background-rgb: 0, 0, 0;
   }
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: rgb(var(--background-rgb));
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --accent: 240 5.9% 10%;
+    --background: 0 0% 90%;
+    --foreground: 0 0% 10%;
+    --primary: 0 0% 15%;
+    --muted: 0 0% 85%;
+    --accent: 0 0% 100%;
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --accent: 240 4.8% 95.9%;
+    --background: 0 0% 10%;
+    --foreground: 0 0% 96%;
+    --primary: 0 0% 90%;
+    --muted: 0 0% 15%;
+    --accent: 0 0% 20%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-muted;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans min-h-screen;
+  }
+  pre, code {
+    @apply font-mono;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-accent shadow-sm;
+  }
+  .button-primary {
+    @apply bg-primary text-accent hover:bg-primary/90;
+  }
+  .button-white {
+    @apply bg-accent text-foreground border border-muted hover:bg-muted/10;
   }
 }

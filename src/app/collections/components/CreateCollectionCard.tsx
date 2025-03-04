@@ -26,9 +26,15 @@ export const CreateCollectionCard = () => {
   useEffect(() => {
     const fetchTickets = async () => {
       const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
       const { data, error } = await supabase
         .from("tickets")
         .select("id, content, created_at")
+        .eq("creator_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -100,7 +106,7 @@ export const CreateCollectionCard = () => {
     <Dialog>
       <DialogTrigger>
         <Card className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-full m-2">
-          <CardHeader className="flex flex-row items-center justify-center w-full a">
+          <CardHeader className="flex flex-row items-center justify-center w-full">
             <Plus className="h-6 w-6" />
             <span className="ml-2">Create Collection</span>
           </CardHeader>

@@ -1,35 +1,13 @@
 "use client";
-import styled from "styled-components";
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const Th = styled.th`
-  background: #f5f5f5;
-  padding: 12px;
-  text-align: left;
-  font-weight: 600;
-  color: #333;
-  border-bottom: 2px solid #e0e0e0;
-`;
-
-const Td = styled.td`
-  padding: 12px;
-  border-bottom: 1px solid #e0e0e0;
-  color: #666;
-`;
-
-const Tr = styled.tr`
-  &:hover {
-    background: #f8f8f8;
-  }
-`;
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface Ingredient {
   id: string;
@@ -47,31 +25,33 @@ export const IngredientsTable: React.FC<IngredientsTableProps> = ({
   ingredients,
 }) => {
   return (
-    <Table>
-      <thead>
-        <tr>
-          <Th>Name</Th>
-          <Th>Category</Th>
-          <Th>Unit</Th>
-          <Th>Created At</Th>
-        </tr>
-      </thead>
-      <tbody>
-        {ingredients ? (
-          ingredients.map((ingredient) => (
-            <Tr key={ingredient.id}>
-              <Td>{ingredient.name}</Td>
-              <Td>{ingredient.category}</Td>
-              <Td>{ingredient.unit}</Td>
-              <Td>{new Date(ingredient.created_at).toLocaleDateString()}</Td>
-            </Tr>
-          ))
-        ) : (
-          <Tr>
-            <Td colSpan={4}>Add ingredients</Td>
-          </Tr>
-        )}
-      </tbody>
-    </Table>
+    <div className="rounded-lg border bg-white shadow-sm">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Unit</TableHead>
+            <TableHead>Created At</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {ingredients ? (
+            ingredients.map((ingredient) => (
+              <TableRow key={ingredient.id} className="hover:bg-muted/50">
+                <TableCell>{ingredient.name}</TableCell>
+                <TableCell>{ingredient.category}</TableCell>
+                <TableCell>{ingredient.unit}</TableCell>
+                <TableCell>{new Date(ingredient.created_at).toLocaleDateString()}</TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center">Add ingredients</TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };

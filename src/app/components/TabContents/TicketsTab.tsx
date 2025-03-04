@@ -1,6 +1,5 @@
 import { TicketCard } from "../Cards/TicketCard";
 import { createClient } from "../../../../utils/supabase/server";
-import { Grid } from "./CollectionsTab.styles";
 import { SuspenseTab } from "./SuspenseTab";
 import { CreateTicketCard } from "../Tickets/CreateTicketCard";
 
@@ -24,11 +23,11 @@ export const TicketsTab = async () => {
     .eq("creator_id", user?.id);
 
   return (
-    <Grid>
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5 p-5">
       <CreateTicketCard />
       {tickets?.map((ticket) => (
         <TicketCard key={ticket.id} ticket={ticket} />
       ))}
-    </Grid>
+    </div>
   );
 };

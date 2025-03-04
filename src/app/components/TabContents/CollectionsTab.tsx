@@ -1,7 +1,6 @@
 import { createClient } from "../../../../utils/supabase/server";
 import { CollectionCard } from "../Cards/CollectionCard";
 import { CreateCollectionCard } from "../Collections/CreateCollectionCard";
-import { Grid } from "./CollectionsTab.styles";
 import { SuspenseTab } from "./SuspenseTab";
 
 export const CollectionTabSuspense = () => {
@@ -25,12 +24,12 @@ async function CollectionsTab() {
 
   return (
     <div>
-      <Grid>
-      <CreateCollectionCard />
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5 p-5">
+        <CreateCollectionCard />
         {collections?.map((collection) => (
           <CollectionCard key={collection.id} collection={collection} />
         ))}
-      </Grid>
+      </div>
     </div>
   );
 }

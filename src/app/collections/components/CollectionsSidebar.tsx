@@ -17,14 +17,10 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft, ChevronRight, Home, Library } from "lucide-react";
-
-interface Collection {
-  id: string;
-  name: string;
-}
+import { CollectionProps } from "@/types/collections";
 
 interface CollectionsSidebarProps {
-  collections: Collection[];
+  collections: CollectionProps[];
   currentCollectionId?: string;
 }
 
@@ -102,14 +98,14 @@ export const CollectionsSidebar: React.FC<CollectionsSidebarProps> = ({
                         "no-underline flex items-center gap-2",
                         "transition-[width] duration-200 ease-linear"
                       )}
-                      title={collection.name}
+                      title={collection.title}
                     >
                       <Library className="h-4 w-4" />
                       <span className={cn(
                         "transition-opacity duration-200",
                         isCollapsed ? "opacity-0 w-0" : "opacity-100"
                       )}>
-                        {collection.name}
+                        {collection.title}
                       </span>
                     </Link>
                   </SidebarMenuButton>

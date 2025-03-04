@@ -12,9 +12,6 @@ export interface CollectionProps {
 }
 
 export interface CollectionViewProps {
-  collections: {
-    id: string;
-    name: string;
-  }[];
+  collections: CollectionProps[];
   selectedCollection?: CollectionProps | null;
 }

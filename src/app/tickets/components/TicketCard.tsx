@@ -1,23 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Ticket } from "@/types/collections";
 
-interface Ticket {
-  id: string;
-  content: string;
-}
-
-interface TicketCardProps {
-  ticket: Ticket;
-}
-
-export const TicketCard: React.FC<TicketCardProps> = ({ ticket }) => {
+export const TicketCard: React.FC<Ticket> = (ticket) => {
   const router = useRouter();
 
   const handleClick = () => {
@@ -25,8 +12,8 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket }) => {
   };
 
   return (
-    <Card 
-      onClick={handleClick} 
+    <Card
+      onClick={handleClick}
       className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-full m-2 select-none"
     >
       <CardHeader>

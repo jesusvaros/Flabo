@@ -25,15 +25,15 @@ export const Tabs: React.FC<TabsProps> = ({ children }) => {
       if (tab) {
         setActiveTab(tab.props.id);
         // Clean up the URL by removing the tab parameter
-        const url = new URL(window.location.href);
-        url.searchParams.delete("tab");
-        window.history.replaceState({}, "", url);
+        const params = new URLSearchParams(searchParams);
+        params.delete("tab");
+        router.replace("?" + params.toString());
       }
-    } else if (children.length > 0) {
-      // Set the first tab as default
+    } else if (children.length > 0 && !activeTab) {
+      // Only set default tab if no active tab is set
       setActiveTab(children[0].props.id);
     }
-  }, [searchParams, children]);
+  }, [searchParams, children, activeTab, router]);
 
   return (
     <TabsRoot

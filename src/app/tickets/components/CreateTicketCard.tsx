@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "../../../../utils/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import {
@@ -45,6 +45,11 @@ export const CreateTicketCard = () => {
 
     setContent("");
     setOpen(false);
+    
+    // Set the tab parameter and refresh
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", "tickets");
+    router.replace("?" + params.toString());
     router.refresh();
   };
 

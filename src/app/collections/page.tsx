@@ -1,5 +1,5 @@
 import { createClient } from "../../../utils/supabase/server";
-import { CollectionsView } from "../components/Collections/CollectionsView";
+import { CollectionsView } from "./components/CollectionsView";
 import { redirect } from "next/navigation";
 
 export default async function CollectionPage() {
@@ -20,6 +20,7 @@ export default async function CollectionPage() {
     .eq("creator_id", user.id);
 
   return (
+    <div className="flex min-h-screen">
       <CollectionsView
         collections={
           collections?.map((col) => ({
@@ -28,5 +29,6 @@ export default async function CollectionPage() {
           })) || []
         }
       />
+    </div>
   );
 }

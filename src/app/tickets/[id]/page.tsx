@@ -1,7 +1,6 @@
+import { BackButton } from "@/app/components/navigation/BackButton";
 import { createClient } from "../../../../utils/supabase/server";
 import { redirect } from "next/navigation";
-import { Container, Title, Content, Metadata } from "../styles";
-import { BackButton } from "../../components/Navigation/BackButton";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -40,15 +39,15 @@ export default async function TicketPage(props: Props) {
   }
 
   return (
-    <Container>
+    <div className="px-6 py-6 max-w-3xl mx-auto">
       <BackButton />
-      <Title>{ticket.content}</Title>
-      <Content>
+      <h1 className="text-2xl font-semibold mb-4">{ticket.content}</h1>
+      <div className="bg-white p-6 rounded-lg shadow-sm">
         <p>{ticket.content}</p>
-      </Content>
-      <Metadata>
+      </div>
+      <div className="mt-6 text-sm text-muted-foreground">
         <p>Created: {new Date(ticket.created_at).toLocaleString()}</p>
-      </Metadata>
-    </Container>
+      </div>
+    </div>
   );
 }

@@ -9,14 +9,16 @@ import { Header } from "./components/Header";
 import { HeroSection } from "./components/HeroSection";
 import { RestaurantFeatures } from "./components/RestaurantFeatures";
 import { HomeCooksFeatures } from "./components/HomeCooksFeatures";
+import { createClient } from "../../../utils/supabase/client";
 
 export default function WelcomePage() {
   const [user, setUser] = useState<null | User>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClientComponentClient();
+
 
   useEffect(() => {
     async function checkUser() {
+      const supabase = createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -28,7 +30,7 @@ export default function WelcomePage() {
       }
     }
     checkUser();
-  }, [supabase]);
+  }, []);
 
   if (isLoading) {
     return null;

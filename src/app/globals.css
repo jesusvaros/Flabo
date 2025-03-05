@@ -1,63 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --background-rgb: 240, 240, 240;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --background-rgb: 0, 0, 0;
   }
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: rgb(var(--background-rgb));
 }
-
-
 
 @layer base {
   :root {
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 0 0% 90%;
+    --foreground: 0 0% 10%;
+    --primary: 0 0% 15%;
+    --muted: 0 0% 85%;
+    --accent: 0 0% 100%;
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
   }
+
   .dark {
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 0 0% 10%;
+    --foreground: 0 0% 96%;
+    --primary: 0 0% 90%;
+    --muted: 0 0% 15%;
+    --accent: 0 0% 20%;
   }
 }
 
-
-
 @layer base {
   * {
-    @apply border-border;
+    @apply border-muted;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans min-h-screen;
+  }
+  pre, code {
+    @apply font-mono;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-accent shadow-sm;
+  }
+  .button-primary {
+    @apply bg-primary text-accent hover:bg-primary/90;
+  }
+  .button-white {
+    @apply bg-accent text-foreground border border-muted hover:bg-muted/10;
   }
 }

@@ -16,19 +16,12 @@ export default async function CollectionPage() {
   // Get all collections for the sidebar, filtered by user_id
   const { data: collections } = await supabase
     .from("collections")
-    .select("id, title")
+    .select("id, title, creator_id")
     .eq("creator_id", user.id);
 
   return (
     <div className="flex min-h-screen">
-      <CollectionsView
-        collections={
-          collections?.map((col) => ({
-            id: col.id,
-            name: col.title,
-          })) || []
-        }
-      />
+      <CollectionsView collections={collections || []} />
     </div>
   );
 }

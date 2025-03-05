@@ -16,12 +16,15 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { FilterableList } from "@/components/ui/filterable-list";
 import { Ticket } from "@/types/collections";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export const CreateCollectionCard = () => {
   const [title, setTitle] = useState("");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -64,7 +67,7 @@ export const CreateCollectionCard = () => {
       // Insert the collection
       const { data: collectionData, error: collectionError } = await supabase
         .from("collections")
-        .insert({ title, user_id: user.id })
+        .insert({ title, creator_id: user.id })
         .select()
         .single();
 
@@ -78,15 +81,17 @@ export const CreateCollectionCard = () => {
         }));
 
         const { error: relationshipError } = await supabase
-          .from("collection_tickets")
+          .from("collections_tickets")
           .insert(relationshipsToInsert);
 
         if (relationshipError) throw relationshipError;
       }
 
-      // Reset form
+      // Reset form and close dialog
       setTitle("");
       setSelectedTickets([]);
+      setOpen(false);
+      router.refresh(); // Refresh the page to show the new collection
     } catch (error) {
       console.error("Error creating collection:", error);
     } finally {
@@ -103,7 +108,7 @@ export const CreateCollectionCard = () => {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
         <Card className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-full m-2">
           <CardHeader className="flex flex-row items-center justify-center w-full">

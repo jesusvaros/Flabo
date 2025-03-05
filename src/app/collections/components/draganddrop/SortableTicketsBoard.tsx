@@ -10,7 +10,7 @@ import {
   useSensors,
   DragEndEvent,
 } from "@dnd-kit/core";
-import { Ticket } from "@/types/collections";
+import { TicketWithPosition } from "@/types/collections";
 import { DraggableTicketCard } from "./DraggableTicketCard";
 
 interface Position {
@@ -19,7 +19,7 @@ interface Position {
 }
 
 interface TicketsBoardProps {
-  tickets: Ticket[];
+  tickets: TicketWithPosition[];
   onPositionChange?: (id: string, position: Position) => void;
 }
 
@@ -33,7 +33,7 @@ export const TicketsBoard = ({
 }: TicketsBoardProps) => {
   const boardRef = useRef<HTMLDivElement>(null);
   const [boardSize, setBoardSize] = useState({ width: 0, height: 0 });
-  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+  const [tickets, setTickets] = useState<TicketWithPosition[]>(initialTickets);
 
   useEffect(() => {
     setTickets(initialTickets);

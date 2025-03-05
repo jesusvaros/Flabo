@@ -33,7 +33,7 @@ export const CreateCollectionCard = () => {
       if (!user) return;
       const { data, error } = await supabase
         .from("tickets")
-        .select("id, content, created_at")
+        .select("id, content, created_at, creator_id")
         .eq("creator_id", user.id)
         .order("created_at", { ascending: false });
 

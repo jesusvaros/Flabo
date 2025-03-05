@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Ticket } from "@/types/collections";
 
-export const TicketCard: React.FC<Ticket> = (ticket) => {
+export const TicketCard: React.FC<{ ticket: Ticket }> = ({ ticket }) => {
   const router = useRouter();
 
   const handleClick = () => {

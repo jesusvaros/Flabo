@@ -3,32 +3,33 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Ticket } from "@/types/collections";
+import { TicketWithPosition } from "@/types/collections";
 
 interface DraggableTicketCardProps {
-  ticket: Ticket;
+  ticket: TicketWithPosition;
 }
 
 export const DraggableTicketCard = ({ ticket }: DraggableTicketCardProps) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: ticket.id,
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: ticket.id,
+    });
 
   const style = {
-    position: 'absolute',
+    position: "absolute",
     top: ticket.position_y,
     left: ticket.position_x,
     transform: CSS.Transform.toString(transform),
     zIndex: isDragging ? 999999 : ticket.z_index,
-    width: '300px',
-    height: '100px',
+    width: "300px",
+    height: "100px",
   };
 
   return (
-    <div 
-      ref={setNodeRef} 
-      style={style as React.CSSProperties} 
-      {...attributes} 
+    <div
+      ref={setNodeRef}
+      style={style as React.CSSProperties}
+      {...attributes}
       {...listeners}
       className="absolute touch-none"
     >

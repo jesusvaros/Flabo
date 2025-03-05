@@ -1,7 +1,6 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketWithPosition } from "@/types/collections";
 
@@ -19,7 +18,7 @@ export const DraggableTicketCard = ({ ticket }: DraggableTicketCardProps) => {
     position: "absolute",
     top: ticket.position_y,
     left: ticket.position_x,
-    transform: CSS.Transform.toString(transform),
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     zIndex: isDragging ? 999999 : ticket.z_index,
     width: "300px",
     height: "100px",

@@ -21,4 +21,5 @@ export interface CollectionProps {
 export interface CollectionViewProps {
   collections: CollectionProps[];
   selectedCollection?: CollectionProps | null;
+  tickets?: Ticket[];
 }

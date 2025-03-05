@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   DndContext,
   closestCenter,
@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  useDroppable,
 } from "@dnd-kit/core";
 import { TicketWithPosition } from "@/types/collections";
 import { DraggableTicketCard } from "./DraggableTicketCard";
@@ -20,7 +21,8 @@ interface Position {
 
 interface TicketsBoardProps {
   tickets: TicketWithPosition[];
-  onPositionChange?: (id: string, position: Position) => void;
+  onPositionChange: (ticketId: string, position: Position) => void;
+  droppableId: string;
 }
 
 const CARD_WIDTH = 300;
@@ -30,10 +32,15 @@ const PADDING = 16;
 export const TicketsBoard = ({
   tickets: initialTickets,
   onPositionChange,
+  droppableId,
 }: TicketsBoardProps) => {
   const boardRef = useRef<HTMLDivElement>(null);
   const [boardSize, setBoardSize] = useState({ width: 0, height: 0 });
   const [tickets, setTickets] = useState<TicketWithPosition[]>(initialTickets);
+
+  const { setNodeRef: setDroppableRef, isOver } = useDroppable({
+    id: droppableId,
+  });
 
   useEffect(() => {
     setTickets(initialTickets);
@@ -54,6 +61,12 @@ export const TicketsBoard = ({
     return () => window.removeEventListener("resize", updateBoardSize);
   }, []);
 
+  useEffect(() => {
+    if (boardRef.current) {
+      setDroppableRef(boardRef.current);
+    }
+  }, [setDroppableRef]);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor)
@@ -70,31 +83,34 @@ export const TicketsBoard = ({
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, delta } = event;
+    const { active, delta, over } = event;
 
-    const updatedTickets = tickets.map((item) => {
-      if (item.id === active.id) {
-        const newPosition = constrainPosition(
-          item.position_x + delta.x,
-          item.position_y + delta.y
-        );
+    // Handle internal drag
+    if (active.data.current?.position_x !== undefined) {
+      const updatedTickets = tickets.map((item) => {
+        if (item.id === active.id) {
+          const newPosition = constrainPosition(
+            item.position_x + delta.x,
+            item.position_y + delta.y
+          );
 
-        // Notify parent about position change
-        requestAnimationFrame(() => {
-          onPositionChange?.(item.id, newPosition);
-        });
+          // Notify parent about position change
+          requestAnimationFrame(() => {
+            onPositionChange?.(item.id, newPosition);
+          });
 
-        return {
-          ...item,
-          position_x: newPosition.x,
-          position_y: newPosition.y,
-          z_index: Math.max(...tickets.map((t) => t.z_index)) + 1,
-        };
-      }
-      return item;
-    });
+          return {
+            ...item,
+            position_x: newPosition.x,
+            position_y: newPosition.y,
+            z_index: Math.max(...tickets.map((t) => t.z_index)) + 1,
+          };
+        }
+        return item;
+      });
 
-    setTickets(updatedTickets);
+      setTickets(updatedTickets);
+    }
   };
 
   return (
@@ -105,7 +121,10 @@ export const TicketsBoard = ({
     >
       <div
         ref={boardRef}
-        className="relative w-full h-[calc(100vh-12rem)] bg-muted/10 rounded-lg overflow-hidden"
+        data-droppable-id={droppableId}
+        className={`relative w-full h-[calc(100vh-12rem)] bg-muted/10 rounded-lg overflow-hidden ${
+          isOver ? "ring-2 ring-primary ring-offset-2" : ""
+        }`}
       >
         {tickets.map((ticket) => (
           <DraggableTicketCard key={ticket.id} ticket={ticket} />

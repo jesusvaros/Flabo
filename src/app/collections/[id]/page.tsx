@@ -17,6 +17,7 @@ type SupabaseTicket = {
     position_x: number;
     position_y: number;
     z_index: number;
+    position: number;
   }[];
 };
 
@@ -47,9 +48,10 @@ export default async function CollectionPage(props: Props) {
     .eq("creator_id", user.id);
 
   // Get the selected collection with tickets and their positions
-  const { data: selectedCollection } = await supabase
+  const { data: selectedCollection } = (await supabase
     .from("collections")
-    .select(`
+    .select(
+      `
       id,
       title,
       creator_id,
@@ -58,27 +60,31 @@ export default async function CollectionPage(props: Props) {
         content,
         created_at,
         creator_id,
-        collections_tickets(position_x, position_y, z_index)
+        collections_tickets(position_x, position_y, z_index, position)
       )
-    `)
+    `
+    )
     .eq("id", collectionId)
-    .single() as { data: SupabaseCollection | null };
+    .single()) as { data: SupabaseCollection | null };
 
   // Transform the data to match CollectionProps
-  const transformedCollection: CollectionProps | null = selectedCollection ? {
-    id: selectedCollection.id,
-    title: selectedCollection.title,
-    creator_id: selectedCollection.creator_id,
-    tickets: selectedCollection.tickets.map(ticket => ({
-      id: ticket.id,
-      content: ticket.content,
-      created_at: ticket.created_at,
-      creator_id: ticket.creator_id,
-      position_x: ticket.collections_tickets[0]?.position_x ?? 0,
-      position_y: ticket.collections_tickets[0]?.position_y ?? 0,
-      z_index: ticket.collections_tickets[0]?.z_index ?? 0
-    }))
-  } : null;
+  const transformedCollection: CollectionProps | null = selectedCollection
+    ? {
+        id: selectedCollection.id,
+        title: selectedCollection.title,
+        creator_id: selectedCollection.creator_id,
+        tickets: selectedCollection.tickets.map((ticket) => ({
+          id: ticket.id,
+          content: ticket.content,
+          created_at: ticket.created_at,
+          creator_id: ticket.creator_id,
+          position_x: ticket.collections_tickets[0]?.position_x ?? 0,
+          position_y: ticket.collections_tickets[0]?.position_y ?? 0,
+          z_index: ticket.collections_tickets[0]?.z_index ?? 0,
+          position: ticket.collections_tickets[0]?.position ?? 0,
+        })),
+      }
+    : null;
 
   return (
     <CollectionsView

@@ -9,6 +9,7 @@ export interface TicketWithPosition extends Ticket {
   position_x: number;
   position_y: number;
   z_index: number;
+  position: number;
 }
 
 export interface CollectionProps {

@@ -22,6 +22,7 @@ interface Item {
 interface FilterableTagListProps<T extends Item> {
   items: T[]
   selectedItems: string[]
+  disabledItems?: string[]
   onItemToggle: (id: string) => void
   className?: string
 }
@@ -29,6 +30,7 @@ interface FilterableTagListProps<T extends Item> {
 export function FilterableTagList<T extends Item>({
   items: initialItems,
   selectedItems,
+  disabledItems = [],
   onItemToggle,
   className,
 }: FilterableTagListProps<T>) {
@@ -128,19 +130,29 @@ export function FilterableTagList<T extends Item>({
         </TooltipProvider>
       </div>
       <div className="flex flex-wrap gap-2">
-        {items.map((item) => (
-          <Badge
-            key={item.id}
-            variant={selectedItems.includes(item.id) ? "default" : "outline"}
-            className={cn(
-              "cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors",
-              selectedItems.includes(item.id) && "bg-primary text-primary-foreground"
-            )}
-            onClick={() => onItemToggle(item.id)}
-          >
-            {item.content}
-          </Badge>
-        ))}
+        {items.map((item) => {
+          const isSelected = selectedItems.includes(item.id)
+          const isDisabled = disabledItems.includes(item.id)
+
+          return (
+            <Badge
+              key={item.id}
+              variant={isSelected ? "default" : "outline"}
+              className={cn(
+                "cursor-pointer select-none transition-colors",
+                isDisabled && "opacity-50 cursor-default bg-muted hover:bg-muted",
+                !isDisabled && isSelected && "hover:bg-primary/80",
+                !isDisabled && !isSelected && "hover:bg-muted"
+              )}
+              onClick={() => !isDisabled && onItemToggle(item.id)}
+            >
+              {item.content}
+            </Badge>
+          )
+        })}
+        {items.length === 0 && (
+          <p className="text-muted-foreground text-sm">No items found</p>
+        )}
       </div>
     </div>
   )

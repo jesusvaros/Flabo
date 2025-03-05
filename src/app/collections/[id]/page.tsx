@@ -2,6 +2,7 @@ import { createClient } from "../../../../utils/supabase/server";
 import { redirect } from "next/navigation";
 import { CollectionsView } from "../components/CollectionsView";
 import { CollectionProps } from "@/types/collections";
+import { CollectionProvider } from "../context/CollectionContext";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -106,9 +107,11 @@ export default async function CollectionPage(props: Props) {
     : null;
 
   return (
-    <CollectionsView
-      collections={collections || []}
-      selectedCollection={transformedCollection}
-    />
+    <CollectionProvider collection={transformedCollection}>
+      <CollectionsView
+        collections={collections || []}
+        selectedCollection={transformedCollection}
+      />
+    </CollectionProvider>
   );
 }

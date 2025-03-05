@@ -15,6 +15,7 @@ import { Loader2 } from "lucide-react";
 import { FilterableTagList } from "@/components/ui/filterable-tag-list";
 import { useState } from "react";
 import { addTicketsToCollection } from "@/app/tickets/api/ticketsApi";
+import { useCollection } from "../context/CollectionContext";
 
 interface AddTicketDrawerProps {
   isOpen: boolean;
@@ -23,17 +24,46 @@ interface AddTicketDrawerProps {
   onTicketsAdded?: () => void;
 }
 
+function DrawerWrapper({
+  isOpen,
+  onOpenChange,
+  children,
+}: {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Drawer open={isOpen} onOpenChange={onOpenChange}>
+      <DrawerContent className="flex flex-col">
+        <DrawerHeader className="flex-none">
+          <DrawerTitle>Add Tickets</DrawerTitle>
+          <DrawerDescription>
+            Select tickets to add to your collection.
+          </DrawerDescription>
+        </DrawerHeader>
+        {children}
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
 export function AddTicketDrawer({
   isOpen,
   onOpenChange,
   collectionId,
   onTicketsAdded,
 }: AddTicketDrawerProps) {
+  const { collection } = useCollection();
   const { tickets, isLoading, error } = useAvailableTickets();
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
   const [isAdding, setIsAdding] = useState(false);
 
+  // Get the IDs of tickets already in the collection
+
   const handleTicketToggle = (ticketId: string) => {
+    if (disabledTickets.includes(ticketId)) return;
+
     setSelectedTickets((prev) =>
       prev.includes(ticketId)
         ? prev.filter((id) => id !== ticketId)
@@ -45,71 +75,90 @@ export function AddTicketDrawer({
     try {
       setIsAdding(true);
       await addTicketsToCollection(collectionId, selectedTickets);
-
       onTicketsAdded?.();
       onOpenChange(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setIsAdding(false);
     }
   };
 
-  return (
-    <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="flex flex-col">
-        <DrawerHeader className="flex-none">
-          <DrawerTitle>Add Tickets</DrawerTitle>
-          <DrawerDescription>
-            Select tickets to add to your collection.
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="flex-1 px-4 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
-          ) : error ? (
-            <div className="text-destructive text-center">
-              Failed to load tickets. Please try again.
-            </div>
-          ) : tickets.length === 0 ? (
-            <div className="text-muted-foreground text-center">
-              No tickets available.
-            </div>
+  const renderFooter = () => (
+    <DrawerFooter className="flex-none border-t bg-background">
+      <div className="flex items-center justify-between gap-2">
+        <Button
+          disabled={isLoading || isAdding || selectedTickets.length === 0}
+          onClick={handleAddTickets}
+          className="flex-1"
+        >
+          {isAdding ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Adding...
+            </>
           ) : (
-            <FilterableTagList
-              items={tickets}
-              selectedItems={selectedTickets}
-              onItemToggle={handleTicketToggle}
-              className="pb-4"
-            />
+            `Add Selected (${selectedTickets.length})`
           )}
+        </Button>
+        <DrawerClose asChild>
+          <Button variant="outline" className="flex-1">
+            Cancel
+          </Button>
+        </DrawerClose>
+      </div>
+    </DrawerFooter>
+  );
+
+  if (isLoading) {
+    return (
+      <DrawerWrapper isOpen={isOpen} onOpenChange={onOpenChange}>
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin" />
         </div>
-        <DrawerFooter className="flex-none border-t bg-background">
-          <div className="flex items-center justify-between gap-2">
-            <Button
-              disabled={isLoading || isAdding || selectedTickets.length === 0}
-              onClick={handleAddTickets}
-              className="flex-1"
-            >
-              {isAdding ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Adding...
-                </>
-              ) : (
-                `Add Selected (${selectedTickets.length})`
-              )}
-            </Button>
-            <DrawerClose asChild>
-              <Button variant="outline" className="flex-1">
-                Cancel
-              </Button>
-            </DrawerClose>
-          </div>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+        {renderFooter()}
+      </DrawerWrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <DrawerWrapper isOpen={isOpen} onOpenChange={onOpenChange}>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-destructive">
+            Failed to load tickets. Please try again.
+          </p>
+        </div>
+        {renderFooter()}
+      </DrawerWrapper>
+    );
+  }
+
+  if (!tickets.length || collection === null) {
+    return (
+      <DrawerWrapper isOpen={isOpen} onOpenChange={onOpenChange}>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">No tickets available.</p>
+        </div>
+        {renderFooter()}
+      </DrawerWrapper>
+    );
+  }
+
+  const disabledTickets = collection?.tickets?.map((ticket) => ticket.id) || [];
+
+  return (
+    <DrawerWrapper isOpen={isOpen} onOpenChange={onOpenChange}>
+      <div className="flex-1 px-4 overflow-y-auto">
+        <FilterableTagList
+          items={tickets}
+          selectedItems={selectedTickets}
+          onItemToggle={handleTicketToggle}
+          disabledItems={disabledTickets}
+          className="pb-4"
+        />
+      </div>
+      {renderFooter()}
+    </DrawerWrapper>
   );
 }

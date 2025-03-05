@@ -90,4 +90,4 @@ export const CollectionsView = ({
       </div>
     </div>
   );
-};
+}

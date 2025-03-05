@@ -3,53 +3,40 @@
 import { useParams } from "next/navigation";
 import { CollectionsSidebar } from "./CollectionsSidebar";
 import { CreateCollectionCard } from "./CreateCollectionCard";
+import { TicketsBoard } from "./draganddrop/SortableTicketsBoard";
 import { CollectionViewProps } from "@/types/collections";
 
-export const CollectionsView: React.FC<CollectionViewProps> = ({
+export const CollectionsView = ({
   collections,
   selectedCollection,
-}) => {
-  if (!selectedCollection) {
-    return (
-      <div className="flex min-h-screen">
-        <CollectionsSidebar collections={collections} />
-        <main className="flex-1 p-8">
-          <header className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-2">Collections</h1>
-            <p className="text-muted-foreground">Create and manage your collections</p>
-          </header>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <CreateCollectionCard />
-          </div>
-        </main>
-      </div>
-    );
-  }
+}: CollectionViewProps) => {
+  const handlePositionChange = (id: string) => {
+    // Position updates are now handled in the TicketsBoard component
+    console.log("Position updated for ticket", id);
+  };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen">
       <CollectionsSidebar
         collections={collections}
-        currentCollectionId={selectedCollection.id}
+        currentCollectionId={selectedCollection?.id}
       />
-      <main className="flex-1 p-8">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">{selectedCollection.title}</h1>
-          <p className="text-muted-foreground">{selectedCollection.title}</p>
-        </header>
-        <div className="space-y-4">
-          {selectedCollection.tickets?.map((ticket) => (
-            <div
-              key={ticket.id}
-              className="p-4 rounded-lg border border-border hover:border-border/60 transition-colors"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-muted-foreground whitespace-pre-wrap">{ticket.content}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </main>
+      <div className="flex-1 p-4 overflow-hidden">
+        {selectedCollection ? (
+          <div className="h-full flex flex-col">
+            <h1 className="text-2xl font-bold mb-6">{selectedCollection.title}</h1>
+            <TicketsBoard
+              tickets={selectedCollection.tickets || []}
+              collectionId={selectedCollection.id}
+              onPositionChange={handlePositionChange}
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <CreateCollectionCard />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

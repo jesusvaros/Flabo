@@ -1,11 +1,31 @@
 import { createClient } from "../../../../utils/supabase/server";
 import { redirect } from "next/navigation";
 import { CollectionsView } from "../components/CollectionsView";
-import { Collection } from "@/types/collections";
+import { CollectionProps } from "@/types/collections";
 
 type Props = {
   params: Promise<{ id: string }>;
-}
+};
+
+// Define the type for the raw Supabase response
+type SupabaseTicket = {
+  id: string;
+  content: string;
+  created_at: string;
+  creator_id: string;
+  collections_tickets: {
+    position_x: number;
+    position_y: number;
+    z_index: number;
+  }[];
+};
+
+type SupabaseCollection = {
+  id: string;
+  title: string;
+  creator_id: string;
+  tickets: SupabaseTicket[];
+};
 
 export default async function CollectionPage(props: Props) {
   const params = await props.params;
@@ -17,32 +37,53 @@ export default async function CollectionPage(props: Props) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/");
+    return redirect("/");
   }
 
   // Get all collections for the sidebar
   const { data: collections } = await supabase
     .from("collections")
-    .select("id, title")
+    .select("id, title, creator_id")
     .eq("creator_id", user.id);
 
-  // Get the selected collection details
+  // Get the selected collection with tickets and their positions
   const { data: selectedCollection } = await supabase
     .from("collections")
-    .select("id, title, creator_id, tickets (id, content)")
+    .select(`
+      id,
+      title,
+      creator_id,
+      tickets(
+        id,
+        content,
+        created_at,
+        creator_id,
+        collections_tickets(position_x, position_y, z_index)
+      )
+    `)
     .eq("id", collectionId)
-    .eq("creator_id", user.id)
-    .single();
+    .single() as { data: SupabaseCollection | null };
+
+  // Transform the data to match CollectionProps
+  const transformedCollection: CollectionProps | null = selectedCollection ? {
+    id: selectedCollection.id,
+    title: selectedCollection.title,
+    creator_id: selectedCollection.creator_id,
+    tickets: selectedCollection.tickets.map(ticket => ({
+      id: ticket.id,
+      content: ticket.content,
+      created_at: ticket.created_at,
+      creator_id: ticket.creator_id,
+      position_x: ticket.collections_tickets[0]?.position_x ?? 0,
+      position_y: ticket.collections_tickets[0]?.position_y ?? 0,
+      z_index: ticket.collections_tickets[0]?.z_index ?? 0
+    }))
+  } : null;
 
   return (
     <CollectionsView
-      collections={
-        collections?.map((col) => ({
-          id: col.id,
-          name: col.title,
-        })) || []
-      }
-      selectedCollection={selectedCollection}
+      collections={collections || []}
+      selectedCollection={transformedCollection}
     />
   );
 }

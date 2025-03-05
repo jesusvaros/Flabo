@@ -38,10 +38,14 @@ export const useSortableTickets = ({
     const newIndex = tickets.findIndex((ticket) => ticket.id === over.id);
 
     if (oldIndex !== -1 && newIndex !== -1) {
+      // Create new array with updated positions
       const newTickets = arrayMove(tickets, oldIndex, newIndex).map(
         (ticket, index) => ({
           ...ticket,
           position: index,
+          position_x: ticket.position_x,
+          position_y: ticket.position_y,
+          z_index: ticket.z_index
         })
       );
       onReorder?.(newTickets);
@@ -50,11 +54,16 @@ export const useSortableTickets = ({
 
   const activeTicket = activeId ? tickets.find((t) => t.id === activeId) : undefined;
 
+  // Sort tickets by position and map to UniqueIdentifier
+  const sortedItems = [...tickets]
+    .sort((a, b) => (a.position || 0) - (b.position || 0))
+    .map(ticket => ticket.id as UniqueIdentifier);
+
   return {
     activeId,
     activeTicket,
     handleDragStart,
     handleDragEnd,
-    items: tickets.map((ticket) => ticket.id),
+    items: sortedItems,
   };
 };

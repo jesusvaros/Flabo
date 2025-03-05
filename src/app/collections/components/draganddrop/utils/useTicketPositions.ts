@@ -4,68 +4,69 @@ import { createClient } from "../../../../../../utils/supabase/client";
 
 interface UseTicketPositionsProps {
   collectionId: string;
-  debounceMs?: number;
+  tickets: TicketWithPosition[];
 }
 
-export const useTicketPositions = ({ 
+export const useTicketPositions = ({
   collectionId,
-  debounceMs = 2000 
+  tickets,
 }: UseTicketPositionsProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
-  const [pendingTickets, setPendingTickets] = useState<TicketWithPosition[]>([]);
   const supabase = createClient();
   const debounceTimer = useRef<NodeJS.Timeout>();
+  const isSavingRef = useRef(false);
 
   const savePositions = async (tickets: TicketWithPosition[]) => {
-    if (!collectionId) return;
+    if (!collectionId || isSavingRef.current) return;
     
-    setIsUpdating(true);
     try {
+      isSavingRef.current = true;
+      setIsUpdating(true);
+      
       const updates = tickets.map((ticket, index) => ({
         collection_id: collectionId,
         ticket_id: ticket.id,
         position: index,
+        position_x: ticket.position_x,
+        position_y: ticket.position_y,
+        z_index: ticket.z_index,
       }));
 
       const { error } = await supabase
-        .from('collections_tickets')
-        .upsert(
-          updates,
-          { 
-            onConflict: 'collection_id,ticket_id',
-            ignoreDuplicates: false 
-          }
-        );
+        .from("collections_tickets")
+        .upsert(updates, {
+          onConflict: "collection_id,ticket_id",
+          ignoreDuplicates: false,
+        });
 
       if (error) {
-        console.error('Error updating positions:', error);
+        console.error("Error updating positions:", error);
         throw error;
       }
-      
-      // Clear pending tickets after successful save
-      setPendingTickets([]);
     } catch (error) {
-      console.error('Error in savePositions:', error);
+      console.error("Error in savePositions:", error);
       throw error;
     } finally {
+      isSavingRef.current = false;
       setIsUpdating(false);
+      debounceTimer.current = undefined;
     }
   };
 
-  const updatePositions = useCallback((tickets: TicketWithPosition[]) => {
-    // Update pending state immediately for optimistic UI
-    setPendingTickets(tickets);
+  const updatePositions = useCallback(
+    (updatedTickets: TicketWithPosition[]) => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
 
-    // Clear existing timer
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-
-    // Set new timer
-    debounceTimer.current = setTimeout(() => {
-      savePositions(tickets);
-    }, debounceMs);
-  }, [collectionId, debounceMs]);
+      debounceTimer.current = setTimeout(() => {
+        savePositions(updatedTickets);
+      }, 2000);
+      
+      setIsUpdating(true);
+    },
+    [collectionId]
+  );
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -73,13 +74,13 @@ export const useTicketPositions = ({
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
       }
+      setIsUpdating(false);
     };
   }, []);
 
   return {
     updatePositions,
     isUpdating,
-    pendingTickets,
-    hasPendingChanges: pendingTickets.length > 0
+    hasPendingChanges: !!debounceTimer.current,
   };
 };

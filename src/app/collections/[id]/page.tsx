@@ -47,7 +47,7 @@ export default async function CollectionPage(props: Props) {
     .select("id, title, creator_id")
     .eq("creator_id", user.id);
 
-  // Get the selected collection with tickets and their positions
+  // Get the selected collection with tickets and their positions, ordered by position
   const { data: selectedCollection } = (await supabase
     .from("collections")
     .select(

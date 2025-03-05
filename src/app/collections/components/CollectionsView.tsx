@@ -16,19 +16,18 @@ export const CollectionsView = ({
 }: CollectionViewProps) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [localTickets, setLocalTickets] = useState<TicketWithPosition[]>(
-    [...(selectedCollection?.tickets || [])].sort((a, b) => (a.position || 0) - (b.position || 0))
+    [...(selectedCollection?.tickets || [])].sort(
+      (a, b) => (a.position) - (b.position)
+    )
   );
 
-  // Update local tickets when collection changes
-  useEffect(() => {
-    setLocalTickets(
-      [...(selectedCollection?.tickets || [])].sort((a, b) => (a.position || 0) - (b.position || 0))
-    );
-  }, [selectedCollection?.tickets]);
 
-  const { updatePositions, isUpdating, hasPendingChanges } = useTicketPositions({
-    collectionId: selectedCollection?.id || "",
-  });
+  const { updatePositions, isUpdating, hasPendingChanges } = useTicketPositions(
+    {
+      collectionId: selectedCollection?.id || "",
+      tickets: localTickets,
+    }
+  );
 
   const handleReorder = async (tickets: TicketWithPosition[]) => {
     try {
@@ -50,9 +49,14 @@ export const CollectionsView = ({
           <div className="h-full flex flex-col">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">{selectedCollection.title}</h1>
-                {hasPendingChanges && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
+                <h1 className="text-2xl font-bold">
+                  {selectedCollection.title}
+                </h1>
+                {isUpdating && (
+                  <Badge
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
                     <Loader2 className="h-3 w-3 animate-spin" />
                     Saving
                   </Badge>

@@ -1,27 +1,53 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Ticket } from "@/types/collections";
+import { TicketWithPosition } from "@/types/collections";
+import { BigTicketCard } from "./BigTicketCard";
 
-export const TicketCard: React.FC<{ ticket: Ticket }> = ({ ticket }) => {
-  const router = useRouter();
+interface TicketCardProps {
+  ticket: TicketWithPosition;
+}
 
-  const handleClick = () => {
-    router.push(`/tickets/${ticket.id}`);
+export const TicketCard = ({ ticket }: TicketCardProps) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [cardRect, setCardRect] = useState<DOMRect | null>(null);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const card = e.currentTarget.querySelector('.card-content') as HTMLElement;
+    if (card) {
+      setCardRect(card.getBoundingClientRect());
+      setIsModalOpen(true);
+    }
   };
 
   return (
-    <Card
-      onClick={handleClick}
-      className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-full m-2 select-none"
-    >
-      <CardHeader>
-        <CardTitle className="text-base">{ticket.content}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">details</p>
-      </CardContent>
-    </Card>
+    <>
+      <Card
+        onClick={handleClick}
+        className="select-none relative cursor-pointer border-muted bg-accent hover:shadow-md transition-all"
+        style={{ transitionDuration: 'var(--duration)', transitionTimingFunction: 'var(--ease-out)' }}
+      >
+        <div className="card-content h-full">
+          <CardHeader>
+            <CardTitle className="text-base">{ticket.content}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Position: {ticket.position}</p>
+          </CardContent>
+        </div>
+      </Card>
+      {isModalOpen && (
+        <BigTicketCard
+          ticket={ticket}
+          onClose={() => {
+            setIsModalOpen(false);
+            setCardRect(null);
+          }}
+          cardRect={cardRect}
+        />
+      )}
+    </>
   );
 };

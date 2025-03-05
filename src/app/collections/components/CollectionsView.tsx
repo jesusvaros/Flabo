@@ -9,6 +9,7 @@ import { SortableTicketsBoard } from "./draganddrop/SortableTicketsBoard";
 import { useTicketPositions } from "./draganddrop/utils/useTicketPositions";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { AddTicketDrawer } from "./AddTicketDrawer";
 
 export const CollectionsView = ({
   collections,
@@ -20,7 +21,6 @@ export const CollectionsView = ({
       (a, b) => (a.position) - (b.position)
     )
   );
-
 
   const { updatePositions, isUpdating, hasPendingChanges } = useTicketPositions(
     {
@@ -71,6 +71,15 @@ export const CollectionsView = ({
             <SortableTicketsBoard
               tickets={localTickets}
               onReorder={handleReorder}
+            />
+            <AddTicketDrawer 
+              isOpen={isDrawerOpen}
+              onOpenChange={setIsDrawerOpen}
+              collectionId={selectedCollection.id}
+              onTicketsAdded={() => {
+                // Refresh the collection's tickets
+                window.location.reload();
+              }}
             />
           </div>
         ) : (

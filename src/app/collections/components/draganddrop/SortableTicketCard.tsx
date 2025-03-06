@@ -90,9 +90,10 @@ export const SortableTicketCard = ({
             {...attributes}
             {...listeners}
             data-drag-handle
-            className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-1 hover:bg-accent/80 rounded"
+            className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-2 hover:bg-accent/80 rounded touch-manipulation"
+            style={{ touchAction: "none" }}
           >
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
+            <GripVertical className="h-5 w-5 text-muted-foreground" />
           </div>
         )}
       </Card>

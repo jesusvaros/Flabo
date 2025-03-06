@@ -82,7 +82,6 @@ const MobileTicketDrawer = ({
             
             {/* Drawing Board */}
             <div className="mt-6 border rounded-md overflow-hidden">
-              <h3 className="text-sm font-medium p-2 bg-muted">Drawing Board</h3>
               <TicketDrawingBoard ticketId={ticket.id} />
             </div>
           </div>
@@ -126,7 +125,6 @@ const DesktopTicketCard = ({
             
             {/* Drawing Board */}
             <div className="mt-6 border rounded-md overflow-hidden">
-              <h3 className="text-sm font-medium p-2 bg-muted">Drawing Board</h3>
               <TicketDrawingBoard ticketId={ticket.id} />
             </div>
           </div>

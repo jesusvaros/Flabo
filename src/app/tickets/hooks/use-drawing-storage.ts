@@ -4,9 +4,12 @@ import { useCallback } from "react";
 import { TLEditorSnapshot } from "tldraw";
 import { createClient } from "../../../../utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { useCollection } from "@/app/collections/context/CollectionContext";
 
 export const useDrawingStorage = (ticketId: string) => {
   const router = useRouter();
+  const { refetchTicket } = useCollection();
+
   const saveDrawing = useCallback(
     async (drawing: TLEditorSnapshot) => {
       const supabase = createClient();
@@ -44,14 +47,18 @@ export const useDrawingStorage = (ticketId: string) => {
             created_by: user.id,
           });
         }
-        console.log("Dibujo guardado correctamente");
+
+        // Refresh the ticket data in the collection context
+        try {
+          await refetchTicket(ticketId);
+        } catch (refreshError) {
+          console.error("Error refreshing ticket data:", refreshError);
+        }
       } catch (error) {
         console.error("Error saving drawing to database:", error);
-      } finally {
-        router.refresh();
       }
     },
-    [ticketId]
+    [ticketId, refetchTicket, router]
   );
 
   return {

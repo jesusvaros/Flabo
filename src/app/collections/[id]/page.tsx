@@ -9,7 +9,7 @@ type Props = {
 };
 
 // Define the type for the raw Supabase response
-type SupabaseTicket = {
+export type SupabaseTicket = {
   id: string;
   content: string;
   created_at: string;
@@ -25,7 +25,7 @@ type SupabaseTicket = {
   };
 };
 
-type SupabaseCollection = {
+export type SupabaseCollection = {
   id: string;
   title: string;
   creator_id: string;

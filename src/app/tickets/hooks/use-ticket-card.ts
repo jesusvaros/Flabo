@@ -60,36 +60,3 @@ export function useDrawerAnimation(onClose: () => void) {
     onDrawerOpenChange
   };
 }
-
-// Hook for handling backdrop click
-export function useBackdropClick(onClose: () => void) {
-  const handleBackdropClick = (e: React.MouseEvent): void => {
-    // Stop propagation only for this component
-    e.stopPropagation();
-    
-    // Close the current card
-    onClose();
-    
-    // Simulate a new click at the same position to activate elements behind
-    setTimeout(() => {
-      // Create a new click event at the same position
-      const newEvent = new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-        view: window,
-        clientX: e.clientX,
-        clientY: e.clientY
-      });
-      
-      // Get the element at that position
-      const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
-      
-      // Dispatch the event on that element if it exists
-      if (elementUnder) {
-        elementUnder.dispatchEvent(newEvent);
-      }
-    }, 10); // Small delay to ensure the current card has closed
-  };
-
-  return { handleBackdropClick };
-} 

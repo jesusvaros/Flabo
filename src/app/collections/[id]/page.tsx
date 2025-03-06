@@ -20,6 +20,9 @@ type SupabaseTicket = {
     z_index: number;
     position: number;
   } | null;
+  ticket_drawings: Array<{
+    data: any;
+  }> | null;
 };
 
 type SupabaseCollection = {
@@ -48,7 +51,7 @@ export default async function CollectionPage(props: Props) {
     .select("id, title, creator_id")
     .eq("creator_id", user.id);
 
-  // Get the selected collection with tickets
+  // Get the selected collection with tickets and their drawings
   const { data: selectedCollection } = (await supabase
     .from("collections")
     .select(
@@ -66,6 +69,9 @@ export default async function CollectionPage(props: Props) {
             position_y,
             z_index,
             position
+          ),
+          ticket_drawings (
+            data
           )
         )
       `
@@ -101,10 +107,13 @@ export default async function CollectionPage(props: Props) {
             position_y: position?.position_y ?? 0,
             z_index: position?.z_index ?? 0,
             position: position?.position ?? 0,
+            drawing: ticket.ticket_drawings?.[0]?.data ?? null,
           };
         }),
       }
     : null;
+
+  console.log(transformedCollection);
 
   return (
     <CollectionProvider collection={transformedCollection}>

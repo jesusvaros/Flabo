@@ -6,8 +6,11 @@ import { cn } from "@/lib/utils";
 import { TicketWithPosition } from "@/types/collections";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useCardAnimation, useDrawerAnimation, useBackdropClick } from "../hooks/use-ticket-card";
+import { useCardAnimation, useDrawerAnimation } from "../hooks/use-ticket-card";
 import { TicketDrawingBoard } from "./TicketDrawingBoard";
+import { useCallback, useState, useEffect } from "react";
+import { TLEditorSnapshot } from "tldraw";
+import { useDrawingStorage } from "../hooks/use-drawing-storage";
 
 interface BigTicketCardProps {
   ticket: TicketWithPosition;
@@ -21,27 +24,49 @@ export const BigTicketCard = ({
   clickPosition,
 }: BigTicketCardProps) => {
   const isMobile = useIsMobile();
+  const [isDrawingBoardMounted, setIsDrawingBoardMounted] = useState(false);
+  const { saveDrawing } = useDrawingStorage(ticket.id);
   
   // Use custom hooks to separate logic
   const { style } = useCardAnimation(clickPosition);
   const { drawerOpen, handleDrawerClose, onDrawerOpenChange } = useDrawerAnimation(onClose);
-  const { handleBackdropClick } = useBackdropClick(onClose);
+
+  // Montar el DrawingBoard después de que la animación de apertura haya terminado
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsDrawingBoardMounted(true);
+    }, 300);
+    
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
+
+  // Manejador para guardar el dibujo
+  const handleSaveDrawing = useCallback((drawing: TLEditorSnapshot) => {
+    console.log("Guardando dibujo en la base de datos");
+    saveDrawing(drawing);
+  }, [saveDrawing]);
 
   // For mobile, render the Drawer component
   if (isMobile) {
     return <MobileTicketDrawer 
-      ticket={ticket} 
+      ticket={ticket}
       drawerOpen={drawerOpen} 
       onOpenChange={onDrawerOpenChange}
       onClose={handleDrawerClose}
+      isDrawingBoardMounted={isDrawingBoardMounted}
+      onSaveDrawing={handleSaveDrawing}
     />;
   }
 
   // For desktop, render the animated card
   return <DesktopTicketCard 
-    ticket={ticket} 
+    ticket={ticket}
     style={style} 
-    onBackdropClick={handleBackdropClick}
+    onBackdropClick={onClose}
+    isDrawingBoardMounted={isDrawingBoardMounted}
+    onSaveDrawing={handleSaveDrawing}
   />;
 };
 
@@ -50,12 +75,16 @@ const MobileTicketDrawer = ({
   ticket, 
   drawerOpen, 
   onOpenChange, 
-  onClose 
+  onClose,
+  isDrawingBoardMounted,
+  onSaveDrawing
 }: { 
   ticket: TicketWithPosition; 
   drawerOpen: boolean; 
   onOpenChange: (open: boolean) => void; 
   onClose: () => void;
+  isDrawingBoardMounted: boolean;
+  onSaveDrawing: (drawing: TLEditorSnapshot) => void;
 }) => {
   return (
     <Drawer 
@@ -82,7 +111,13 @@ const MobileTicketDrawer = ({
             
             {/* Drawing Board */}
             <div className="mt-6 border rounded-md overflow-hidden">
-              <TicketDrawingBoard ticketId={ticket.id} />
+              {isDrawingBoardMounted && (
+                <TicketDrawingBoard 
+                  ticketId={ticket.id} 
+                  initialDrawing={ticket.drawing}
+                  onSave={onSaveDrawing}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -95,11 +130,15 @@ const MobileTicketDrawer = ({
 const DesktopTicketCard = ({ 
   ticket, 
   style, 
-  onBackdropClick 
+  onBackdropClick,
+  isDrawingBoardMounted,
+  onSaveDrawing
 }: { 
   ticket: TicketWithPosition; 
   style: React.CSSProperties; 
-  onBackdropClick: (e: React.MouseEvent) => void;
+  onBackdropClick: () => void;
+  isDrawingBoardMounted: boolean;
+  onSaveDrawing: (drawing: TLEditorSnapshot) => void;
 }) => {
   return (
     <>
@@ -125,7 +164,13 @@ const DesktopTicketCard = ({
             
             {/* Drawing Board */}
             <div className="mt-6 border rounded-md overflow-hidden">
-              <TicketDrawingBoard ticketId={ticket.id} />
+              {isDrawingBoardMounted && (
+                <TicketDrawingBoard 
+                  ticketId={ticket.id} 
+                  initialDrawing={ticket.drawing}
+                  onSave={onSaveDrawing}
+                />
+              )}
             </div>
           </div>
         </CardContent>

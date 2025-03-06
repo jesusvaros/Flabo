@@ -7,6 +7,7 @@ import { TicketWithPosition } from "@/types/collections";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useCardAnimation, useDrawerAnimation, useBackdropClick } from "../hooks/use-ticket-card";
+import { TicketDrawingBoard } from "./TicketDrawingBoard";
 
 interface BigTicketCardProps {
   ticket: TicketWithPosition;
@@ -75,9 +76,15 @@ const MobileTicketDrawer = ({
         </DrawerHeader>
         <div className="p-6">
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-4">
               Position: {ticket.position}
             </p>
+            
+            {/* Drawing Board */}
+            <div className="mt-6 border rounded-md overflow-hidden">
+              <h3 className="text-sm font-medium p-2 bg-muted">Drawing Board</h3>
+              <TicketDrawingBoard />
+            </div>
           </div>
         </div>
       </DrawerContent>
@@ -116,6 +123,12 @@ const DesktopTicketCard = ({
             <p className="text-sm text-muted-foreground">
               Position: {ticket.position}
             </p>
+            
+            {/* Drawing Board */}
+            <div className="mt-6 border rounded-md overflow-hidden">
+              <h3 className="text-sm font-medium p-2 bg-muted">Drawing Board</h3>
+              <TicketDrawingBoard />
+            </div>
           </div>
         </CardContent>
         <button

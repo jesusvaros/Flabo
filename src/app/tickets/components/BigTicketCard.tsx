@@ -47,7 +47,7 @@ export const BigTicketCard = ({
   const [isDrawingBoardMounted, setIsDrawingBoardMounted] = useState(false);
   const drawingEditorRef = useRef<{ saveDrawing: () => void }>(null);
   const { style } = useCardAnimation(clickPosition);
-  
+
   const handleCloseRequested = () => {
     if (drawingEditorRef.current) {
       drawingEditorRef.current.saveDrawing();
@@ -106,7 +106,7 @@ const MobileTicketDrawer = ({
   drawingEditorRef,
 }: MobileTicketDrawerProps) => {
   return (
-    <Drawer open={drawerOpen} onOpenChange={onOpenChange} snapPoints={[1]}>
+    <Drawer open={drawerOpen} onOpenChange={onOpenChange}>
       <DrawerContent className="p-0 h-auto max-h-[90vh]">
         <DrawerHeader className="border-b border-muted py-4 px-4 pb-5">
           <DrawerTitle>{ticket.content}</DrawerTitle>
@@ -142,40 +142,36 @@ const DesktopTicketCard = ({
         style={style}
         className={cn(
           "select-none fixed z-50 bg-accent border-muted shadow-lg",
-          "w-[90%] max-w-2xl"
+          "w-[90%] max-w-6xl"
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <CardHeader className="p-6">
+        <CardHeader className="p-4">
           <CardTitle className="text-2xl text-foreground">
             {ticket.content}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Position: {ticket.position}
-            </p>
-            <div
-              className="mt-6 transition-all duration-200 ease-in-out"
-              style={{
-                height: isDrawingBoardMounted ? "400px" : "0",
-                overflow: "hidden",
-                transitionDelay: "500ms",
-                borderRadius: "0.375rem",
-              }}
-            >
-              {isDrawingBoardMounted ? (
-                <TicketDrawingBoard
-                  ticketId={ticket.id}
-                  initialDrawing={ticket.drawing}
-                  onClose={onClose}
-                  ref={drawingEditorRef}
-                />
-              ) : (
-                <div className="h-0 w-0" />
-              )}
-            </div>
+          <div
+            className="transition-all duration-200 ease-in-out"
+            style={{
+              height: isDrawingBoardMounted ? "80vh" : "0",
+              overflow: "hidden",
+              transitionDelay: "500ms",
+              borderRadius: "0.375rem",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            {isDrawingBoardMounted ? (
+              <TicketDrawingBoard
+                ticketId={ticket.id}
+                initialDrawing={ticket.drawing}
+                onClose={onClose}
+                ref={drawingEditorRef}
+              />
+            ) : (
+              <div className="h-0 w-0" />
+            )}
           </div>
         </CardContent>
         <button

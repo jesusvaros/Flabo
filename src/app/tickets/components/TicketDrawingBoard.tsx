@@ -38,7 +38,7 @@ export const TicketDrawingBoard = forwardRef<
     return (
       <div
         className={cn("relative w-full", className)}
-        style={fullHeight ? {} : { height: "400px" }}
+        style={fullHeight ? {} : { height: "80vh" }}
       >
         <Tldraw
           className="h-full w-full"

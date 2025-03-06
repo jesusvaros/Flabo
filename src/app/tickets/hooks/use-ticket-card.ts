@@ -2,34 +2,29 @@ import { useState, useEffect } from "react";
 
 // Hook for handling card animation
 export function useCardAnimation(clickPosition: { x: number; y: number } | null) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-
+  const [isAnimating, setIsAnimating] = useState(true);
+  
   useEffect(() => {
-    // First make the component visible
-    setIsVisible(true);
-    
-    // Small delay to ensure animation is triggered after visibility
+    // Small delay to ensure animation is triggered
     const timer = setTimeout(() => {
-      setIsOpen(true);
+      setIsAnimating(false);
     }, 10);
     return () => clearTimeout(timer);
   }, []);
-
-  // Style for initial animation
-  const style = !isOpen && clickPosition ? {
+  
+  // Create style based on whether we're animating from click position
+  const style = clickPosition && isAnimating ? {
     top: `${clickPosition.y}px`,
     left: `${clickPosition.x}px`,
     transform: 'translate(-50%, -50%) scale(0.3)',
-    opacity: isVisible ? 1 : 0, // Start invisible until ready
+    transition: 'none', 
   } : {
-    // Always centered in final position
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%) scale(1)',
-    opacity: 1,
+    transition: 'all 300ms cubic-bezier(0.16, 1, 0.3, 1)',
   };
-
+  
   return { style };
 }
 

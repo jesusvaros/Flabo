@@ -4,6 +4,14 @@ import { CollectionProps, TicketWithPosition } from "@/types/collections";
 import { createContext, useContext, useState, useCallback } from "react";
 import { createClient } from "../../../../utils/supabase/client";
 import { SupabaseCollection, SupabaseTicket } from "../[id]/page";
+import { 
+  fetchCollectionWithTickets, 
+  fetchTicketPositions, 
+  transformCollectionData,
+  fetchTicketWithDrawing,
+  fetchTicketPosition,
+  transformTicketData
+} from "../utils/collection-utils";
 
 interface CollectionContextType {
   collection: CollectionProps | null;
@@ -39,65 +47,12 @@ export function CollectionProvider({
     
     const supabase = createClient();
     
-    // Get the selected collection with tickets and their drawings
-    const { data: selectedCollection } = (await supabase
-      .from("collections")
-      .select(`
-        id,
-        title,
-        creator_id,
-        tickets (
-          id,
-          content,
-          created_at,
-          creator_id,
-          collections_tickets!collections_tickets_ticket_id_fkey (
-            position_x,
-            position_y,
-            z_index,
-            position
-          ),
-          ticket_drawings (
-            data
-          )
-        )
-      `)
-      .eq("id", collection.id)
-      .single())as { data: SupabaseCollection | null };
+    // Use utility functions to fetch and transform data
+    const selectedCollection = await fetchCollectionWithTickets(supabase, collection.id);
+    const ticketPositions = await fetchTicketPositions(supabase, collection.id);
+    const updatedCollection = transformCollectionData(selectedCollection, ticketPositions);
     
-    if (selectedCollection) {
-      // Get the tickets with their positions for this collection
-      const { data: collectionTickets } = await supabase
-        .from("collections_tickets")
-        .select("ticket_id, position_x, position_y, z_index, position")
-        .eq("collection_id", collection.id);
-      
-      // Create a map of ticket positions
-      const ticketPositions = new Map(
-        collectionTickets?.map((ct) => [ct.ticket_id, ct]) || []
-      );
-      
-      // Transform the data to match CollectionProps
-      const updatedCollection: CollectionProps = {
-        id: selectedCollection.id,
-        title: selectedCollection.title,
-        creator_id: selectedCollection.creator_id,
-        tickets: selectedCollection.tickets.map((ticket) => {
-          const position = ticketPositions.get(ticket.id);
-          return {
-            id: ticket.id,
-            content: ticket.content,
-            created_at: ticket.created_at,
-            creator_id: ticket.creator_id,
-            position_x: position?.position_x ?? 0,
-            position_y: position?.position_y ?? 0,
-            z_index: position?.z_index ?? 0,
-            position: position?.position ?? 0,
-            drawing: ticket.ticket_drawings?.data ?? null,
-          };
-        }),
-      };
-      
+    if (updatedCollection) {
       setCollection(updatedCollection);
     }
   }, [collection]);
@@ -108,46 +63,15 @@ export function CollectionProvider({
     
     const supabase = createClient();
     
-    // Get the ticket with its drawing
-    const { data: ticket } = await supabase
-      .from("tickets")
-      .select(`
-        id,
-        content,
-        created_at,
-        creator_id,
-        ticket_drawings (
-          data
-        )
-      `)
-      .eq("id", ticketId)
-      .single() as { data: SupabaseTicket | null };
-    
-    if (!ticket) return null;
-    
-    // Get the position data for this ticket in this collection
-    const { data: position } = await supabase
-      .from("collections_tickets")
-      .select("position_x, position_y, z_index, position")
-      .eq("collection_id", collection.id)
-      .eq("ticket_id", ticketId)
-      .single();
-    
-    // Create the updated ticket
-    const updatedTicket: TicketWithPosition = {
-      id: ticket.id,
-      content: ticket.content,
-      created_at: ticket.created_at,
-      creator_id: ticket.creator_id,
-      position_x: position?.position_x ?? 0,
-      position_y: position?.position_y ?? 0,
-      z_index: position?.z_index ?? 0,
-      position: position?.position ?? 0,
-      drawing: ticket.ticket_drawings?.data ?? null,
-    };
+    // Use utility functions to fetch and transform ticket data
+    const ticket = await fetchTicketWithDrawing(supabase, ticketId);
+    const position = await fetchTicketPosition(supabase, collection.id, ticketId);
+    const updatedTicket = transformTicketData(ticket, position);
     
     // Update the ticket in the collection
-    updateTicketInCollection(updatedTicket);
+    if (updatedTicket) {
+      updateTicketInCollection(updatedTicket);
+    }
     
     return updatedTicket;
   }, [collection]);

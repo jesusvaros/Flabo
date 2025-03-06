@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { CollectionsView } from "../components/CollectionsView";
 import { CollectionProps } from "@/types/collections";
 import { CollectionProvider } from "../context/CollectionContext";
+import { fetchCollectionWithTickets, fetchTicketPositions, transformCollectionData } from "../utils/collection-utils";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -51,69 +52,12 @@ export default async function CollectionPage(props: Props) {
     .select("id, title, creator_id")
     .eq("creator_id", user.id);
 
-  // Get the selected collection with tickets and their drawings
-  const { data: selectedCollection } = (await supabase
-    .from("collections")
-    .select(
-      `
-        id,
-        title,
-        creator_id,
-        tickets (
-          id,
-          content,
-          created_at,
-          creator_id,
-          collections_tickets!collections_tickets_ticket_id_fkey (
-            position_x,
-            position_y,
-            z_index,
-            position
-          ),
-          ticket_drawings (
-            data
-          )
-        )
-      `
-    )
-    .eq("id", collectionId)
-    .single()) as { data: SupabaseCollection | null };
-
-  // Get the tickets with their positions for this collection
-  const { data: collectionTickets } = await supabase
-    .from("collections_tickets")
-    .select("ticket_id, position_x, position_y, z_index, position")
-    .eq("collection_id", collectionId);
-
-  // Create a map of ticket positions
-  const ticketPositions = new Map(
-    collectionTickets?.map((ct) => [ct.ticket_id, ct]) || []
-  );
-
+  // Fetch collection data using utility functions
+  const selectedCollection = await fetchCollectionWithTickets(supabase, collectionId);
+  const ticketPositions = await fetchTicketPositions(supabase, collectionId);
+  
   // Transform the data to match CollectionProps
-  const transformedCollection: CollectionProps | null = selectedCollection
-    ? {
-        id: selectedCollection.id,
-        title: selectedCollection.title,
-        creator_id: selectedCollection.creator_id,
-        tickets: selectedCollection.tickets.map((ticket) => {
-          const position = ticketPositions.get(ticket.id);
-          return {
-            id: ticket.id,
-            content: ticket.content,
-            created_at: ticket.created_at,
-            creator_id: ticket.creator_id,
-            position_x: position?.position_x ?? 0,
-            position_y: position?.position_y ?? 0,
-            z_index: position?.z_index ?? 0,
-            position: position?.position ?? 0,
-            drawing: ticket.ticket_drawings?.data ?? null,
-          };
-        }),
-      }
-    : null;
-
-  console.log(transformedCollection);
+  const transformedCollection = transformCollectionData(selectedCollection, ticketPositions);
 
   return (
     <CollectionProvider collection={transformedCollection}>

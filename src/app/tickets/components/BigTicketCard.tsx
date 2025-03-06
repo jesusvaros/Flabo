@@ -60,16 +60,21 @@ export const BigTicketCard = ({
   
   const { drawerOpen, onDrawerOpenChange } = useDrawerAnimation(handleCloseRequested);
 
-  // Mount the DrawingBoard after the opening animation has finished
+  // Mount the DrawingBoard after the opening animation has finished for desktop
+  // For mobile, mount immediately to avoid animation issues
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (!isMobile) {
+      const timer = setTimeout(() => {
+        setIsDrawingBoardMounted(true);
+      }, 300);
+      
+      return () => {
+        clearTimeout(timer);
+      };
+    } else {
       setIsDrawingBoardMounted(true);
-    }, 300);
-    
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
+    }
+  }, [isMobile]);
 
   // For mobile, render the Drawer component
   if (isMobile) {
@@ -106,38 +111,25 @@ const MobileTicketDrawer = ({
     <Drawer 
       open={drawerOpen} 
       onOpenChange={onOpenChange} 
-      snapPoints={[1.4]}
+      snapPoints={[1]}
     >
-      <DrawerContent className="bg-accent">
-        <DrawerHeader className="border-b border-muted">
+      <DrawerContent className="p-0 h-auto max-h-[90vh]">
+        <DrawerHeader className="border-b border-muted py-4 px-4 pb-5">
           <DrawerTitle>{ticket.content}</DrawerTitle>
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 hover:bg-muted rounded-full transition-colors"
-            aria-label="Close ticket details"
-          >
-            <X className="h-4 w-4" />
-          </button>
         </DrawerHeader>
-        <div className="p-6">
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              Position: {ticket.position}
-            </p>
-            
-            {/* Drawing Board */}
-            <div className="mt-6 border rounded-md overflow-hidden">
-              {isDrawingBoardMounted && (
-                <TicketDrawingBoard 
-                  ticketId={ticket.id} 
-                  initialDrawing={ticket.drawing}
-                  onClose={onClose}
-                  ref={drawingEditorRef}
-                />
-              )}
-            </div>
+        
+        {isDrawingBoardMounted && (
+          <div className="w-full h-[80vh]">
+            <TicketDrawingBoard 
+              ticketId={ticket.id} 
+              initialDrawing={ticket.drawing}
+              onClose={onClose}
+              ref={drawingEditorRef}
+              className="h-full"
+              fullHeight
+            />
           </div>
-        </div>
+        )}
       </DrawerContent>
     </Drawer>
   );

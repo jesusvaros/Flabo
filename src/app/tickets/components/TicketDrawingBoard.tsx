@@ -1,26 +1,34 @@
 "use client";
 
-import { Tldraw } from "tldraw";
-import { useCallback } from "react";
+import { Tldraw, useEditor, Editor } from "tldraw";
+import { useState, useEffect, useCallback } from "react";
 import "tldraw/tldraw.css";
+import { useDrawingStorage } from "../hooks/use-drawing-storage";
+import { DrawingEditor } from "./DrawingEditor";
 
 interface TicketDrawingBoardProps {
-  // Add any props you might need
-  className?: string;
+    ticketId: string;
+    className?: string;
 }
 
-export const TicketDrawingBoard = ({ className }: TicketDrawingBoardProps) => {
-  // Handle mount event if needed
-  const handleMount = useCallback(() => {
-    console.log("Drawing board mounted");
-  }, []);
+export const TicketDrawingBoard = ({ ticketId, className }: TicketDrawingBoardProps) => {
+    const persistenceKey = `ticket-drawing-${ticketId}`;
+    const { saveDrawing, loadDrawing } = useDrawingStorage(ticketId);
 
-  return (
-    <div className={`w-full h-[400px] ${className || ""}`}>
-      <Tldraw
-        persistenceKey="ticket-drawing" // Used for local storage persistence
-        onMount={handleMount}
-      />
-    </div>
-  );
+    return (
+        <div className={`w-full ${className || ""}`}>
+            <div className="w-full h-[400px] border rounded-md overflow-hidden">
+                <Tldraw
+                    persistenceKey={persistenceKey}
+                    onMount={() => console.log(`Drawing board for ticket ${ticketId} mounted`)}
+                >
+                    <DrawingEditor
+                        ticketId={ticketId}
+                        onSave={saveDrawing}
+                        onLoad={loadDrawing}
+                    />
+                </Tldraw>
+            </div>
+        </div>
+    );
 }; 

@@ -39,13 +39,6 @@ export const TicketDrawingBoard = forwardRef<
                     NavigationPanel: null,
                     MainMenu: null,
                 }}
-                overrides={{
-                    translations: {
-                        es: {
-                            'assets.files.amount-too-many': 'Demasiados archivos'
-                        }
-                    }
-                }}
             >
                 <DrawingEditor
                     ticketId={ticketId}

@@ -18,7 +18,7 @@ export const useDrawingStorage = (ticketId: string) => {
 
     try {
       // Check if a drawing already exists for this ticket
-      const { data: existingDrawing } = await supabase
+      const {error, data: existingDrawing } = await supabase
         .from('ticket_drawings')
         .select('id')
         .eq('ticket_id', ticketId)

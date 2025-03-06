@@ -113,8 +113,6 @@ export default async function CollectionPage(props: Props) {
       }
     : null;
 
-  console.log(transformedCollection);
-
   return (
     <CollectionProvider collection={transformedCollection}>
       <CollectionsView

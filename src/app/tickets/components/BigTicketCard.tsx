@@ -9,7 +9,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useCardAnimation, useDrawerAnimation } from "../hooks/use-ticket-card";
 import { TicketDrawingBoard } from "./TicketDrawingBoard";
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 
 interface BigTicketCardProps {
   ticket: TicketWithPosition;
@@ -40,7 +39,6 @@ export const BigTicketCard = ({
   clickPosition,
 }: BigTicketCardProps) => {
   const isMobile = useIsMobile();
-  const router = useRouter();
   const [isDrawingBoardMounted, setIsDrawingBoardMounted] = useState(false);
   
   // Create a ref to store the drawing editor instance
@@ -56,7 +54,7 @@ export const BigTicketCard = ({
       drawingEditorRef.current.saveDrawing();
     }
     
-    // Call the onClose prop and refresh the router
+    // Call the onClose
     onClose();
   };
   

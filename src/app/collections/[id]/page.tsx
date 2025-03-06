@@ -20,9 +20,9 @@ type SupabaseTicket = {
     z_index: number;
     position: number;
   } | null;
-  ticket_drawings: Array<{
+  ticket_drawings: {
     data: any;
-  }> | null;
+  };
 };
 
 type SupabaseCollection = {
@@ -87,7 +87,7 @@ export default async function CollectionPage(props: Props) {
 
   // Create a map of ticket positions
   const ticketPositions = new Map(
-    collectionTickets?.map(ct => [ct.ticket_id, ct]) || []
+    collectionTickets?.map((ct) => [ct.ticket_id, ct]) || []
   );
 
   // Transform the data to match CollectionProps
@@ -107,11 +107,13 @@ export default async function CollectionPage(props: Props) {
             position_y: position?.position_y ?? 0,
             z_index: position?.z_index ?? 0,
             position: position?.position ?? 0,
-            drawing: ticket.ticket_drawings?.[0]?.data ?? null,
+            drawing: ticket.ticket_drawings?.data ?? null,
           };
         }),
       }
     : null;
+
+  console.log(transformedCollection);
 
   return (
     <CollectionProvider collection={transformedCollection}>

@@ -4,10 +4,11 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketWithPosition } from "@/types/collections";
-import { CSSProperties, useState } from "react";
+import { CSSProperties, useState, useEffect } from "react";
 import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BigTicketCard } from "@/app/tickets/components/BigTicketCard";
+import { useCollection } from "@/app/collections/context/CollectionContext";
 
 interface SortableTicketCardProps {
   ticket: TicketWithPosition;
@@ -15,11 +16,26 @@ interface SortableTicketCardProps {
 }
 
 export const SortableTicketCard = ({
-  ticket,
+  ticket: initialTicket,
   disabled = false,
 }: SortableTicketCardProps) => {
+  // Use the collection context to get the latest ticket data
+  const { collection } = useCollection();
+  
+  // Keep a local state of the ticket that can be updated
+  const [ticket, setTicket] = useState<TicketWithPosition>(initialTicket);
   const [isExpanded, setIsExpanded] = useState(false);
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
+  
+  // Update the ticket when the collection changes or when the card is closed
+  useEffect(() => {
+    if (collection && collection.tickets) {
+      const updatedTicket = collection.tickets.find(t => t.id === initialTicket.id);
+      if (updatedTicket) {
+        setTicket(updatedTicket);
+      }
+    }
+  }, [collection, initialTicket.id]);
   
   const {
     attributes,

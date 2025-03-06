@@ -1,47 +1,69 @@
 "use client";
 
-import { useEditor, loadSnapshot, getSnapshot, TLEditorSnapshot } from "tldraw";
-import { useEffect } from "react";
+import { TLEditorSnapshot, useEditor, loadSnapshot, getSnapshot } from "tldraw";
+import { forwardRef, useImperativeHandle, useEffect, useCallback } from "react";
+import { useDrawingStorage } from "../hooks/use-drawing-storage";
 
 interface DrawingEditorProps {
   ticketId: string;
   initialDrawing: TLEditorSnapshot | null;
-  onSave?: (drawing: TLEditorSnapshot) => void;
+  onCloseRequested: () => void;
 }
 
-export const DrawingEditor = ({
-  ticketId,
-  initialDrawing,
-  onSave
-}: DrawingEditorProps) => {
+export const DrawingEditor = forwardRef<
+  { saveDrawing: () => void },
+  DrawingEditorProps
+>(({ ticketId, initialDrawing, onCloseRequested }, ref) => {
+  // Get the editor instance directly
   const editor = useEditor();
+  const { saveDrawing } = useDrawingStorage(ticketId);
   
-  // Verificar que ticketId existe
-  if (!ticketId) {
-    console.error("DrawingEditor: ticketId es undefined");
-  }
-
-  // Cargar el dibujo inicial
+  // Load the initial drawing when the component mounts
   useEffect(() => {
     if (editor && initialDrawing) {
-      console.log(`Cargando dibujo inicial para ticket ${ticketId}`);
+      console.log(`Loading initial drawing for ticket ${ticketId}`);
       loadSnapshot(editor.store, initialDrawing);
     }
   }, [editor, initialDrawing, ticketId]);
-
-  // Guardar el dibujo cuando el componente se desmonte
-  useEffect(() => {
+  
+  // Define the save drawing function
+  const handleSaveDrawing = useCallback(() => {
     if (!editor) return;
-
-    return () => {
-      // Solo guardar cuando el componente se desmonte
-      if (onSave) {
-        const snapshot = getSnapshot(editor.store);
-        console.log(`Guardando dibujo al desmontar para ticket ${ticketId}`);
-        onSave(snapshot);
+    
+    console.log(`Saving drawing for ticket ${ticketId}`);
+    const snapshot = getSnapshot(editor.store);
+    saveDrawing(snapshot);
+  }, [editor, saveDrawing, ticketId]);
+  
+  // Handle the close action
+  const handleClose = useCallback(() => {
+    // Save the drawing first
+    handleSaveDrawing();
+    
+    // Then call the onCloseRequested callback
+    onCloseRequested();
+  }, [handleSaveDrawing, onCloseRequested]);
+  
+  // Expose the saveDrawing method to the parent component
+  useImperativeHandle(ref, () => ({
+    saveDrawing: handleSaveDrawing
+  }));
+  
+  // Set up an effect to handle the Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
       }
     };
-  }, [editor, onSave, ticketId]);
+    
+    window.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleClose]);
 
+  // Return null as this is a logic component that doesn't render anything
   return null;
-}; 
+});

@@ -8,14 +8,30 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useCardAnimation, useDrawerAnimation } from "../hooks/use-ticket-card";
 import { TicketDrawingBoard } from "./TicketDrawingBoard";
-import { useCallback, useState, useEffect } from "react";
-import { TLEditorSnapshot } from "tldraw";
-import { useDrawingStorage } from "../hooks/use-drawing-storage";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 interface BigTicketCardProps {
   ticket: TicketWithPosition;
   onClose: () => void;
   clickPosition: { x: number; y: number } | null;
+}
+
+interface MobileTicketDrawerProps {
+  ticket: TicketWithPosition;
+  drawerOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
+  isDrawingBoardMounted: boolean;
+  drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
+}
+
+interface DesktopTicketCardProps {
+  ticket: TicketWithPosition;
+  style: React.CSSProperties;
+  onClose: () => void;
+  isDrawingBoardMounted: boolean;
+  drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
 }
 
 export const BigTicketCard = ({
@@ -24,14 +40,29 @@ export const BigTicketCard = ({
   clickPosition,
 }: BigTicketCardProps) => {
   const isMobile = useIsMobile();
+  const router = useRouter();
   const [isDrawingBoardMounted, setIsDrawingBoardMounted] = useState(false);
-  const { saveDrawing } = useDrawingStorage(ticket.id);
+  
+  // Create a ref to store the drawing editor instance
+  const drawingEditorRef = useRef<{ saveDrawing: () => void }>(null);
   
   // Use custom hooks to separate logic
   const { style } = useCardAnimation(clickPosition);
-  const { drawerOpen, handleDrawerClose, onDrawerOpenChange } = useDrawerAnimation(onClose);
+  
+  // This function will be called when the user clicks the close button
+  const handleCloseRequested = () => {
+    // Call the saveDrawing function on the drawing editor instance
+    if (drawingEditorRef.current) {
+      drawingEditorRef.current.saveDrawing();
+    }
+    
+    // Call the onClose prop and refresh the router
+    onClose();
+  };
+  
+  const { drawerOpen, onDrawerOpenChange } = useDrawerAnimation(handleCloseRequested);
 
-  // Montar el DrawingBoard después de que la animación de apertura haya terminado
+  // Mount the DrawingBoard after the opening animation has finished
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsDrawingBoardMounted(true);
@@ -42,21 +73,15 @@ export const BigTicketCard = ({
     };
   }, []);
 
-  // Manejador para guardar el dibujo
-  const handleSaveDrawing = useCallback((drawing: TLEditorSnapshot) => {
-    console.log("Guardando dibujo en la base de datos");
-    saveDrawing(drawing);
-  }, [saveDrawing]);
-
   // For mobile, render the Drawer component
   if (isMobile) {
     return <MobileTicketDrawer 
       ticket={ticket}
       drawerOpen={drawerOpen} 
       onOpenChange={onDrawerOpenChange}
-      onClose={handleDrawerClose}
+      onClose={handleCloseRequested}
       isDrawingBoardMounted={isDrawingBoardMounted}
-      onSaveDrawing={handleSaveDrawing}
+      drawingEditorRef={drawingEditorRef}
     />;
   }
 
@@ -64,9 +89,9 @@ export const BigTicketCard = ({
   return <DesktopTicketCard 
     ticket={ticket}
     style={style} 
-    onBackdropClick={onClose}
+    onClose={handleCloseRequested}
     isDrawingBoardMounted={isDrawingBoardMounted}
-    onSaveDrawing={handleSaveDrawing}
+    drawingEditorRef={drawingEditorRef}
   />;
 };
 
@@ -77,15 +102,8 @@ const MobileTicketDrawer = ({
   onOpenChange, 
   onClose,
   isDrawingBoardMounted,
-  onSaveDrawing
-}: { 
-  ticket: TicketWithPosition; 
-  drawerOpen: boolean; 
-  onOpenChange: (open: boolean) => void; 
-  onClose: () => void;
-  isDrawingBoardMounted: boolean;
-  onSaveDrawing: (drawing: TLEditorSnapshot) => void;
-}) => {
+  drawingEditorRef
+}: MobileTicketDrawerProps) => {
   return (
     <Drawer 
       open={drawerOpen} 
@@ -115,7 +133,8 @@ const MobileTicketDrawer = ({
                 <TicketDrawingBoard 
                   ticketId={ticket.id} 
                   initialDrawing={ticket.drawing}
-                  onSave={onSaveDrawing}
+                  onClose={onClose}
+                  ref={drawingEditorRef}
                 />
               )}
             </div>
@@ -130,16 +149,10 @@ const MobileTicketDrawer = ({
 const DesktopTicketCard = ({ 
   ticket, 
   style, 
-  onBackdropClick,
+  onClose,
   isDrawingBoardMounted,
-  onSaveDrawing
-}: { 
-  ticket: TicketWithPosition; 
-  style: React.CSSProperties; 
-  onBackdropClick: () => void;
-  isDrawingBoardMounted: boolean;
-  onSaveDrawing: (drawing: TLEditorSnapshot) => void;
-}) => {
+  drawingEditorRef
+}: DesktopTicketCardProps) => {
   return (
     <>
       <Card
@@ -168,14 +181,15 @@ const DesktopTicketCard = ({
                 <TicketDrawingBoard 
                   ticketId={ticket.id} 
                   initialDrawing={ticket.drawing}
-                  onSave={onSaveDrawing}
+                  onClose={onClose}
+                  ref={drawingEditorRef}
                 />
               )}
             </div>
           </div>
         </CardContent>
         <button
-          onClick={onBackdropClick}
+          onClick={onClose}
           className="absolute top-4 right-4 p-2 hover:bg-muted rounded-full transition-colors"
           aria-label="Close ticket details"
         >
@@ -184,7 +198,7 @@ const DesktopTicketCard = ({
       </Card>
       <div 
         className="fixed inset-0 z-40"
-        onClick={onBackdropClick}
+        onClick={onClose}
       />
     </>
   );

@@ -14,6 +14,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useCardAnimation, useDrawerAnimation } from "../hooks/use-ticket-card";
 import { TicketDrawingBoard } from "./TicketDrawingBoard";
 import { useState, useEffect, useRef } from "react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface BigTicketCardProps {
   ticket: TicketWithPosition;
@@ -28,6 +31,8 @@ interface MobileTicketDrawerProps {
   onClose: () => void;
   isDrawingBoardMounted: boolean;
   drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
+  showAIView: boolean;
+  setShowAIView: (show: boolean) => void;
 }
 
 interface DesktopTicketCardProps {
@@ -36,6 +41,8 @@ interface DesktopTicketCardProps {
   onClose: () => void;
   isDrawingBoardMounted: boolean;
   drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
+  showAIView: boolean;
+  setShowAIView: (show: boolean) => void;
 }
 
 export const BigTicketCard = ({
@@ -45,6 +52,7 @@ export const BigTicketCard = ({
 }: BigTicketCardProps) => {
   const isMobile = useIsMobile();
   const [isDrawingBoardMounted, setIsDrawingBoardMounted] = useState(false);
+  const [showAIView, setShowAIView] = useState(false);
   const drawingEditorRef = useRef<{ saveDrawing: () => void }>(null);
   const { style } = useCardAnimation(clickPosition);
 
@@ -81,6 +89,8 @@ export const BigTicketCard = ({
         onClose={handleCloseRequested}
         isDrawingBoardMounted={isDrawingBoardMounted}
         drawingEditorRef={drawingEditorRef}
+        showAIView={showAIView}
+        setShowAIView={setShowAIView}
       />
     );
   }
@@ -93,6 +103,8 @@ export const BigTicketCard = ({
       onClose={handleCloseRequested}
       isDrawingBoardMounted={isDrawingBoardMounted}
       drawingEditorRef={drawingEditorRef}
+      showAIView={showAIView}
+      setShowAIView={setShowAIView}
     />
   );
 };
@@ -104,27 +116,52 @@ const MobileTicketDrawer = ({
   onClose,
   isDrawingBoardMounted,
   drawingEditorRef,
+  showAIView,
+  setShowAIView,
 }: MobileTicketDrawerProps) => {
   return (
     <Drawer open={drawerOpen} onOpenChange={onOpenChange}>
       <DrawerContent className="p-0 h-auto max-h-[90vh]">
         <DrawerHeader className="border-b border-muted py-4 px-4 pb-5">
           <DrawerTitle>{ticket.content}</DrawerTitle>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="mobile-ai-mode"
+              checked={showAIView}
+              onCheckedChange={setShowAIView}
+            />
+            <Label htmlFor="mobile-ai-mode">AI Mode</Label>
+          </div>
         </DrawerHeader>
 
         {isDrawingBoardMounted && (
           <div className="w-full h-[80vh]">
-            <TicketDrawingBoard
-              ticketId={ticket.id}
-              initialDrawing={ticket.drawing}
-              onClose={onClose}
-              ref={drawingEditorRef}
-              className="h-full"
-              fullHeight
-            />
+            {showAIView ? (
+              <div className="flex flex-col items-center justify-center h-full bg-accent/10 rounded-md">
+                <p className="text-center text-muted-foreground mb-4">
+                  Convert this ticket to an AI-generated version
+                </p>
+                <Button variant="default">Convert to AI</Button>
+              </div>
+            ) : (
+              <TicketDrawingBoard
+                ticketId={ticket.id}
+                initialDrawing={ticket.drawing}
+                onClose={onClose}
+                ref={drawingEditorRef}
+                className="h-full"
+                fullHeight
+              />
+            )}
           </div>
         )}
       </DrawerContent>
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 rounded-full p-1 hover:bg-accent"
+      >
+        <X className="h-4 w-4" />
+      </button>
     </Drawer>
   );
 };
@@ -135,21 +172,39 @@ const DesktopTicketCard = ({
   onClose,
   isDrawingBoardMounted,
   drawingEditorRef,
+  showAIView,
+  setShowAIView,
 }: DesktopTicketCardProps) => {
   return (
     <>
       <Card
-        style={style}
         className={cn(
           "select-none fixed z-50 bg-accent border-muted shadow-lg",
           "w-[90%] max-w-6xl"
         )}
+        style={style}
         onClick={(e) => e.stopPropagation()}
       >
         <CardHeader className="p-4">
-          <CardTitle className="text-2xl text-foreground">
-            {ticket.content}
-          </CardTitle>
+          <div className="flex justify-between items-center mb-2">
+            <CardTitle>{ticket.content}</CardTitle>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="ai-mode"
+                  checked={showAIView}
+                  onCheckedChange={setShowAIView}
+                />
+                <Label htmlFor="ai-mode">AI Mode</Label>
+              </div>
+              <button
+                onClick={onClose}
+                className="rounded-full p-1 hover:bg-accent"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div
@@ -162,25 +217,27 @@ const DesktopTicketCard = ({
               boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
             }}
           >
-            {isDrawingBoardMounted ? (
-              <TicketDrawingBoard
-                ticketId={ticket.id}
-                initialDrawing={ticket.drawing}
-                onClose={onClose}
-                ref={drawingEditorRef}
-              />
-            ) : (
-              <div className="h-0 w-0" />
+            {isDrawingBoardMounted && (
+              <>
+                {showAIView ? (
+                  <div className="flex flex-col items-center justify-center h-full bg-accent/10 rounded-md">
+                    <p className="text-center text-muted-foreground mb-4">
+                      Convert this ticket to an AI-generated version
+                    </p>
+                    <Button variant="default">Convert to AI</Button>
+                  </div>
+                ) : (
+                  <TicketDrawingBoard
+                    ticketId={ticket.id}
+                    initialDrawing={ticket.drawing}
+                    onClose={onClose}
+                    ref={drawingEditorRef}
+                  />
+                )}
+              </>
             )}
           </div>
         </CardContent>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 hover:bg-muted rounded-full transition-colors"
-          aria-label="Close ticket details"
-        >
-          <X className="h-4 w-4" />
-        </button>
       </Card>
       <div className="fixed inset-0 z-40" onClick={onClose} />
     </>

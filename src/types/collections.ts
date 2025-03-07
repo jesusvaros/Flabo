@@ -1,3 +1,5 @@
+import { TLEditorSnapshot } from "tldraw";
+
 export interface Ticket {
   id: string;
   content: string;
@@ -10,6 +12,7 @@ export interface TicketWithPosition extends Ticket {
   position_y: number;
   z_index: number;
   position: number;
+  drawing: TLEditorSnapshot | null;
 }
 
 export interface CollectionProps {

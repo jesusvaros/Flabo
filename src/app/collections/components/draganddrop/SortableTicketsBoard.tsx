@@ -1,6 +1,13 @@
 "use client";
 
-import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
+import { 
+  DndContext, 
+  DragOverlay, 
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors
+} from "@dnd-kit/core";
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { TicketWithPosition } from "@/types/collections";
 import { SortableTicketCard } from "./SortableTicketCard";
@@ -21,9 +28,20 @@ export const SortableTicketsBoard = ({
       tickets,
       onReorder,
     });
+    
+  // Use PointerSensor which works for both mouse and touch
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      // Require a small movement to start dragging
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   return (
     <DndContext
+      sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
@@ -37,7 +55,7 @@ export const SortableTicketsBoard = ({
       </div>
       <DragOverlay>
         {activeTicket && (
-          <Card className="h-[100px] w-[300px] select-none shadow-lg">
+          <Card className="h-[100px] w-full max-w-[100%] select-none shadow-lg">
             <CardHeader>
               <CardTitle className="text-base line-clamp-4">
                 {activeTicket.content}

@@ -11,21 +11,11 @@ interface TicketCardProps {
 
 export const TicketCard = ({ ticket }: TicketCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [cardRect, setCardRect] = useState<DOMRect | null>(null);
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const card = e.currentTarget.querySelector('.card-content') as HTMLElement;
-    if (card) {
-      setCardRect(card.getBoundingClientRect());
-      setIsModalOpen(true);
-    }
-  };
 
   return (
     <>
       <Card
-        onClick={handleClick}
+        onClick={() => setIsModalOpen(true)}
         className="select-none relative cursor-pointer border-muted bg-accent hover:shadow-md transition-all"
         style={{ transitionDuration: 'var(--duration)', transitionTimingFunction: 'var(--ease-out)' }}
       >
@@ -43,9 +33,7 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
           ticket={ticket}
           onClose={() => {
             setIsModalOpen(false);
-            setCardRect(null);
           }}
-          cardRect={cardRect}
         />
       )}
     </>

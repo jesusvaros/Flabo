@@ -20,12 +20,12 @@ export const SortableTicketCard = ({
   disabled = false,
 }: SortableTicketCardProps) => {
   // Use the collection context to get the latest ticket data
-  const { collection, refetchTicket } = useCollection();
+  const { collection } = useCollection();
   
   // Keep a local state of the ticket that can be updated
   const [ticket, setTicket] = useState<TicketWithPosition>(initialTicket);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
+  const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>();
   
   // Update the ticket when the collection changes
   useEffect(() => {

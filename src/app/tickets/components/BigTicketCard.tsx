@@ -9,7 +9,7 @@ import { TicketWithPosition } from "@/types/collections";
 interface BigTicketCardProps {
   ticket: TicketWithPosition;
   onClose: () => void;
-  clickPosition: { x: number; y: number } | null;
+  clickPosition?: { x: number; y: number };
 }
 
 export const BigTicketCard = ({

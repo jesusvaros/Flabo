@@ -14,15 +14,20 @@ export default function WelcomePage() {
 
   useEffect(() => {
     async function checkUser() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-      setIsLoading(false);
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setUser(user);
 
-      if (user) {
-        window.location.href = "/";
+        if (user) {
+          window.location.href = "/";
+        }
+      } catch (error) {
+        console.error("Error checking user:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
     checkUser();

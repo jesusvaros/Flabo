@@ -1,88 +1,113 @@
 # Deploying Flabo to Vercel
 
-This guide will help you deploy your Flabo project to Vercel with Supabase integration.
+This guide will walk you through the process of deploying your Flabo project to Vercel with automatic deployments from GitHub.
 
 ## Prerequisites
 
-1. A [Vercel account](https://vercel.com/signup) (you can sign up with your GitHub account)
-2. Your GitHub repository: https://github.com/jesusvaros/Flabo.git
-3. Supabase project credentials
+- A GitHub account with your Flabo project repository
+- A Vercel account (you can sign up at [vercel.com](https://vercel.com))
+- A Supabase project (for backend functionality)
 
-## Environment Variables
+## Step 1: Prepare Your Project
 
-You'll need to set up the following environment variables in Vercel:
+Before deploying, make sure your project builds successfully locally:
 
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+```bash
+npm run build
+```
 
-## Deployment Steps
+We've already fixed several issues that could prevent successful deployment:
+- Fixed import path casing for the BackButton component
+- Updated component props to match their interfaces
+- Added error handling for Supabase client initialization
+- Created a robust vercel.json configuration file
 
-### Option 1: Deploy via Vercel Dashboard (Recommended)
+## Step 2: Connect to GitHub
 
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Click "Add New" > "Project"
-3. Import your GitHub repository (jesusvaros/Flabo)
-4. Configure the project:
-   - Framework Preset: Next.js
-   - Root Directory: ./
-   - Build Command: next build
-   - Output Directory: .next
-5. Add the environment variables:
-   - Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-6. Click "Deploy"
+1. Log in to your Vercel account
+2. Click "Add New..." and select "Project"
+3. Import your GitHub repository
+4. Select the Flabo repository from the list
 
-### Option 2: Deploy via Vercel CLI
+## Step 3: Configure Project Settings
 
-1. Login to Vercel CLI:
-   ```
-   npx vercel login
-   ```
+1. Framework Preset: Select "Next.js"
+2. Root Directory: Leave as default (/)
+3. Build Command: `next build` (this should be automatically detected)
+4. Output Directory: `.next` (this should be automatically detected)
 
-2. Deploy the project:
-   ```
-   npx vercel
-   ```
+## Step 4: Set Up Environment Variables (CRITICAL)
 
-3. Follow the prompts:
-   - Set up and deploy "~/Flabo"? Yes
-   - Link to existing project? No
-   - What's your project's name? flabo
-   - In which directory is your code located? ./
-   - Want to override the settings? No
-   - Add Environment Variables? Yes
-     - Add `NEXT_PUBLIC_SUPABASE_URL`
-     - Add `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+The build will fail without these environment variables. Add the following:
 
-## Setting Up Automatic Deployments
+1. Click on "Environment Variables" section
+2. Add the following variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key
 
-Automatic deployments are enabled by default when you connect your GitHub repository to Vercel. Each time you push to your repository, Vercel will automatically deploy the changes.
+You can find these values in your Supabase dashboard:
+1. Log in to [app.supabase.io](https://app.supabase.io)
+2. Select your project
+3. Go to Project Settings > API
+4. Copy the URL and anon key
 
-## Performance Optimization
+## Step 5: Deploy
 
-The `vercel.json` file in your project already includes configurations for:
-- Optimized caching for static assets
-- Security headers
-- Region selection for faster load times
+1. Click "Deploy"
+2. Wait for the build and deployment process to complete
+3. Once deployed, Vercel will provide you with a URL to access your application
 
-## Additional Optimizations
+## Automatic Deployments
 
-1. **Image Optimization**: Vercel automatically optimizes images with Next.js Image component.
+Vercel automatically sets up continuous deployment from your GitHub repository. Any push to the main branch will trigger a new deployment.
 
-2. **Edge Caching**: Vercel automatically caches your content at the edge.
+## Troubleshooting Common Issues
 
-3. **Analytics**: Enable Vercel Analytics in your project settings to monitor performance.
+### Build Failures
 
-## Troubleshooting
+If your build fails, check the Vercel logs for specific error messages. Common issues include:
 
-If you encounter any issues during deployment:
+1. **Missing Environment Variables**: Ensure all required environment variables are set correctly
+2. **Case Sensitivity Issues**: Windows is case-insensitive, but Vercel's Linux servers are case-sensitive. Ensure all import paths use the correct case.
+3. **ESLint Errors**: You might see ESLint warnings, but they shouldn't prevent deployment
 
-1. Check the build logs in Vercel dashboard
-2. Verify that all environment variables are correctly set
-3. Ensure your Supabase project is properly configured and accessible
+### Runtime Errors
 
-## Next Steps After Deployment
+If your application deploys but doesn't work correctly:
 
-1. Set up a custom domain in Vercel dashboard
-2. Configure SSL certificates (automatically handled by Vercel)
-3. Set up monitoring and alerts
-4. Consider adding Vercel Analytics for performance monitoring
+1. Check browser console for JavaScript errors
+2. Verify that your Supabase connection is working
+3. Check that your environment variables are correctly set and accessible
+
+## Performance Optimizations
+
+The `vercel.json` file includes configurations for:
+
+- Optimized caching for static assets (fonts, images)
+- Security headers for better protection
+- Region selection for faster load times (currently set to Frankfurt - "fra1")
+- Framework-specific optimizations for Next.js
+
+## Monitoring and Analytics
+
+After deployment, you can monitor your application's performance in the Vercel dashboard:
+
+1. Analytics for page views and API routes
+2. Performance metrics
+3. Error tracking
+
+## Custom Domains
+
+To use a custom domain:
+
+1. Go to your project in Vercel
+2. Click on "Domains"
+3. Add your custom domain and follow the verification steps
+
+## Need Help?
+
+If you encounter any issues during deployment, refer to:
+
+- [Vercel Documentation](https://vercel.com/docs)
+- [Next.js Deployment Documentation](https://nextjs.org/docs/deployment)
+- [Supabase Documentation](https://supabase.com/docs)

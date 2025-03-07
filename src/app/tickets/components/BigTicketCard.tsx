@@ -32,7 +32,7 @@ interface MobileTicketDrawerProps {
   isDrawingBoardMounted: boolean;
   drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
   showAIView: boolean;
-  setShowAIView: (show: boolean) => void;
+  handleAIViewToggle: (show: boolean) => void;
 }
 
 interface DesktopTicketCardProps {
@@ -42,7 +42,7 @@ interface DesktopTicketCardProps {
   isDrawingBoardMounted: boolean;
   drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
   showAIView: boolean;
-  setShowAIView: (show: boolean) => void;
+  handleAIViewToggle: (show: boolean) => void;
 }
 
 export const BigTicketCard = ({
@@ -61,6 +61,13 @@ export const BigTicketCard = ({
       drawingEditorRef.current.saveDrawing();
     }
     onClose();
+  };
+
+  const handleAIViewToggle = (checked: boolean) => {
+    if (checked && drawingEditorRef.current) {
+      drawingEditorRef.current.saveDrawing();
+    }
+    setShowAIView(checked);
   };
 
   const { drawerOpen, onDrawerOpenChange } =
@@ -90,7 +97,7 @@ export const BigTicketCard = ({
         isDrawingBoardMounted={isDrawingBoardMounted}
         drawingEditorRef={drawingEditorRef}
         showAIView={showAIView}
-        setShowAIView={setShowAIView}
+        handleAIViewToggle={handleAIViewToggle}
       />
     );
   }
@@ -104,7 +111,7 @@ export const BigTicketCard = ({
       isDrawingBoardMounted={isDrawingBoardMounted}
       drawingEditorRef={drawingEditorRef}
       showAIView={showAIView}
-      setShowAIView={setShowAIView}
+      handleAIViewToggle={handleAIViewToggle}
     />
   );
 };
@@ -117,7 +124,7 @@ const MobileTicketDrawer = ({
   isDrawingBoardMounted,
   drawingEditorRef,
   showAIView,
-  setShowAIView,
+  handleAIViewToggle,
 }: MobileTicketDrawerProps) => {
   return (
     <Drawer open={drawerOpen} onOpenChange={onOpenChange}>
@@ -128,7 +135,7 @@ const MobileTicketDrawer = ({
             <Switch
               id="mobile-ai-mode"
               checked={showAIView}
-              onCheckedChange={setShowAIView}
+              onCheckedChange={handleAIViewToggle}
             />
             <Label htmlFor="mobile-ai-mode">AI Mode</Label>
           </div>
@@ -173,7 +180,7 @@ const DesktopTicketCard = ({
   isDrawingBoardMounted,
   drawingEditorRef,
   showAIView,
-  setShowAIView,
+  handleAIViewToggle,
 }: DesktopTicketCardProps) => {
   return (
     <>
@@ -193,7 +200,7 @@ const DesktopTicketCard = ({
                 <Switch
                   id="ai-mode"
                   checked={showAIView}
-                  onCheckedChange={setShowAIView}
+                  onCheckedChange={handleAIViewToggle}
                 />
                 <Label htmlFor="ai-mode">AI Mode</Label>
               </div>

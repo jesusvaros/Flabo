@@ -54,7 +54,7 @@ export const MobileTicketDrawer = ({
             }}
           >
             {showAIView ? (
-              <AIConversionView />
+              <AIConversionView ticket={ticket} />
             ) : (
               <TicketDrawingBoard
                 ticketId={ticket.id}

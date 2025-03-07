@@ -71,7 +71,7 @@ export const DesktopTicketCard = ({
             {isDrawingBoardMounted && (
               <>
                 {showAIView ? (
-                  <AIConversionView />
+                  <AIConversionView ticket={ticket} />
                 ) : (
                   <TicketDrawingBoard
                     ticketId={ticket.id}

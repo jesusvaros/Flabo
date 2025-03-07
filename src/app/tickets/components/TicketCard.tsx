@@ -45,7 +45,10 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
             setIsModalOpen(false);
             setCardRect(null);
           }}
-          cardRect={cardRect}
+          clickPosition={cardRect ? {
+            x: cardRect.left + cardRect.width / 2,
+            y: cardRect.top + cardRect.height / 2
+          } : null}
         />
       )}
     </>

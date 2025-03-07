@@ -1,7 +1,8 @@
 'use client';
 
+import React from 'react';
 import { Parallax } from 'react-scroll-parallax';
-import AuthForm from "../../login/authForm";
+import AuthForm from "../../auth/confirm/login/authForm";
 
 export const AuthSection = () => (
   <section className="auth-section">

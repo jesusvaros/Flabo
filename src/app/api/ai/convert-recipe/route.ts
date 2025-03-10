@@ -26,7 +26,11 @@ Rules:
 2. For ingredients, include quantity and unit (e.g., "2 cups flour")
 3. For instructions, break down into clear, numbered steps
 4. Keep notes concise and relevant
-5. If any field is empty, use an empty array []`;
+5. If any field is empty, use an empty array []
+6. For the title, make it descriptive but concise (e.g., "Classic Chocolate Chip Cookies")
+7. For ingredients, always include units and be specific (e.g., "1 cup all-purpose flour" not just "flour")
+8. For instructions, include cooking times and temperatures when relevant
+9. For notes, include any special tips, substitutions, or storage instructions`;
 
 export async function POST(req: Request) {
   try {
@@ -45,6 +49,27 @@ export async function POST(req: Request) {
 
     if (!ticketId) {
       throw new Error("Ticket ID is required");
+    }
+
+    // Verify the user owns the ticket
+    const { data: ticket, error: ticketError } = await supabase
+      .from('tickets')
+      .select('creator_id')
+      .eq('id', ticketId)
+      .single();
+
+    if (ticketError || !ticket) {
+      return NextResponse.json(
+        { error: "Ticket not found" },
+        { status: 404 }
+      );
+    }
+
+    if (ticket.creator_id !== user.id) {
+      return NextResponse.json(
+        { error: "Not authorized to convert this recipe" },
+        { status: 403 }
+      );
     }
 
     const completion = await openai.chat.completions.create({

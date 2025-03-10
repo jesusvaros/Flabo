@@ -1,16 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { TicketWithPosition } from "@/types/collections";
-import { Loader2, History } from "lucide-react";
+import { Loader2, Wand2 } from "lucide-react";
 import { RecipeConversion } from "@/types/recipe-conversions";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { createClient } from "../../../../../utils/supabase/client";
 
 interface AIConversionViewProps {
   ticket: TicketWithPosition;
@@ -38,16 +33,43 @@ interface RecipeDisplayProps {
 export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AIResponse | null>(null);
-  const [showHistory, setShowHistory] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [selectedRecipe, setSelectedRecipe] = useState<RecipeConversion | null>(null);
+
+  useEffect(() => {
+    const fetchConversions = async () => {
+      setIsLoadingHistory(true);
+      const supabase = createClient();
+      const { data: conversions, error } = await supabase
+        .from('recipe_conversions')
+        .select('*')
+        .eq('ticket_id', ticket.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Error fetching conversions:", error);
+        return;
+      }
+
+      if (conversions && conversions.length > 0) {
+        setResult({
+          recipe: conversions[0],
+          conversions: conversions
+        });
+        setSelectedRecipe(conversions[0]);
+      }
+      setIsLoadingHistory(false);
+    };
+
+    fetchConversions();
+  }, [ticket.id]);
 
   const handleConvertToAI = async () => {
     try {
       setIsLoading(true);
       
-      // Extract drawing data from tldraw
       const drawingData = ticket.drawing;
       
-      // Create a simpler, more focused prompt for gpt-3.5-turbo
       const prompt = `
         I have a drawing of a recipe. Here's the relevant information:
         Drawing Data: ${JSON.stringify(drawingData)}
@@ -87,6 +109,7 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
 
       const data = await response.json();
       setResult(data);
+      setSelectedRecipe(data.recipe);
     } catch (error) {
       console.error("Error converting ticket to recipe:", error);
     } finally {
@@ -129,70 +152,90 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
     </div>
   );
 
+  if (isLoadingHistory) {
+    return (
+      <div className="flex flex-col h-full bg-accent/10 rounded-md p-6 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <p className="text-muted-foreground mt-2">Loading recipe history...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-full bg-accent/10 rounded-md p-6">
-      <div className="flex justify-between items-center mb-6">
-        <p className="text-muted-foreground max-w-md">
-          Convert this drawing into a detailed recipe. The AI will analyze your drawing and create a structured recipe with ingredients and instructions.
-        </p>
-        {result?.conversions && result.conversions.length > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-2"
-          >
-            <History className="h-4 w-4" />
-            {showHistory ? "Hide History" : "Show History"}
-          </Button>
+    <div className="flex h-full bg-accent/10 rounded-md">
+      <div className="flex-1 p-6 overflow-auto">
+        {!selectedRecipe ? (
+          <div className="flex flex-col items-center justify-center h-full">
+            <p className="text-muted-foreground text-center mb-4">
+              Convert this drawing into a recipe or select a previous conversion.
+            </p>
+            <Button 
+              variant="default" 
+              onClick={handleConvertToAI}
+              disabled={isLoading}
+              className="flex items-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Converting Drawing...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="h-4 w-4" />
+                  Convert to Recipe
+                </>
+              )}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <RecipeDisplay recipe={selectedRecipe} />
+            <Button 
+              variant="default" 
+              onClick={handleConvertToAI}
+              disabled={isLoading}
+              className="flex items-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Converting Drawing...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="h-4 w-4" />
+                  Create New Conversion
+                </>
+              )}
+            </Button>
+          </div>
         )}
       </div>
 
-      {!result ? (
-        <Button 
-          variant="default" 
-          onClick={handleConvertToAI}
-          disabled={isLoading}
-          className="flex items-center gap-2 self-start"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Converting Drawing to Recipe...
-            </>
-          ) : (
-            "Convert to Recipe"
-          )}
-        </Button>
-      ) : (
-        <div className="space-y-6 overflow-auto">
-          <RecipeDisplay recipe={result.recipe} />
-          
-          {showHistory && result.conversions && result.conversions.length > 0 && (
-            <div className="mt-8">
-              <h4 className="text-lg font-medium mb-4">Conversion History</h4>
-              <Accordion type="single" collapsible className="w-full">
-                {result.conversions.map((conversion, index) => (
-                  <AccordionItem key={conversion.id} value={conversion.id}>
-                    <AccordionTrigger>
-                      {conversion.title} - {new Date(conversion.created_at).toLocaleString()}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <RecipeDisplay recipe={conversion} />
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-          )}
-          
-          <Button 
-            variant="outline" 
-            onClick={() => setResult(null)}
-            className="mt-4"
-          >
-            Convert Again
-          </Button>
+      {result?.conversions && result.conversions.length > 0 && (
+        <div className="w-64 border-l border-border bg-background/50 p-4 overflow-auto">
+          <h4 className="text-sm font-medium text-muted-foreground mb-3">Previous Conversions</h4>
+          <div className="space-y-2">
+            {result.conversions.map((conversion) => (
+              <button
+                key={conversion.id}
+                onClick={() => setSelectedRecipe(conversion)}
+                className={`w-full text-left p-2 rounded-md text-sm transition-colors ${
+                  selectedRecipe?.id === conversion.id
+                    ? 'bg-secondary border border-border'
+                    : 'hover:bg-accent/30'
+                }`}
+              >
+                <div className={`font-medium truncate ${
+                  selectedRecipe?.id === conversion.id ? 'text-secondary-foreground' : 'text-muted-foreground'
+                }`}>{conversion.title}</div>
+                <div className="text-xs text-muted-foreground/75 truncate">
+                  {new Date(conversion.created_at).toLocaleDateString()}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

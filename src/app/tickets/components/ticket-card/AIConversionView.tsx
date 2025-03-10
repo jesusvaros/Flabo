@@ -9,43 +9,67 @@ interface AIConversionViewProps {
   ticket: TicketWithPosition;
 }
 
+interface AIResponse {
+  recipe: {
+    title: string;
+    ingredients: string[];
+    instructions: string[];
+    notes: string[];
+  };
+}
+
 export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<AIResponse | null>(null);
 
   const handleConvertToAI = async () => {
     try {
       setIsLoading(true);
       
-      // Prepare the data to send to OpenAI
-      const ticketData = {
-        id: ticket.id,
-        content: ticket.content,
-        drawing: ticket.drawing,
-        // Add any other relevant ticket data
-      };
+      // Extract drawing data from tldraw
+      const drawingData = ticket.drawing;
       
-      // TODO: Replace with actual API call to OpenAI
-      // This is a placeholder for the actual implementation
-      console.log("Sending ticket data to OpenAI:", ticketData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock response structure (to be defined later)
-      const mockResponse = {
-        success: true,
-        aiGeneratedContent: "AI-enhanced version of: " + ticket.content,
-        aiSuggestions: [
-          "Suggestion 1 based on the drawing",
-          "Suggestion 2 based on the content"
-        ],
-        // Other fields will be added based on the defined structure
-      };
-      
-      setResult(mockResponse);
+      // Create a simpler, more focused prompt for gpt-3.5-turbo
+      const prompt = `
+        I have a drawing of a recipe. Here's the relevant information:
+        Drawing Data: ${JSON.stringify(drawingData)}
+
+        Please analyze this drawing and extract:
+        1. The recipe title from any prominent text or header
+        2. List of ingredients with their quantities (look for text near ingredient items)
+        3. Cooking steps (follow any arrows or numbered elements)
+        4. Any special notes or tips
+
+        Remember to:
+        - Keep ingredient quantities clear (e.g., "2 cups flour")
+        - Number the cooking steps
+        - Include any temperature or timing information
+        - Note any special techniques or warnings
+      `;
+
+      const response = await fetch("/api/ai/convert-recipe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to convert recipe");
+      }
+
+      const data = await response.json();
+      setResult(data);
     } catch (error) {
-      console.error("Error converting ticket to AI:", error);
+      console.error("Error converting ticket to recipe:", error);
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +80,7 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
       {!result ? (
         <>
           <p className="text-center text-muted-foreground mb-6 max-w-md">
-            Convert this ticket to an AI-generated version. This will analyze the drawing and content to create enhanced suggestions.
+            Convert this drawing into a detailed recipe. The AI will analyze your drawing and create a structured recipe with ingredients and instructions.
           </p>
           <Button 
             variant="default" 
@@ -67,36 +91,52 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Processing...
+                Converting Drawing to Recipe...
               </>
             ) : (
-              "Convert to AI"
+              "Convert to Recipe"
             )}
           </Button>
         </>
       ) : (
         <div className="w-full max-w-md">
-          <h3 className="text-lg font-medium mb-4">AI Results</h3>
-          <div className="bg-background p-4 rounded-md border border-border mb-4">
-            <p className="font-medium text-sm text-muted-foreground mb-2">Enhanced Content:</p>
-            <p>{result.aiGeneratedContent}</p>
-          </div>
+          <h3 className="text-xl font-medium mb-4">{result.recipe.title}</h3>
           
-          <div className="bg-background p-4 rounded-md border border-border">
-            <p className="font-medium text-sm text-muted-foreground mb-2">Suggestions:</p>
+          <div className="bg-background p-4 rounded-md border border-border mb-4">
+            <h4 className="font-medium text-sm text-muted-foreground mb-2">Ingredients:</h4>
             <ul className="list-disc pl-5 space-y-1">
-              {result.aiSuggestions.map((suggestion: string, index: number) => (
-                <li key={index}>{suggestion}</li>
+              {result.recipe.ingredients.map((ingredient, index) => (
+                <li key={index}>{ingredient}</li>
               ))}
             </ul>
           </div>
+          
+          <div className="bg-background p-4 rounded-md border border-border mb-4">
+            <h4 className="font-medium text-sm text-muted-foreground mb-2">Instructions:</h4>
+            <ol className="list-decimal pl-5 space-y-2">
+              {result.recipe.instructions.map((step, index) => (
+                <li key={index}>{step}</li>
+              ))}
+            </ol>
+          </div>
+
+          {result.recipe.notes.length > 0 && (
+            <div className="bg-background p-4 rounded-md border border-border mb-4">
+              <h4 className="font-medium text-sm text-muted-foreground mb-2">Notes:</h4>
+              <ul className="list-disc pl-5 space-y-1">
+                {result.recipe.notes.map((note, index) => (
+                  <li key={index}>{note}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           
           <Button 
             variant="outline" 
             className="mt-4"
             onClick={() => setResult(null)}
           >
-            Try Again
+            Convert Again
           </Button>
         </div>
       )}

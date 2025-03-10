@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { TicketWithPosition } from "@/types/collections";
-import { Loader2 } from "lucide-react";
+import { Loader2, History } from "lucide-react";
+import { RecipeConversion } from "@/types/recipe-conversions";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface AIConversionViewProps {
   ticket: TicketWithPosition;
@@ -16,11 +23,22 @@ interface AIResponse {
     instructions: string[];
     notes: string[];
   };
+  conversions: RecipeConversion[];
+}
+
+interface RecipeDisplayProps {
+  recipe: {
+    title: string;
+    ingredients: string[];
+    instructions: string[];
+    notes: string[];
+  };
 }
 
 export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AIResponse | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
 
   const handleConvertToAI = async () => {
     try {
@@ -53,6 +71,7 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          ticketId: ticket.id,
           messages: [
             {
               role: "user",
@@ -75,66 +94,102 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
     }
   };
 
+  const RecipeDisplay = ({ recipe }: RecipeDisplayProps) => (
+    <div className="space-y-4">
+      <h3 className="text-xl font-medium">{recipe.title}</h3>
+      
+      <div className="bg-background p-4 rounded-md border border-border">
+        <h4 className="font-medium text-sm text-muted-foreground mb-2">Ingredients:</h4>
+        <ul className="list-disc pl-5 space-y-1">
+          {recipe.ingredients.map((ingredient, index) => (
+            <li key={index}>{ingredient}</li>
+          ))}
+        </ul>
+      </div>
+      
+      <div className="bg-background p-4 rounded-md border border-border">
+        <h4 className="font-medium text-sm text-muted-foreground mb-2">Instructions:</h4>
+        <ol className="list-decimal pl-5 space-y-2">
+          {recipe.instructions.map((step, index) => (
+            <li key={index}>{step}</li>
+          ))}
+        </ol>
+      </div>
+
+      {recipe.notes.length > 0 && (
+        <div className="bg-background p-4 rounded-md border border-border">
+          <h4 className="font-medium text-sm text-muted-foreground mb-2">Notes:</h4>
+          <ul className="list-disc pl-5 space-y-1">
+            {recipe.notes.map((note, index) => (
+              <li key={index}>{note}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <div className="flex flex-col items-center justify-center h-full bg-accent/10 rounded-md p-6">
-      {!result ? (
-        <>
-          <p className="text-center text-muted-foreground mb-6 max-w-md">
-            Convert this drawing into a detailed recipe. The AI will analyze your drawing and create a structured recipe with ingredients and instructions.
-          </p>
-          <Button 
-            variant="default" 
-            onClick={handleConvertToAI}
-            disabled={isLoading}
+    <div className="flex flex-col h-full bg-accent/10 rounded-md p-6">
+      <div className="flex justify-between items-center mb-6">
+        <p className="text-muted-foreground max-w-md">
+          Convert this drawing into a detailed recipe. The AI will analyze your drawing and create a structured recipe with ingredients and instructions.
+        </p>
+        {result?.conversions && result.conversions.length > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowHistory(!showHistory)}
             className="flex items-center gap-2"
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Converting Drawing to Recipe...
-              </>
-            ) : (
-              "Convert to Recipe"
-            )}
+            <History className="h-4 w-4" />
+            {showHistory ? "Hide History" : "Show History"}
           </Button>
-        </>
-      ) : (
-        <div className="w-full max-w-md">
-          <h3 className="text-xl font-medium mb-4">{result.recipe.title}</h3>
-          
-          <div className="bg-background p-4 rounded-md border border-border mb-4">
-            <h4 className="font-medium text-sm text-muted-foreground mb-2">Ingredients:</h4>
-            <ul className="list-disc pl-5 space-y-1">
-              {result.recipe.ingredients.map((ingredient, index) => (
-                <li key={index}>{ingredient}</li>
-              ))}
-            </ul>
-          </div>
-          
-          <div className="bg-background p-4 rounded-md border border-border mb-4">
-            <h4 className="font-medium text-sm text-muted-foreground mb-2">Instructions:</h4>
-            <ol className="list-decimal pl-5 space-y-2">
-              {result.recipe.instructions.map((step, index) => (
-                <li key={index}>{step}</li>
-              ))}
-            </ol>
-          </div>
+        )}
+      </div>
 
-          {result.recipe.notes.length > 0 && (
-            <div className="bg-background p-4 rounded-md border border-border mb-4">
-              <h4 className="font-medium text-sm text-muted-foreground mb-2">Notes:</h4>
-              <ul className="list-disc pl-5 space-y-1">
-                {result.recipe.notes.map((note, index) => (
-                  <li key={index}>{note}</li>
+      {!result ? (
+        <Button 
+          variant="default" 
+          onClick={handleConvertToAI}
+          disabled={isLoading}
+          className="flex items-center gap-2 self-start"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Converting Drawing to Recipe...
+            </>
+          ) : (
+            "Convert to Recipe"
+          )}
+        </Button>
+      ) : (
+        <div className="space-y-6 overflow-auto">
+          <RecipeDisplay recipe={result.recipe} />
+          
+          {showHistory && result.conversions && result.conversions.length > 0 && (
+            <div className="mt-8">
+              <h4 className="text-lg font-medium mb-4">Conversion History</h4>
+              <Accordion type="single" collapsible className="w-full">
+                {result.conversions.map((conversion, index) => (
+                  <AccordionItem key={conversion.id} value={conversion.id}>
+                    <AccordionTrigger>
+                      {conversion.title} - {new Date(conversion.created_at).toLocaleString()}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <RecipeDisplay recipe={conversion} />
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
-              </ul>
+              </Accordion>
             </div>
           )}
           
           <Button 
             variant="outline" 
-            className="mt-4"
             onClick={() => setResult(null)}
+            className="mt-4"
           >
             Convert Again
           </Button>

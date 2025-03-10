@@ -1,5 +1,7 @@
 import { OpenAI } from "openai";
 import { NextResponse } from "next/server";
+import { createClient } from "../../../../../utils/supabase/server";
+import { CreateRecipeConversion } from "@/types/recipe-conversions";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -28,7 +30,22 @@ Rules:
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    // Get the current user from Supabase
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const { messages, ticketId } = await req.json();
+
+    if (!ticketId) {
+      throw new Error("Ticket ID is required");
+    }
 
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -56,10 +73,42 @@ export async function POST(req: Request) {
     if (!recipe.recipe?.title || !Array.isArray(recipe.recipe?.ingredients) || !Array.isArray(recipe.recipe?.instructions)) {
       throw new Error("Invalid response format from AI");
     }
+    
+    const conversionData: CreateRecipeConversion = {
+      ticket_id: ticketId,
+      created_by: user.id,
+      title: recipe.recipe.title,
+      ingredients: recipe.recipe.ingredients,
+      instructions: recipe.recipe.instructions,
+      notes: recipe.recipe.notes || [],
+    };
 
-    return NextResponse.json(recipe);
+    const { error } = await supabase
+      .from('recipe_conversions')
+      .insert(conversionData);
+
+    if (error) {
+      console.error("Supabase Error:", error);
+      throw new Error("Failed to save recipe conversion");
+    }
+
+    // Get all conversions for this ticket
+    const { data: conversions, error: fetchError } = await supabase
+      .from('recipe_conversions')
+      .select('*')
+      .eq('ticket_id', ticketId)
+      .order('created_at', { ascending: false });
+
+    if (fetchError) {
+      console.error("Error fetching conversions:", fetchError);
+    }
+
+    return NextResponse.json({
+      recipe: recipe.recipe,
+      conversions: conversions || []
+    });
   } catch (error) {
-    console.error("OpenAI API Error:", error);
+    console.error("API Error:", error);
     return NextResponse.json(
       { error: "Failed to convert drawing to recipe" },
       { status: 500 }

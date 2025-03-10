@@ -3,9 +3,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { TicketWithPosition } from "@/types/collections";
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2, MessageSquare } from "lucide-react";
 import { RecipeConversion } from "@/types/recipe-conversions";
 import { createClient } from "../../../../../utils/supabase/client";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface AIConversionViewProps {
   ticket: TicketWithPosition;
@@ -35,6 +38,8 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
   const [result, setResult] = useState<AIResponse | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [selectedRecipe, setSelectedRecipe] = useState<RecipeConversion | null>(null);
+  const [showCustomPrompt, setShowCustomPrompt] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState("");
 
   useEffect(() => {
     const fetchConversions = async () => {
@@ -70,7 +75,7 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
       
       const drawingData = ticket.drawing;
       
-      const prompt = `
+      const basePrompt = `
         I have a drawing of a recipe. Here's the relevant information:
         Drawing Data: ${JSON.stringify(drawingData)}
 
@@ -87,6 +92,10 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
         - Note any special techniques or warnings
       `;
 
+      const finalPrompt = showCustomPrompt && customPrompt 
+        ? `${basePrompt}\n\nAdditional Instructions:\n${customPrompt}`
+        : basePrompt;
+
       const response = await fetch("/api/ai/convert-recipe", {
         method: "POST",
         headers: {
@@ -97,7 +106,7 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
           messages: [
             {
               role: "user",
-              content: prompt,
+              content: finalPrompt,
             },
           ],
         }),
@@ -110,6 +119,9 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
       const data = await response.json();
       setResult(data);
       setSelectedRecipe(data.recipe);
+      if (!showCustomPrompt) {
+        setCustomPrompt("");
+      }
     } catch (error) {
       console.error("Error converting ticket to recipe:", error);
     } finally {
@@ -169,46 +181,104 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
             <p className="text-muted-foreground text-center mb-4">
               Convert this drawing into a recipe or select a previous conversion.
             </p>
-            <Button 
-              variant="default" 
-              onClick={handleConvertToAI}
-              disabled={isLoading}
-              className="flex items-center gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Converting Drawing...
-                </>
-              ) : (
-                <>
-                  <Wand2 className="h-4 w-4" />
-                  Convert to Recipe
-                </>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between space-x-4">
+                <Button 
+                  variant="default" 
+                  onClick={handleConvertToAI}
+                  disabled={isLoading}
+                  className="flex items-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Converting Drawing...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="h-4 w-4" />
+                      Convert to Recipe
+                    </>
+                  )}
+                </Button>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="custom-prompt"
+                    checked={showCustomPrompt}
+                    onCheckedChange={setShowCustomPrompt}
+                  />
+                  <Label htmlFor="custom-prompt" className="text-sm">
+                    <MessageSquare className="h-4 w-4 inline-block mr-1" />
+                    Custom Instructions
+                  </Label>
+                </div>
+              </div>
+              {showCustomPrompt && (
+                <div className="space-y-1">
+                  <Textarea
+                    placeholder="Add special instructions for the AI (e.g., 'Make it vegetarian' or 'Add cooking tips for beginners')"
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    className="min-h-[100px] resize-none"
+                    maxLength={500}
+                  />
+                  <div className="text-xs text-muted-foreground text-right">
+                    {customPrompt.length}/500 characters
+                  </div>
+                </div>
               )}
-            </Button>
+            </div>
           </div>
         ) : (
           <div className="space-y-6">
             <RecipeDisplay recipe={selectedRecipe} />
-            <Button 
-              variant="default" 
-              onClick={handleConvertToAI}
-              disabled={isLoading}
-              className="flex items-center gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Converting Drawing...
-                </>
-              ) : (
-                <>
-                  <Wand2 className="h-4 w-4" />
-                  Create New Conversion
-                </>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between space-x-4">
+                <Button 
+                  variant="default" 
+                  onClick={handleConvertToAI}
+                  disabled={isLoading}
+                  className="flex items-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Converting Drawing...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="h-4 w-4" />
+                      Create New Conversion
+                    </>
+                  )}
+                </Button>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="custom-prompt"
+                    checked={showCustomPrompt}
+                    onCheckedChange={setShowCustomPrompt}
+                  />
+                  <Label htmlFor="custom-prompt" className="text-sm">
+                    <MessageSquare className="h-4 w-4 inline-block mr-1" />
+                    Custom Instructions
+                  </Label>
+                </div>
+              </div>
+              {showCustomPrompt && (
+                <div className="space-y-1">
+                  <Textarea
+                    placeholder="Add special instructions for the AI (e.g., 'Make it vegetarian' or 'Add cooking tips for beginners')"
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    className="min-h-[100px] resize-none"
+                    maxLength={500}
+                  />
+                  <div className="text-xs text-muted-foreground text-right">
+                    {customPrompt.length}/500 characters
+                  </div>
+                </div>
               )}
-            </Button>
+            </div>
           </div>
         )}
       </div>
@@ -233,6 +303,11 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
                 <div className="text-xs text-muted-foreground/75 truncate">
                   {new Date(conversion.created_at).toLocaleDateString()}
                 </div>
+                {conversion.custom_prompt && (
+                  <div className="text-xs text-muted-foreground/75 mt-1 truncate">
+                    <span className="text-accent-foreground">Custom:</span> {conversion.custom_prompt}
+                  </div>
+                )}
               </button>
             ))}
           </div>

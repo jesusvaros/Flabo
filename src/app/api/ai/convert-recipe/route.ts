@@ -30,7 +30,8 @@ Rules:
 6. For the title, make it descriptive but concise (e.g., "Classic Chocolate Chip Cookies")
 7. For ingredients, always include units and be specific (e.g., "1 cup all-purpose flour" not just "flour")
 8. For instructions, include cooking times and temperatures when relevant
-9. For notes, include any special tips, substitutions, or storage instructions`;
+9. For notes, include any special tips, substitutions, or storage instructions
+10. The response has to be always on the same language as the drawing`;
 
 export async function POST(req: Request) {
   try {
@@ -106,6 +107,7 @@ export async function POST(req: Request) {
       ingredients: recipe.recipe.ingredients,
       instructions: recipe.recipe.instructions,
       notes: recipe.recipe.notes || [],
+      custom_prompt: messages[0].content.includes("Additional Instructions:") ? messages[0].content.split("Additional Instructions:")[1].trim() : undefined,
     };
 
     const { error } = await supabase

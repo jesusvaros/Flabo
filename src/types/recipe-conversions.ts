@@ -6,6 +6,7 @@ export interface RecipeConversion {
   ingredients: string[];
   instructions: string[];
   notes: string[];
+  custom_prompt?: string;
   created_at: string;
   updated_at: string;
 }
@@ -17,4 +18,5 @@ export interface CreateRecipeConversion {
   ingredients: string[];
   instructions: string[];
   notes: string[];
+  custom_prompt?: string;
 }

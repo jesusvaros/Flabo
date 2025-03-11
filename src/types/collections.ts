@@ -26,4 +26,5 @@ export interface CollectionViewProps {
   collections: CollectionProps[];
   selectedCollection?: CollectionProps | null;
   tickets?: Ticket[];
+  tabsContent?: React.ReactNode;
 }

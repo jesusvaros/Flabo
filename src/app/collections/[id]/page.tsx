@@ -4,6 +4,11 @@ import { CollectionsView } from "../components/CollectionsView";
 import { CollectionProps } from "@/types/collections";
 import { CollectionProvider } from "../context/CollectionContext";
 import { fetchCollectionWithTickets, fetchTicketPositions, transformCollectionData } from "../utils/collection-utils";
+import { Tabs } from "@/app/components/TabContents/Tabs";
+import { TicktetsTabSuspense } from "@/app/tickets/components/TicketsTab";
+import { IngredientsTabSuspense } from "@/app/ingredients/components/IngredientsTab";
+import { CollectionTabSuspense } from "@/app/collections/components/CollectionsTab";
+import { LogoutButton } from "@/app/components/auth/LogoutButton";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -43,7 +48,7 @@ export default async function CollectionPage(props: Props) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/");
+    return redirect("/welcome");
   }
 
   // Get all collections for the sidebar
@@ -59,12 +64,33 @@ export default async function CollectionPage(props: Props) {
   // Transform the data to match CollectionProps
   const transformedCollection = transformCollectionData(selectedCollection, ticketPositions);
 
+  // Pre-render the tabs content on the server
+  const tabsContent = (
+    <Tabs>
+      <CollectionTabSuspense />
+      <TicktetsTabSuspense />
+      <IngredientsTabSuspense />
+    </Tabs>
+  );
+
   return (
     <CollectionProvider collection={transformedCollection}>
-      <CollectionsView
-        collections={collections || []}
-        selectedCollection={transformedCollection}
-      />
+      <div className="flex flex-col min-h-screen">
+        <div className="flex justify-between items-center p-4 border-b bg-background">
+          <h1 className="text-2xl font-bold">Welcome to Flabo</h1>
+          <div className="flex gap-4 items-center">
+            <span>{user.email}</span>
+            <LogoutButton />
+          </div>
+        </div>
+        <div className="flex-1">
+          <CollectionsView
+            collections={collections || []}
+            selectedCollection={transformedCollection}
+            tabsContent={tabsContent}
+          />
+        </div>
+      </div>
     </CollectionProvider>
   );
 }

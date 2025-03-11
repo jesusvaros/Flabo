@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Menu, Home, Library } from "lucide-react";
 import { AddTicketDrawer } from "./AddTicketDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TabsDrawer } from "./TabsDrawer";
 import {
   Sheet,
   SheetContent,
@@ -24,6 +25,7 @@ import { Separator } from "@/components/ui/separator";
 export const CollectionsView = ({
   collections,
   selectedCollection,
+  tabsContent,
 }: CollectionViewProps) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
@@ -53,9 +55,16 @@ export const CollectionsView = ({
   // Common content for both mobile and desktop views
   const renderMainContent = () => (
     <div className="flex-1 p-4 overflow-hidden">
+      <div className="flex justify-end mb-4">
+        {tabsContent && (
+          <TabsDrawer>
+            {tabsContent}
+          </TabsDrawer>
+        )}
+      </div>
       {selectedCollection ? (
         <div className="h-full flex flex-col">
-          <div className="flex justify-between items-center mb-6 mt-8 md:mt-0">
+          <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">
                 {selectedCollection.title}

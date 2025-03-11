@@ -1,4 +1,4 @@
-import { BackButton } from "@/app/components/navigation/BackButton";
+import { BackButton } from "@/app/components/Navigation/BackButton";
 import { createClient } from "../../../../utils/supabase/server";
 import { redirect } from "next/navigation";
 

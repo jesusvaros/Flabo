@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 // Hook for handling card animation
 export function useCardAnimation(
-  clickPosition: { x: number; y: number } | null
+  clickPosition?: { x: number; y: number }
 ) {
   const [isAnimating, setIsAnimating] = useState(true);
 

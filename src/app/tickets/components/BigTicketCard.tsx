@@ -1,41 +1,15 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { TicketWithPosition } from "@/types/collections";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useState, useRef, useEffect } from "react";
 import { useCardAnimation, useDrawerAnimation } from "../hooks/use-ticket-card";
-import { TicketDrawingBoard } from "./TicketDrawingBoard";
-import { useState, useEffect, useRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileTicketDrawer, DesktopTicketCard } from "./ticket-card";
+import { TicketWithPosition } from "@/types/collections";
 
 interface BigTicketCardProps {
   ticket: TicketWithPosition;
   onClose: () => void;
-  clickPosition: { x: number; y: number } | null;
-}
-
-interface MobileTicketDrawerProps {
-  ticket: TicketWithPosition;
-  drawerOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  onClose: () => void;
-  isDrawingBoardMounted: boolean;
-  drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
-}
-
-interface DesktopTicketCardProps {
-  ticket: TicketWithPosition;
-  style: React.CSSProperties;
-  onClose: () => void;
-  isDrawingBoardMounted: boolean;
-  drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
+  clickPosition?: { x: number; y: number };
 }
 
 export const BigTicketCard = ({
@@ -45,6 +19,7 @@ export const BigTicketCard = ({
 }: BigTicketCardProps) => {
   const isMobile = useIsMobile();
   const [isDrawingBoardMounted, setIsDrawingBoardMounted] = useState(false);
+  const [showAIView, setShowAIView] = useState(false);
   const drawingEditorRef = useRef<{ saveDrawing: () => void }>(null);
   const { style } = useCardAnimation(clickPosition);
 
@@ -53,6 +28,13 @@ export const BigTicketCard = ({
       drawingEditorRef.current.saveDrawing();
     }
     onClose();
+  };
+
+  const handleAIViewToggle = (checked: boolean) => {
+    if (checked && drawingEditorRef.current) {
+      drawingEditorRef.current.saveDrawing();
+    }
+    setShowAIView(checked);
   };
 
   const { drawerOpen, onDrawerOpenChange } =
@@ -65,13 +47,10 @@ export const BigTicketCard = ({
       const timer = setTimeout(() => {
         setIsDrawingBoardMounted(true);
       }, 300);
-      return () => {
-        clearTimeout(timer);
-      };
+      return () => clearTimeout(timer);
     }
   }, [isMobile]);
 
-  // For mobile, render the Drawer component
   if (isMobile) {
     return (
       <MobileTicketDrawer
@@ -81,11 +60,12 @@ export const BigTicketCard = ({
         onClose={handleCloseRequested}
         isDrawingBoardMounted={isDrawingBoardMounted}
         drawingEditorRef={drawingEditorRef}
+        showAIView={showAIView}
+        handleAIViewToggle={handleAIViewToggle}
       />
     );
   }
 
-  // For desktop, render the animated card
   return (
     <DesktopTicketCard
       ticket={ticket}
@@ -93,96 +73,8 @@ export const BigTicketCard = ({
       onClose={handleCloseRequested}
       isDrawingBoardMounted={isDrawingBoardMounted}
       drawingEditorRef={drawingEditorRef}
+      showAIView={showAIView}
+      handleAIViewToggle={handleAIViewToggle}
     />
-  );
-};
-
-const MobileTicketDrawer = ({
-  ticket,
-  drawerOpen,
-  onOpenChange,
-  onClose,
-  isDrawingBoardMounted,
-  drawingEditorRef,
-}: MobileTicketDrawerProps) => {
-  return (
-    <Drawer open={drawerOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="p-0 h-auto max-h-[90vh]">
-        <DrawerHeader className="border-b border-muted py-4 px-4 pb-5">
-          <DrawerTitle>{ticket.content}</DrawerTitle>
-        </DrawerHeader>
-
-        {isDrawingBoardMounted && (
-          <div className="w-full h-[80vh]">
-            <TicketDrawingBoard
-              ticketId={ticket.id}
-              initialDrawing={ticket.drawing}
-              onClose={onClose}
-              ref={drawingEditorRef}
-              className="h-full"
-              fullHeight
-            />
-          </div>
-        )}
-      </DrawerContent>
-    </Drawer>
-  );
-};
-
-const DesktopTicketCard = ({
-  ticket,
-  style,
-  onClose,
-  isDrawingBoardMounted,
-  drawingEditorRef,
-}: DesktopTicketCardProps) => {
-  return (
-    <>
-      <Card
-        style={style}
-        className={cn(
-          "select-none fixed z-50 bg-accent border-muted shadow-lg",
-          "w-[90%] max-w-6xl"
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <CardHeader className="p-4">
-          <CardTitle className="text-2xl text-foreground">
-            {ticket.content}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div
-            className="transition-all duration-200 ease-in-out"
-            style={{
-              height: isDrawingBoardMounted ? "80vh" : "0",
-              overflow: "hidden",
-              transitionDelay: "500ms",
-              borderRadius: "0.375rem",
-              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            {isDrawingBoardMounted ? (
-              <TicketDrawingBoard
-                ticketId={ticket.id}
-                initialDrawing={ticket.drawing}
-                onClose={onClose}
-                ref={drawingEditorRef}
-              />
-            ) : (
-              <div className="h-0 w-0" />
-            )}
-          </div>
-        </CardContent>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 hover:bg-muted rounded-full transition-colors"
-          aria-label="Close ticket details"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </Card>
-      <div className="fixed inset-0 z-40" onClick={onClose} />
-    </>
   );
 };

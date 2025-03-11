@@ -13,7 +13,7 @@ interface CollectionCardProps {
 
 export const CollectionCard: React.FC<CollectionCardProps> = ({ collection }) => {
   return (
-    <Link href={`/collections/${collection.id}`} className="block no-underline">
+    <Link href={`/${collection.id}`} className="block no-underline">
       <Card className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer w-full m-2">
         <CardHeader>
           <CardTitle className="text-base">{collection.title}</CardTitle>

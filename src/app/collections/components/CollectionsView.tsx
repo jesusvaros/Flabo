@@ -130,7 +130,7 @@ export const CollectionsView = ({
         {collections.map((collection) => (
           <SheetClose key={collection.id} asChild>
             <Link 
-              href={`/collections/${collection.id}`}
+              href={`/${collection.id}`}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 hover:bg-accent",
                 collection.id === selectedCollection?.id ? "bg-accent/50 font-medium" : ""

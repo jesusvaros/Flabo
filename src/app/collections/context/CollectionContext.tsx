@@ -3,7 +3,7 @@
 import { CollectionProps, TicketWithPosition } from "@/types/collections";
 import { createContext, useContext, useState, useCallback } from "react";
 import { createClient } from "../../../../utils/supabase/client";
-import { SupabaseCollection, SupabaseTicket } from "../[id]/page";
+import { SupabaseCollection, SupabaseTicket } from "../../[id]/page";
 import { 
   fetchCollectionWithTickets, 
   fetchTicketPositions, 

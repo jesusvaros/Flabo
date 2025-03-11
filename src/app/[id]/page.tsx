@@ -1,9 +1,9 @@
-import { createClient } from "../../../../utils/supabase/server";
+import { createClient } from "../../../utils/supabase/server";
 import { redirect } from "next/navigation";
-import { CollectionsView } from "../components/CollectionsView";
+import { CollectionsView } from "../collections/components/CollectionsView";
 import { CollectionProps } from "@/types/collections";
-import { CollectionProvider } from "../context/CollectionContext";
-import { fetchCollectionWithTickets, fetchTicketPositions, transformCollectionData } from "../utils/collection-utils";
+import { CollectionProvider } from "../collections/context/CollectionContext";
+import { fetchCollectionWithTickets, fetchTicketPositions, transformCollectionData } from "../collections/utils/collection-utils";
 import { Tabs } from "@/app/components/TabContents/Tabs";
 import { TicktetsTabSuspense } from "@/app/tickets/components/TicketsTab";
 import { IngredientsTabSuspense } from "@/app/ingredients/components/IngredientsTab";

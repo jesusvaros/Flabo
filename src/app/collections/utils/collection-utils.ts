@@ -1,6 +1,6 @@
 import { CollectionProps, TicketWithPosition } from "@/types/collections";
 import { SupabaseClient } from "@supabase/supabase-js";
-import { SupabaseCollection, SupabaseTicket } from "../[id]/page";
+import { SupabaseCollection, SupabaseTicket } from "../../[id]/page";
 
 /**
  * Fetches a collection with all its tickets and drawings

@@ -1,10 +1,10 @@
 import { createClient } from "../../utils/supabase/server";
 import { CollectionsView } from "./collections/components/CollectionsView";
 import { redirect } from "next/navigation";
-import { LogoutButton } from "./components/auth/LogoutButton";
 import { Tabs } from "./components/TabContents/Tabs";
 import { TicketsTabSuspense } from "./tickets/components/TicketsTab";
 import { IngredientsTabSuspense } from "./ingredients/components/IngredientsTab";
+import { HeaderLoggedIn } from "./components/Header";
 
 export default async function CollectionPage() {
   const supabase = await createClient();
@@ -45,13 +45,7 @@ export default async function CollectionPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex justify-between items-center p-4 border-b bg-background">
-        <h1 className="text-2xl font-bold">Welcome to Flabo</h1>
-        <div className="flex gap-4 items-center">
-          <span>{user.email}</span>
-          <LogoutButton />
-        </div>
-      </div>
+      <HeaderLoggedIn userEmail={user.email || ""} />
       <div className="flex-1">
         <CollectionsView 
           collections={collections || []} 

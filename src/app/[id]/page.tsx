@@ -7,7 +7,7 @@ import { fetchCollectionWithTickets, fetchTicketPositions, transformCollectionDa
 import { Tabs } from "@/app/components/TabContents/Tabs";
 import { TicketsTabSuspense } from "@/app/tickets/components/TicketsTab";
 import { IngredientsTabSuspense } from "@/app/ingredients/components/IngredientsTab";
-import { LogoutButton } from "@/app/components/auth/LogoutButton";
+import { HeaderLoggedIn } from "@/app/components/Header";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -83,13 +83,7 @@ export default async function CollectionPage(props: Props) {
   return (
     <CollectionProvider collection={transformedCollection}>
       <div className="flex flex-col min-h-screen">
-        <div className="flex justify-between items-center p-4 border-b bg-background">
-          <h1 className="text-2xl font-bold">Welcome to Flabo</h1>
-          <div className="flex gap-4 items-center">
-            <span>{user.email}</span>
-            <LogoutButton />
-          </div>
-        </div>
+        <HeaderLoggedIn userEmail={user.email || ""} />
         <div className="flex-1">
           <CollectionsView
             collections={collections || []}

@@ -3,9 +3,8 @@ import { CollectionsView } from "./collections/components/CollectionsView";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "./components/auth/LogoutButton";
 import { Tabs } from "./components/TabContents/Tabs";
-import { TicktetsTabSuspense } from "./tickets/components/TicketsTab";
+import { TicketsTabSuspense } from "./tickets/components/TicketsTab";
 import { IngredientsTabSuspense } from "./ingredients/components/IngredientsTab";
-import { CollectionTabSuspense } from "./collections/components/CollectionsTab";
 
 export default async function CollectionPage() {
   const supabase = await createClient();
@@ -24,12 +23,23 @@ export default async function CollectionPage() {
     .select("id, title, creator_id")
     .eq("creator_id", user.id);
 
+  // Get all tickets for the user
+  const { data: tickets } = await supabase
+    .from("tickets")
+    .select("*")
+    .eq("creator_id", user.id);
+
+  // Get all ingredients for the user
+  const { data: ingredients } = await supabase
+    .from("ingredients")
+    .select("*")
+    .eq("creator_id", user.id);
+
   // Pre-render the tabs content on the server
   const tabsContent = (
-    <Tabs>
-      <CollectionTabSuspense />
-      <TicktetsTabSuspense />
-      <IngredientsTabSuspense />
+    <Tabs defaultValue="collections">
+      <TicketsTabSuspense tickets={tickets || []} />
+      <IngredientsTabSuspense ingredients={ingredients || []} />
     </Tabs>
   );
 

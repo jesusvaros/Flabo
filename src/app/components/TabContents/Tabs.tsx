@@ -11,17 +11,26 @@ import {
 
 interface TabsProps {
   children: React.ReactElement[];
+  defaultValue?: string;
 }
 
-export const Tabs: React.FC<TabsProps> = ({ children }) => {
-  const [activeTab, setActiveTab] = useState<string>("");
+interface TabPanelProps {
+  label: string;
+  children: React.ReactNode;
+  id: string;
+}
+
+export const Tabs: React.FC<TabsProps> = ({ children, defaultValue }) => {
+  const [activeTab, setActiveTab] = useState<string>(defaultValue || "");
   const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam) {
-      const tab = children.find((child) => child.props.id === tabParam);
+      const tab = children.find((child) => 
+        child?.props?.id === tabParam
+      );
       if (tab) {
         setActiveTab(tab.props.id);
         // Clean up the URL by removing the tab parameter
@@ -31,9 +40,22 @@ export const Tabs: React.FC<TabsProps> = ({ children }) => {
       }
     } else if (children.length > 0 && !activeTab) {
       // Only set default tab if no active tab is set
-      setActiveTab(children[0].props.id);
+      const firstValidChild = children.find(child => 
+        child?.props?.id && child?.props?.label
+      );
+      if (firstValidChild) {
+        setActiveTab(firstValidChild.props.id);
+      }
     }
   }, [searchParams, children, activeTab, router]);
+
+  const validChildren = children.filter(
+    (child) => child?.type === TabPanel || (child?.props?.id && child?.props?.label)
+  );
+
+  if (validChildren.length === 0) {
+    return null;
+  }
 
   return (
     <TabsRoot
@@ -41,9 +63,9 @@ export const Tabs: React.FC<TabsProps> = ({ children }) => {
       onValueChange={setActiveTab}
       className="w-full h-full"
     >
-      <div className=" w-full">
+      <div className="w-full">
         <TabsList className="w-full h-14 items-center justify-start bg-transparent">
-          {children.map((child) => (
+          {validChildren.map((child) => (
             <TabsTrigger
               key={child.props.id}
               value={child.props.id}
@@ -54,11 +76,11 @@ export const Tabs: React.FC<TabsProps> = ({ children }) => {
           ))}
         </TabsList>
       </div>
-      {children.map((child) => (
+      {validChildren.map((child) => (
         <TabsContent
           key={child.props.id}
           value={child.props.id}
-          className="mt-6  p-4 w-full"
+          className="mt-6 p-4 w-full"
         >
           {child}
         </TabsContent>
@@ -67,10 +89,10 @@ export const Tabs: React.FC<TabsProps> = ({ children }) => {
   );
 };
 
-export const TabPanel: React.FC<{
-  label: string;
-  children: React.ReactNode;
-  id: string;
-}> = ({ children }) => {
-  return <div className="w-full space-y-4">{children}</div>;
+export const TabPanel = ({ children, label, id }: TabPanelProps) => {
+  return (
+    <div className="w-full space-y-4" data-id={id} data-label={label}>
+      {children}
+    </div>
+  );
 };

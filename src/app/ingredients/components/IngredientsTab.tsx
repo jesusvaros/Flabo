@@ -1,29 +1,30 @@
 import { SuspenseTab } from "@/app/components/TabContents/SuspenseTab";
-import { createClient } from "../../../../utils/supabase/server";
 import { IngredientsTable } from "./IngredientsTable";
 
-export const IngredientsTabSuspense = () => {
+interface Ingredient {
+  id: string;
+  name: string;
+  category: string;
+  unit: string;
+  created_at: string;
+}
+
+interface IngredientsTabProps {
+  ingredients: Ingredient[];
+}
+
+export const IngredientsTabSuspense = ({ ingredients }: IngredientsTabProps) => {
   return (
     <SuspenseTab label="Ingredients" id="ingredients">
-      <IngredientsTab />
+      <IngredientsTab ingredients={ingredients} />
     </SuspenseTab>
   );
 };
 
-export const IngredientsTab = async () => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: ingredients } = await supabase
-    .from("ingredients")
-    .select("*")
-    .eq("creator_id", user?.id);
-
+function IngredientsTab({ ingredients }: IngredientsTabProps) {
   return (
     <div>
       <IngredientsTable ingredients={ingredients || []} />
     </div>
   );
-};
+}

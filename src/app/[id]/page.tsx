@@ -5,9 +5,8 @@ import { CollectionProps } from "@/types/collections";
 import { CollectionProvider } from "../collections/context/CollectionContext";
 import { fetchCollectionWithTickets, fetchTicketPositions, transformCollectionData } from "../collections/utils/collection-utils";
 import { Tabs } from "@/app/components/TabContents/Tabs";
-import { TicktetsTabSuspense } from "@/app/tickets/components/TicketsTab";
+import { TicketsTabSuspense } from "@/app/tickets/components/TicketsTab";
 import { IngredientsTabSuspense } from "@/app/ingredients/components/IngredientsTab";
-import { CollectionTabSuspense } from "@/app/collections/components/CollectionsTab";
 import { LogoutButton } from "@/app/components/auth/LogoutButton";
 
 type Props = {
@@ -57,19 +56,27 @@ export default async function CollectionPage(props: Props) {
     .select("id, title, creator_id")
     .eq("creator_id", user.id);
 
-  // Fetch collection data using utility functions
+  // Get all tickets for the user
+  const { data: tickets } = await supabase
+    .from("tickets")
+    .select("*")
+    .eq("creator_id", user.id);
+
+  // Get all ingredients for the user
+  const { data: ingredients } = await supabase
+    .from("ingredients")
+    .select("*")
+    .eq("creator_id", user.id);
+
   const selectedCollection = await fetchCollectionWithTickets(supabase, collectionId);
   const ticketPositions = await fetchTicketPositions(supabase, collectionId);
   
-  // Transform the data to match CollectionProps
   const transformedCollection = transformCollectionData(selectedCollection, ticketPositions);
 
-  // Pre-render the tabs content on the server
   const tabsContent = (
-    <Tabs>
-      <CollectionTabSuspense />
-      <TicktetsTabSuspense />
-      <IngredientsTabSuspense />
+    <Tabs defaultValue="tickets">
+      <TicketsTabSuspense tickets={tickets || []} />
+      <IngredientsTabSuspense ingredients={ingredients || []} />
     </Tabs>
   );
 

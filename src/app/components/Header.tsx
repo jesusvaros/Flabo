@@ -14,7 +14,7 @@ export const HeaderLoggedIn = ({ userEmail, className }: HeaderProps) => {
       "flex justify-end items-center p-4 border-b bg-background z-10",
       className
     )}>
-      <div className="flex justify-end items-center p-4 border-b bg-background">
+      <div className="flex justify-end items-center p-4">
         <div className="flex gap-4 items-center">
           <span>{userEmail}</span>
           <LogoutButton />

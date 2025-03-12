@@ -9,6 +9,7 @@ import { createClient } from "../../../../../utils/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RecipeDisplay } from "@/app/components/recipe/RecipeDisplay";
 
 interface AIConversionViewProps {
   ticket: TicketWithPosition;
@@ -22,15 +23,6 @@ interface AIResponse {
     notes: string[];
   };
   conversions: RecipeConversion[];
-}
-
-interface RecipeDisplayProps {
-  recipe: {
-    title: string;
-    ingredients: string[];
-    instructions: string[];
-    notes: string[];
-  };
 }
 
 export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
@@ -129,40 +121,10 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
     }
   };
 
-  const RecipeDisplay = ({ recipe }: RecipeDisplayProps) => (
-    <div className="space-y-4">
-      <h3 className="text-xl font-medium">{recipe.title}</h3>
-      
-      <div className="bg-background p-4 rounded-md border border-border">
-        <h4 className="font-medium text-sm text-muted-foreground mb-2">Ingredients:</h4>
-        <ul className="list-disc pl-5 space-y-1">
-          {recipe.ingredients.map((ingredient, index) => (
-            <li key={index}>{ingredient}</li>
-          ))}
-        </ul>
-      </div>
-      
-      <div className="bg-background p-4 rounded-md border border-border">
-        <h4 className="font-medium text-sm text-muted-foreground mb-2">Instructions:</h4>
-        <ol className="list-decimal pl-5 space-y-2">
-          {recipe.instructions.map((step, index) => (
-            <li key={index}>{step}</li>
-          ))}
-        </ol>
-      </div>
-
-      {recipe.notes.length > 0 && (
-        <div className="bg-background p-4 rounded-md border border-border">
-          <h4 className="font-medium text-sm text-muted-foreground mb-2">Notes:</h4>
-          <ul className="list-disc pl-5 space-y-1">
-            {recipe.notes.map((note, index) => (
-              <li key={index}>{note}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
+  const handleVisualizationGenerated = (shapes: any[]) => {
+    // TODO: Handle the generated visualization, e.g., show it in a modal or update the UI
+    console.log("Visualization generated:", shapes);
+  };
 
   if (isLoadingHistory) {
     return (
@@ -201,114 +163,52 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
                     </>
                   )}
                 </Button>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <Switch
                     id="custom-prompt"
                     checked={showCustomPrompt}
                     onCheckedChange={setShowCustomPrompt}
                   />
-                  <Label htmlFor="custom-prompt" className="text-sm">
-                    <MessageSquare className="h-4 w-4 inline-block mr-1" />
-                    Custom Instructions
+                  <Label htmlFor="custom-prompt" className="cursor-pointer">
+                    <MessageSquare className="h-4 w-4" />
                   </Label>
                 </div>
               </div>
               {showCustomPrompt && (
-                <div className="space-y-1">
+                <div className="space-y-2">
+                  <Label htmlFor="custom-prompt-text">Additional Instructions</Label>
                   <Textarea
-                    placeholder="Add special instructions for the AI (e.g., 'Make it vegetarian' or 'Add cooking tips for beginners')"
+                    id="custom-prompt-text"
+                    placeholder="Add any specific instructions for the AI..."
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
-                    className="min-h-[100px] resize-none"
-                    maxLength={500}
+                    className="h-32"
                   />
-                  <div className="text-xs text-muted-foreground text-right">
-                    {customPrompt.length}/500 characters
-                  </div>
                 </div>
               )}
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
-            <RecipeDisplay recipe={selectedRecipe} />
-            <div className="space-y-4">
-              <div className="flex items-center justify-between space-x-4">
-                <Button 
-                  variant="default" 
-                  onClick={handleConvertToAI}
-                  disabled={isLoading}
-                  className="flex items-center gap-2"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Converting Drawing...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="h-4 w-4" />
-                      Create New Conversion
-                    </>
-                  )}
-                </Button>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="custom-prompt"
-                    checked={showCustomPrompt}
-                    onCheckedChange={setShowCustomPrompt}
-                  />
-                  <Label htmlFor="custom-prompt" className="text-sm">
-                    <MessageSquare className="h-4 w-4 inline-block mr-1" />
-                    Custom Instructions
-                  </Label>
-                </div>
-              </div>
-              {showCustomPrompt && (
-                <div className="space-y-1">
-                  <Textarea
-                    placeholder="Add special instructions for the AI (e.g., 'Make it vegetarian' or 'Add cooking tips for beginners')"
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
-                    className="min-h-[100px] resize-none"
-                    maxLength={500}
-                  />
-                  <div className="text-xs text-muted-foreground text-right">
-                    {customPrompt.length}/500 characters
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <RecipeDisplay
+            recipe={selectedRecipe}
+            ticketId={ticket.id}
+            onVisualizationGenerated={handleVisualizationGenerated}
+          />
         )}
       </div>
-
       {result?.conversions && result.conversions.length > 0 && (
-        <div className="w-64 border-l border-border bg-background/50 p-4 overflow-auto">
-          <h4 className="text-sm font-medium text-muted-foreground mb-3">Previous Conversions</h4>
+        <div className="w-64 border-l bg-background p-4 overflow-y-auto">
+          <h3 className="font-medium text-sm mb-4">Previous Conversions</h3>
           <div className="space-y-2">
             {result.conversions.map((conversion) => (
-              <button
+              <Button
                 key={conversion.id}
+                variant={selectedRecipe?.id === conversion.id ? "secondary" : "ghost"}
+                className="w-full justify-start text-left"
                 onClick={() => setSelectedRecipe(conversion)}
-                className={`w-full text-left p-2 rounded-md text-sm transition-colors ${
-                  selectedRecipe?.id === conversion.id
-                    ? 'bg-secondary border border-border'
-                    : 'hover:bg-accent/30'
-                }`}
               >
-                <div className={`font-medium truncate ${
-                  selectedRecipe?.id === conversion.id ? 'text-secondary-foreground' : 'text-muted-foreground'
-                }`}>{conversion.title}</div>
-                <div className="text-xs text-muted-foreground/75 truncate">
-                  {new Date(conversion.created_at).toLocaleDateString()}
-                </div>
-                {conversion.custom_prompt && (
-                  <div className="text-xs text-muted-foreground/75 mt-1 truncate">
-                    <span className="text-accent-foreground">Custom:</span> {conversion.custom_prompt}
-                  </div>
-                )}
-              </button>
+                <span className="truncate">{conversion.title}</span>
+              </Button>
             ))}
           </div>
         </div>

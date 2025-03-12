@@ -28,6 +28,18 @@ export type SupabaseTicket = {
   ticket_drawings: {
     data: any;
   };
+  recipe_conversions: {
+    id: string;
+    ticket_id: string;
+    title: string;
+    ingredients: string[];
+    instructions: string[];
+    notes: string[];
+    created_at: string;
+    updated_at: string;
+    created_by: string;
+    custom_prompt: string;
+  }[];
 };
 
 export type SupabaseCollection = {

@@ -123,35 +123,18 @@ const ConversionHistory = ({
 
 export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<AIResponse | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<RecipeConversion | null>(null);
   const [showCustomPrompt, setShowCustomPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
-  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+
+  // Use the recipeConversions from the ticket props
+  const conversions = ticket.recipe_conversions;
 
   useEffect(() => {
-    const fetchConversions = async () => {
-      try {
-        const response = await fetch(`/api/ai/conversions/${ticket.id}`);
-        const conversions = await response.json();
-
-        if (conversions && conversions.length > 0) {
-          setResult({ conversions });
-          setSelectedRecipe(conversions[0]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch conversions:", error);
-      } finally {
-        setIsLoadingHistory(false);
-      }
-    };
-
-    if (ticket?.id) {
-      fetchConversions();
-    } else {
-      setIsLoadingHistory(false);
+    if (conversions && conversions.length > 0) {
+      setSelectedRecipe(conversions[0]);
     }
-  }, [ticket?.id]);
+  }, [conversions]);
 
   const handleConvertToAI = async () => {
     try {
@@ -173,7 +156,6 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
       }
 
       const data = await response.json();
-      setResult(data);
       setSelectedRecipe(data.conversions[0]);
       if (!showCustomPrompt) {
         setCustomPrompt("");
@@ -184,10 +166,6 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
       setIsLoading(false);
     }
   };
-
-  if (isLoadingHistory) {
-    return <LoadingView />;
-  }
 
   if (!ticket?.id) {
     return <NoTicketView />;
@@ -212,9 +190,9 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
           />
         )}
       </div>
-      {result?.conversions && result.conversions.length > 0 && (
+      {conversions && conversions.length > 0 && (
         <ConversionHistory
-          conversions={result.conversions}
+          conversions={conversions}
           selectedId={selectedRecipe?.id}
           onSelect={setSelectedRecipe}
         />

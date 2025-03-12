@@ -9,7 +9,7 @@ export async function fetchCollectionWithTickets(
   supabase: SupabaseClient,
   collectionId: string
 ) {
-  // Get the selected collection with tickets and their drawings
+  // Get the selected collection with tickets, their drawings, and recipe conversions
   const { data: selectedCollection } = (await supabase
     .from("collections")
     .select(
@@ -30,6 +30,18 @@ export async function fetchCollectionWithTickets(
           ),
           ticket_drawings (
             data
+          ),
+          recipe_conversions (
+            id,
+            ticket_id,
+            title,
+            ingredients,
+            instructions,
+            notes,
+            created_at,
+            updated_at,
+            created_by,
+            custom_prompt
           )
         )
       `
@@ -82,6 +94,7 @@ export function transformCollectionData(
         z_index: position?.z_index ?? 0,
         position: position?.position ?? 0,
         drawing: ticket.ticket_drawings?.data ?? null,
+        recipe_conversions: ticket.recipe_conversions || [],
       };
     }),
   };
@@ -94,7 +107,7 @@ export async function fetchTicketWithDrawing(
   supabase: SupabaseClient,
   ticketId: string
 ) {
-  // Get the ticket with its drawing
+  // Get the ticket with its drawing and recipe conversions
   const { data: ticket } = (await supabase
     .from("tickets")
     .select(`
@@ -104,6 +117,18 @@ export async function fetchTicketWithDrawing(
       creator_id,
       ticket_drawings (
         data
+      ),
+      recipe_conversions (
+        id,
+        ticket_id,
+        title,
+        ingredients,
+        instructions,
+        notes,
+        created_at,
+        updated_at,
+        created_by,
+        custom_prompt
       )
     `)
     .eq("id", ticketId)
@@ -150,5 +175,17 @@ export function transformTicketData(
     z_index: position?.z_index ?? 0,
     position: position?.position ?? 0,
     drawing: ticket.ticket_drawings?.data ?? null,
+    recipe_conversions: ticket.recipe_conversions.map(rc => ({
+      id: rc.id,
+      ticket_id: rc.ticket_id,
+      title: rc.title,
+      ingredients: rc.ingredients,
+      instructions: rc.instructions,
+      notes: rc.notes,
+      created_at: rc.created_at,
+      updated_at: rc.updated_at,
+      created_by: rc.created_by,
+      custom_prompt: rc.custom_prompt,
+    })),
   };
 }

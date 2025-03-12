@@ -1,9 +1,9 @@
 "use client";
 
-import { CollectionProps, TicketWithPosition } from "@/types/collections";
+import { CollectionProps, TicketWithPosition, TicketWithPositionConversion } from "@/types/collections";
+import { RecipeConversion } from "@/types/recipe-conversions";
 import { createContext, useContext, useState, useCallback } from "react";
 import { createClient } from "../../../../utils/supabase/client";
-import { SupabaseCollection, SupabaseTicket } from "../../[id]/page";
 import { 
   fetchCollectionWithTickets, 
   fetchTicketPositions, 
@@ -41,6 +41,14 @@ export function CollectionProvider({
 }: CollectionProviderProps) {
   const [collection, setCollection] = useState<CollectionProps | null>(initialCollection);
 
+  // Function to transform tickets with recipe conversions
+  const transformTicketsWithConversions = (tickets: TicketWithPosition[] = []): TicketWithPositionConversion[] => {
+    return tickets.map(ticket => {
+      const ticketConversions = ticket.recipe_conversions || [];
+      return { ...ticket, recipeConversions: ticketConversions };
+    });
+  };
+
   // Function to refetch the entire collection
   const refetchCollection = useCallback(async () => {
     if (!collection) return;
@@ -53,7 +61,8 @@ export function CollectionProvider({
     const updatedCollection = transformCollectionData(selectedCollection, ticketPositions);
     
     if (updatedCollection) {
-      setCollection(updatedCollection);
+      const transformedTickets = transformTicketsWithConversions(updatedCollection.tickets);
+      setCollection({ ...updatedCollection, tickets: transformedTickets });
     }
   }, [collection]);
   

@@ -28,6 +28,9 @@ export type SupabaseTicket = {
   ticket_drawings: {
     data: any;
   };
+  ticket_drawings_generated: {
+    data: any;
+  };
   recipe_conversions: {
     id: string;
     ticket_id: string;

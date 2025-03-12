@@ -146,9 +146,9 @@ export const CollectionsView = ({
   );
 
   return (
-    <div className="h-screen">
+    <>
       {isMobile ? (
-        <div className="h-screen">
+        <div className="h">
           {/* Mobile View with Sheet for sidebar */}
           <Sheet open={showMobileSidebar} onOpenChange={setShowMobileSidebar}>
             <SheetTrigger asChild>
@@ -169,7 +169,7 @@ export const CollectionsView = ({
           {renderMainContent()}
         </div>
       ) : (
-        <div className="flex h-screen">
+        <div className="flex">
           <CollectionsSidebar
             collections={collections}
             currentCollectionId={selectedCollection?.id}
@@ -177,6 +177,6 @@ export const CollectionsView = ({
           {renderMainContent()}
         </div>
       )}
-    </div>
+    </>
   );
 }

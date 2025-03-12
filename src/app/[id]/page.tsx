@@ -94,15 +94,15 @@ export default async function CollectionPage(props: Props) {
 
   return (
     <CollectionProvider collection={transformedCollection}>
-      <div className="flex flex-col min-h-screen">
-        <HeaderLoggedIn userEmail={user.email || ""} />
         <div className="flex-1">
+
+        <HeaderLoggedIn userEmail={user.email || ""} />
           <CollectionsView
             collections={collections || []}
             selectedCollection={transformedCollection}
             tabsContent={tabsContent}
           />
-        </div>
+      
       </div>
     </CollectionProvider>
   );

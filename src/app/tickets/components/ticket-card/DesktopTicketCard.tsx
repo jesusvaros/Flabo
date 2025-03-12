@@ -15,6 +15,8 @@ interface DesktopTicketCardProps {
   drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
   showAIView: boolean;
   handleAIViewToggle: (show: boolean) => void;
+  showGeneratedDrawing: boolean;
+  handleDrawingToggle: (checked: boolean) => void;
 }
 
 export const DesktopTicketCard = ({
@@ -25,6 +27,8 @@ export const DesktopTicketCard = ({
   drawingEditorRef,
   showAIView,
   handleAIViewToggle,
+  showGeneratedDrawing,
+  handleDrawingToggle,
 }: DesktopTicketCardProps) => {
   return (
     <>
@@ -47,6 +51,14 @@ export const DesktopTicketCard = ({
                   onCheckedChange={handleAIViewToggle}
                 />
                 <Label htmlFor="ai-mode">AI Mode</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="generated-drawing"
+                  checked={showGeneratedDrawing}
+                  onCheckedChange={handleDrawingToggle}
+                />
+                <Label htmlFor="generated-drawing">Generated Drawing</Label>
               </div>
               <button
                 onClick={onClose}
@@ -75,7 +87,7 @@ export const DesktopTicketCard = ({
                 ) : (
                   <TicketDrawingBoard
                     ticketId={ticket.id}
-                    initialDrawing={ticket.drawing}
+                    initialDrawing={showGeneratedDrawing ? ticket.drawing_generated : ticket.drawing}
                     onClose={onClose}
                     ref={drawingEditorRef}
                   />

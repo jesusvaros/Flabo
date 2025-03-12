@@ -123,7 +123,7 @@ ${JSON.stringify(recipe, null, 2)}`
 
     // Parse and validate the JSON response
     const tldrawData = JSON.parse(content);
-    
+
     // Basic validation of the response structure
     if (!Array.isArray(tldrawData.shapes)) {
       throw new Error("Invalid response format from AI");
@@ -134,11 +134,10 @@ ${JSON.stringify(recipe, null, 2)}`
       ticket_id: ticketId,
       created_by: user.id,
       data: tldrawData,
-      type: 'recipe_visualization'
     };
 
     const { error } = await supabase
-      .from('ticket_drawings')
+      .from('ticket_drawings_generated')
       .insert(drawingData);
 
     if (error) {

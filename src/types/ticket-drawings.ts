@@ -31,5 +31,4 @@ export interface CreateTicketDrawing {
   data: {
     shapes: TldrawShape[];
   };
-  type: 'recipe_visualization';
 }

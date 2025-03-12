@@ -46,22 +46,28 @@ export async function POST(req: Request) {
       );
     }
 
-    const { messages, ticketId } = await req.json();
+    const { ticketId, customPrompt } = await req.json();
 
     if (!ticketId) {
-      throw new Error("Ticket ID is required");
+      return NextResponse.json(
+        { error: "Ticket ID is required" },
+        { status: 400 }
+      );
     }
 
     // Verify the user owns the ticket
     const { data: ticket, error: ticketError } = await supabase
       .from('tickets')
-      .select('creator_id')
+      .select('creator_id, id')
       .eq('id', ticketId)
       .single();
 
+    console.log("Ticket query result:", { ticket, ticketError });
+
     if (ticketError || !ticket) {
+      console.error("Ticket error:", ticketError);
       return NextResponse.json(
-        { error: "Ticket not found" },
+        { error: ticketError?.message || "Ticket not found" },
         { status: 404 }
       );
     }
@@ -73,6 +79,38 @@ export async function POST(req: Request) {
       );
     }
 
+    // Get the drawing data from ticket_drawings table
+    const { data: drawingData, error: drawingError } = await supabase
+      .from('ticket_drawings')
+      .select('data')
+      .eq('ticket_id', ticketId)
+      .single();
+
+    console.log("Drawing query result:", { drawingData, drawingError });
+
+    if (drawingError || !drawingData?.data) {
+      console.error("Drawing error:", drawingError);
+      return NextResponse.json(
+        { error: "No drawing data found for this ticket" },
+        { status: 400 }
+      );
+    }
+
+    const basePrompt = `
+      I have a drawing of a recipe. Here's the relevant information:
+      Drawing Data: ${JSON.stringify(drawingData.data)}
+
+      Please analyze this drawing and extract:
+      1. The recipe title from any prominent text or header
+      2. List of ingredients with their quantities (look for text near ingredient items)
+      3. Cooking steps (follow any arrows or numbered elements)
+      4. Any special notes or tips
+    `;
+
+    const userPrompt = customPrompt
+      ? `${basePrompt}\n\nAdditional Instructions:\n${customPrompt}`
+      : basePrompt;
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -80,7 +118,10 @@ export async function POST(req: Request) {
           role: "system",
           content: SYSTEM_PROMPT,
         },
-        ...messages,
+        {
+          role: "user",
+          content: userPrompt,
+        }
       ],
       temperature: 0.7,
       max_tokens: 1000,
@@ -89,34 +130,58 @@ export async function POST(req: Request) {
 
     const content = completion.choices[0].message.content;
     if (!content) {
-      throw new Error("No content in response");
+      return NextResponse.json(
+        { error: "No content in response from AI" },
+        { status: 500 }
+      );
     }
 
+    console.log("OpenAI response content (first 200 chars):", content.substring(0, 200) + "...");
+
     // Parse and validate the JSON response
-    const recipe = JSON.parse(content);
-    
+    let recipe;
+    try {
+      recipe = JSON.parse(content);
+    } catch (error) {
+      console.error("JSON parse error:", error);
+      return NextResponse.json(
+        { error: "Failed to parse AI response: " + (error instanceof Error ? error.message : String(error)) },
+        { status: 500 }
+      );
+    }
+
     // Basic validation of the response structure
     if (!recipe.recipe?.title || !Array.isArray(recipe.recipe?.ingredients) || !Array.isArray(recipe.recipe?.instructions)) {
-      throw new Error("Invalid response format from AI");
+      console.error("Invalid response format:", recipe);
+      return NextResponse.json(
+        { error: "Invalid response format from AI" },
+        { status: 500 }
+      );
     }
-    
-    const conversionData: CreateRecipeConversion = {
+
+    // Store the conversion in the database
+    const conversion: CreateRecipeConversion = {
       ticket_id: ticketId,
       created_by: user.id,
       title: recipe.recipe.title,
       ingredients: recipe.recipe.ingredients,
       instructions: recipe.recipe.instructions,
       notes: recipe.recipe.notes || [],
-      custom_prompt: messages[0].content.includes("Additional Instructions:") ? messages[0].content.split("Additional Instructions:")[1].trim() : undefined,
+      custom_prompt: customPrompt || undefined,
     };
 
-    const { error } = await supabase
+    const { data: newConversion, error: conversionError } = await supabase
       .from('recipe_conversions')
-      .insert(conversionData);
+      .insert(conversion)
+      .select()
+      .single();
 
-    if (error) {
-      console.error("Supabase Error:", error);
-      throw new Error("Failed to save recipe conversion");
+    if (conversionError) {
+      console.error("Conversion error:", conversionError);
+      return NextResponse.json(
+        { error: "Failed to save conversion: " + conversionError.message },
+        { status: 500 }
+      );
     }
 
     // Get all conversions for this ticket
@@ -127,17 +192,18 @@ export async function POST(req: Request) {
       .order('created_at', { ascending: false });
 
     if (fetchError) {
-      console.error("Error fetching conversions:", fetchError);
+      console.error("Fetch error:", fetchError);
+      return NextResponse.json(
+        { error: "Failed to fetch conversions: " + fetchError.message },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({
-      recipe: recipe.recipe,
-      conversions: conversions || []
-    });
+    return NextResponse.json({ conversions });
   } catch (error) {
-    console.error("API Error:", error);
+    console.error("Error converting recipe:", error);
     return NextResponse.json(
-      { error: "Failed to convert drawing to recipe" },
+      { error: error instanceof Error ? error.message : "Failed to convert recipe" },
       { status: 500 }
     );
   }

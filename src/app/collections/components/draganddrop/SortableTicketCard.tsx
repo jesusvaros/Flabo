@@ -4,14 +4,11 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketWithPosition, TicketWithPositionConversion } from "@/types/collections";
-import { CSSProperties, useState, useEffect, useCallback } from "react";
-import { GripVertical, X } from "lucide-react";
+import { CSSProperties, useState, useEffect } from "react";
+import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BigTicketCard } from "@/app/tickets/components/BigTicketCard";
 import { useCollection } from "@/app/collections/context/CollectionContext";
-import { RecipeConversion } from "@/types/recipe-conversions";
-import { createClient } from "../../../../../utils/supabase/client";
-import { Button } from "@/components/ui/button";
 
 interface SortableTicketCardProps {
   ticket: TicketWithPositionConversion;
@@ -23,15 +20,15 @@ export const SortableTicketCard = ({
   disabled = false,
 }: SortableTicketCardProps) => {
   // Use the collection context to get the latest ticket data
-  const { collection, refetchCollection } = useCollection();
+  const { collection } = useCollection();
   const recipe_conversions = collection?.recipe_conversions || [];
   
   // Keep a local state of the ticket that can be updated
   const [ticket, setTicket] = useState<TicketWithPositionConversion>(initialTicket);
   const [isExpanded, setIsExpanded] = useState(false);
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>();
-  const [isDeleting, setIsDeleting] = useState(false);
-  
+
+
   useEffect(() => {
     if (collection && collection.tickets) {
       const updatedTicket = collection.tickets.find(t => t.id === initialTicket.id) as TicketWithPositionConversion;
@@ -59,8 +56,7 @@ export const SortableTicketCard = ({
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest("[data-drag-handle]") || 
-        (e.target as HTMLElement).closest("[data-delete-button]")) {
+    if ((e.target as HTMLElement).closest("[data-drag-handle]")) {
       return;
     }
     
@@ -71,31 +67,6 @@ export const SortableTicketCard = ({
     });
     
     setIsExpanded(true);
-  };
-
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!collection || isDeleting) return;
-
-    try {
-      setIsDeleting(true);
-      const supabase = createClient();
-      
-      // Delete the entry from collections_tickets
-      const { error } = await supabase
-        .from('collections_tickets')
-        .delete()
-        .eq('collection_id', collection.id)
-        .eq('ticket_id', ticket.id);
-
-      if (error) throw error;
-
-      await refetchCollection();
-    } catch (error) {
-      console.error('Error deleting ticket from collection:', error);
-    } finally {
-      setIsDeleting(false);
-    }
   };
 
   return (
@@ -122,24 +93,15 @@ export const SortableTicketCard = ({
           </div>
         </CardHeader>
         {!disabled && (
-          <>
-            <div
-              {...attributes}
-              {...listeners}
-              data-drag-handle
-              className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-2 hover:bg-accent/80 rounded touch-manipulation"
-              style={{ touchAction: "none" }}
-            >
-              <GripVertical className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div
-              data-delete-button
-              className="absolute right-2 top-2"
-              onClick={handleDelete}
-            >
-              <X className="h-4 w-4" />
-            </div>
-          </>
+          <div
+            {...attributes}
+            {...listeners}
+            data-drag-handle
+            className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-2 hover:bg-accent/80 rounded touch-manipulation"
+            style={{ touchAction: "none" }}
+          >
+            <GripVertical className="h-5 w-5 text-muted-foreground" />
+          </div>
         )}
       </Card>
       {isExpanded && (

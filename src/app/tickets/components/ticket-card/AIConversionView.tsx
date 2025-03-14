@@ -46,9 +46,9 @@ const ConversionForm = ({
   customPrompt: string;
   setCustomPrompt: (prompt: string) => void;
 }) => (
-  <div className="h-full flex items-center justify-center">
-    <div className="max-w-md w-full p-6 space-y-4">
-      <Button onClick={onConvert} disabled={isLoading} className="w-full">
+  <div className="p-4 border-b">
+    <div className="flex items-center gap-4 ">
+      <Button onClick={onConvert} disabled={isLoading}>
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -57,38 +57,38 @@ const ConversionForm = ({
         ) : (
           <>
             <Wand2 className="mr-2 h-4 w-4" />
-            Convert to Recipe
+            Convert drawing to Recipe
           </>
         )}
       </Button>
 
       <div className="flex items-center gap-2">
+        <Label htmlFor="custom-prompt" className="text-sm">
+          <MessageSquare className="mr-1 h-4 w-4 inline" />
+          Custom
+        </Label>
         <Switch
           id="custom-prompt"
           checked={showCustomPrompt}
           onCheckedChange={setShowCustomPrompt}
         />
-        <Label htmlFor="custom-prompt">
-          <MessageSquare className="mr-1 h-4 w-4 inline" />
-          Custom Instructions
-        </Label>
       </div>
-
-      {showCustomPrompt && (
-        <div>
-          <Textarea
-            placeholder="Add special instructions for the AI"
-            value={customPrompt}
-            onChange={(e) => setCustomPrompt(e.target.value)}
-            className="min-h-[100px]"
-            maxLength={500}
-          />
-          <div className="text-right text-xs mt-1">
-            {customPrompt.length}/500
-          </div>
-        </div>
-      )}
     </div>
+
+    {showCustomPrompt && (
+      <div>
+        <Textarea
+          placeholder="Add special instructions for the AI"
+          value={customPrompt}
+          onChange={(e) => setCustomPrompt(e.target.value)}
+          className="min-h-[100px]"
+          maxLength={500}
+        />
+        <div className="text-right text-xs mt-1">
+          {customPrompt.length}/500
+        </div>
+      </div>
+    )}
   </div>
 );
 
@@ -192,21 +192,28 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
 
   return (
     <div className="h-full relative">
-      <div className="h-full">
+      <div className="h-full flex flex-col">
+        <ConversionForm
+          isLoading={isLoading}
+          onConvert={handleConvertToAI}
+          showCustomPrompt={showCustomPrompt}
+          setShowCustomPrompt={setShowCustomPrompt}
+          customPrompt={customPrompt}
+          setCustomPrompt={setCustomPrompt}
+        />
         {selectedRecipe ? (
-          <RecipeDisplay
-            recipe={selectedRecipe}
-            ticketId={ticket.id}
-          />
+          <div className="flex-1 overflow-auto">
+            <RecipeDisplay
+              recipe={selectedRecipe}
+              ticketId={ticket.id}
+            />
+          </div>
         ) : (
-          <ConversionForm
-            isLoading={isLoading}
-            onConvert={handleConvertToAI}
-            showCustomPrompt={showCustomPrompt}
-            setShowCustomPrompt={setShowCustomPrompt}
-            customPrompt={customPrompt}
-            setCustomPrompt={setCustomPrompt}
-          />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-sm text-muted-foreground">
+              Convert your drawing to get started
+            </div>
+          </div>
         )}
       </div>
       <ConversionHistory

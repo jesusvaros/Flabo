@@ -1,5 +1,5 @@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { TicketWithPosition } from "@/types/collections";
+import { TicketWithPositionConversion } from "@/types/collections";
 import { X } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
 import { Switch } from "@/components/ui/switch";
@@ -8,7 +8,7 @@ import { AIConversionView } from "./AIConversionView";
 import { DISABLE_GENERATED_DRAWING } from "./DesktopTicketCard";
 
 interface MobileTicketDrawerProps {
-  ticket: TicketWithPosition;
+  ticket: TicketWithPositionConversion;
   drawerOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onClose: () => void;

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TicketWithPosition } from "@/types/collections";
+import { TicketWithPositionConversion } from "@/types/collections";
 import { X } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
 import { Switch } from "@/components/ui/switch";
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { AIConversionView } from "./AIConversionView";
 
 interface DesktopTicketCardProps {
-  ticket: TicketWithPosition;
+  ticket: TicketWithPositionConversion;
   style: React.CSSProperties;
   onClose: () => void;
   isDrawingBoardMounted: boolean;

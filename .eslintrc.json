@@ -21,7 +21,8 @@
     "react/react-in-jsx-scope": "off",
     "@typescript-eslint/no-floating-promises": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/no-misused-promises": "off"
+    "@typescript-eslint/no-misused-promises": "off",
+    "@next/next/no-html-link-for-pages": "off"
   },
   "settings": {
     "react": {

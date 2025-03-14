@@ -27,19 +27,18 @@ export interface TicketWithPosition extends Ticket {
   position: number;
   drawing: TLEditorSnapshot | null;
   drawing_generated: TLEditorSnapshot | null;
-  recipe_conversions: RecipeConversion[];
 }
 
 export interface TicketWithPositionConversion extends TicketWithPosition {
-  recipeConversions: RecipeConversion[];
+  recipe_conversions: RecipeConversion[];
 }
 
 export interface CollectionProps {
   id: string;
   title: string;
   creator_id: string;
-  tickets?: TicketWithPosition[];
-  recipeConversions?: RecipeConversion[];
+  tickets?: TicketWithPositionConversion[];
+  recipe_conversions?: RecipeConversion[];
 }
 
 export interface CollectionViewProps {

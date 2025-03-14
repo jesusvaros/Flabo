@@ -1,4 +1,4 @@
-import { CollectionProps, TicketWithPosition } from "@/types/collections";
+import { CollectionProps, TicketWithPositionConversion } from "@/types/collections";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { SupabaseCollection, SupabaseTicket } from "../../[id]/page";
 
@@ -169,7 +169,7 @@ export async function fetchTicketPosition(
 export function transformTicketData(
   ticket: SupabaseTicket | null,
   position: any
-): TicketWithPosition | null {
+): TicketWithPositionConversion | null {
   if (!ticket) return null;
 
   return {

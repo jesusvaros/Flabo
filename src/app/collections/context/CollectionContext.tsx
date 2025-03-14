@@ -16,8 +16,8 @@ import {
 interface CollectionContextType {
   collection: CollectionProps | null;
   refetchCollection: () => Promise<void>;
-  refetchTicket: (ticketId: string) => Promise<TicketWithPosition | null>;
-  updateTicketInCollection: (updatedTicket: TicketWithPosition) => void;
+  refetchTicket: (ticketId: string) => Promise<TicketWithPositionConversion | null>;
+  updateTicketInCollection: (updatedTicket: TicketWithPositionConversion) => void;
 }
 
 const CollectionContext = createContext<CollectionContextType | undefined>(undefined);
@@ -42,14 +42,14 @@ export function CollectionProvider({
   const [collection, setCollection] = useState<CollectionProps | null>(initialCollection);
 
   // Function to transform tickets with recipe conversions
-  const transformTicketsWithConversions = (tickets: TicketWithPosition[] = []): TicketWithPositionConversion[] => {
+  const transformTicketsWithConversions = (tickets: TicketWithPositionConversion[] = []): TicketWithPositionConversion[] => {
     return tickets.map(ticket => {
       const ticketConversions = ticket.recipe_conversions || [];
       // Sort conversions by created_at in descending order (newest first)
       const sortedConversions = [...ticketConversions].sort((a, b) => {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
-      return { ...ticket, recipeConversions: sortedConversions };
+      return { ...ticket, recipe_conversions: sortedConversions };
     });
   };
 
@@ -71,7 +71,7 @@ export function CollectionProvider({
   }, [collection]);
   
   // Function to refetch a single ticket
-  const refetchTicket = useCallback(async (ticketId: string): Promise<TicketWithPosition | null> => {
+  const refetchTicket = useCallback(async (ticketId: string): Promise<TicketWithPositionConversion | null> => {
     if (!collection) return null;
     
     const supabase = createClient();
@@ -97,7 +97,7 @@ export function CollectionProvider({
   }, [collection]);
   
   // Function to update a ticket in the collection
-  const updateTicketInCollection = useCallback((updatedTicket: TicketWithPosition) => {
+  const updateTicketInCollection = useCallback((updatedTicket: TicketWithPositionConversion) => {
     if (!collection) return;
     
     setCollection(prevCollection => {

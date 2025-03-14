@@ -7,17 +7,13 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RecipeDisplay } from "@/app/components/recipe/RecipeDisplay";
-import { TicketWithPosition } from "@/types/collections";
+import { TicketWithPositionConversion } from "@/types/collections";
 import { RecipeConversion } from "@/types/recipe-conversions";
 import { cn } from "@/lib/utils";
 import { useCollection } from "@/app/collections/context/CollectionContext";
 
 interface AIConversionViewProps {
-  ticket: TicketWithPosition;
-}
-
-interface AIResponse {
-  conversions: RecipeConversion[];
+  ticket: TicketWithPositionConversion;
 }
 
 const LoadingView = () => (

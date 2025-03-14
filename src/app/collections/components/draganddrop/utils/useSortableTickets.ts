@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { DragEndEvent, DragStartEvent, UniqueIdentifier } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { TicketWithPosition } from "@/types/collections";
+import { TicketWithPositionConversion } from "@/types/collections";
 
 interface UseSortableTicketsProps {
-  tickets: TicketWithPosition[];
-  onReorder?: (tickets: TicketWithPosition[]) => void;
+  tickets: TicketWithPositionConversion[];
+  onReorder?: (tickets: TicketWithPositionConversion[]) => void;
 }
 
 interface UseSortableTicketsReturn {
   activeId: UniqueIdentifier | null;
-  activeTicket: TicketWithPosition | undefined;
+  activeTicket: TicketWithPositionConversion | undefined;
   handleDragStart: (event: DragStartEvent) => void;
   handleDragEnd: (event: DragEndEvent) => void;
   items: UniqueIdentifier[];

@@ -21,31 +21,27 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { useCollection } from "../context/CollectionContext";
 
 export const CollectionsView = ({
   collections,
-  selectedCollection,
+  selectedCollection: initialSelectedCollection,
   tabsContent,
 }: CollectionViewProps) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-  const [localTickets, setLocalTickets] = useState<TicketWithPositionConversion[]>(
-    [...(selectedCollection?.tickets || [])].sort(
-      (a, b) => (a.position) - (b.position)
-    )
-  );
   const isMobile = useIsMobile();
+  const { collection: selectedCollection } = useCollection();
 
   const { updatePositions, isUpdating, hasPendingChanges } = useTicketPositions(
     {
       collectionId: selectedCollection?.id || "",
-      tickets: localTickets,
+      tickets: selectedCollection?.tickets || [],
     }
   );
 
   const handleReorder = async (tickets: TicketWithPositionConversion[]) => {
     try {
-      setLocalTickets(tickets);
       updatePositions(tickets);
     } catch (error) {
       console.log(error);
@@ -86,7 +82,7 @@ export const CollectionsView = ({
             </div>
           </div>
           <SortableTicketsBoard
-            tickets={localTickets}
+            tickets={selectedCollection.tickets || []}
             onReorder={handleReorder}
           />
           <AddTicketDrawer

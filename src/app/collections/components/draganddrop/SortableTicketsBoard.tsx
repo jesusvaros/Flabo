@@ -23,16 +23,14 @@ export const SortableTicketsBoard = ({
   tickets,
   onReorder,
 }: SortableTicketsBoardProps) => {
-  const { activeId, activeTicket, handleDragStart, handleDragEnd, items } =
+  const { activeTicket, handleDragStart, handleDragEnd, items } =
     useSortableTickets({
       tickets,
       onReorder,
     });
-    
-  // Use PointerSensor which works for both mouse and touch
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      // Require a small movement to start dragging
       activationConstraint: {
         distance: 8,
       },

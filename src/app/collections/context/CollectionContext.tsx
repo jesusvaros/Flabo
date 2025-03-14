@@ -1,7 +1,6 @@
 "use client";
 
-import { CollectionProps, TicketWithPosition, TicketWithPositionConversion } from "@/types/collections";
-import { RecipeConversion } from "@/types/recipe-conversions";
+import { CollectionProps, TicketWithPositionConversion } from "@/types/collections";
 import { createContext, useContext, useState, useCallback } from "react";
 import { createClient } from "../../../../utils/supabase/client";
 import { 
@@ -39,6 +38,7 @@ export function CollectionProvider({
   collection: initialCollection,
   children,
 }: CollectionProviderProps) {
+
   const [collection, setCollection] = useState<CollectionProps | null>(initialCollection);
 
   // Function to transform tickets with recipe conversions

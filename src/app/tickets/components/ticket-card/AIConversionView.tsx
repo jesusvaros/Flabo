@@ -16,12 +16,6 @@ interface AIConversionViewProps {
   ticket: TicketWithPositionConversion;
 }
 
-const LoadingView = () => (
-  <div className="h-full flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin" />
-  </div>
-);
-
 const NoTicketView = () => (
   <div className="h-full flex items-center justify-center">
     <p>No ticket selected</p>
@@ -73,18 +67,18 @@ const ConversionForm = ({
     </div>
 
     {showCustomPrompt && (
-      <div>
+      <>
         <Textarea
           placeholder="Add special instructions for the AI"
           value={customPrompt}
           onChange={(e) => setCustomPrompt(e.target.value)}
-          className="min-h-[100px]"
-          maxLength={500}
+          className="min-h-[100px] p-2"
+          maxLength={1000}
         />
         <div className="text-right text-xs mt-1">
-          {customPrompt.length}/500
+          {customPrompt.length}/1000
         </div>
-      </div>
+      </>
     )}
   </div>
 );
@@ -143,7 +137,7 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
   const [showCustomPrompt, setShowCustomPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(true);
-  
+
   const { refetchTicket } = useCollection();
   const conversions = ticket.recipe_conversions;
 
@@ -176,7 +170,7 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
       if (!showCustomPrompt) {
         setCustomPrompt("");
       }
-      
+
       // Refresh the ticket data to update the conversions list
       const updatedTicket = await refetchTicket(ticket.id);
       if (updatedTicket && updatedTicket.recipe_conversions) {
@@ -206,17 +200,13 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
           setCustomPrompt={setCustomPrompt}
         />
         {selectedRecipe ? (
-          <div className="flex-1 overflow-auto">
-            <RecipeDisplay
-              recipe={selectedRecipe}
-              ticketId={ticket.id}
-            />
-          </div>
+          <RecipeDisplay
+            recipe={selectedRecipe}
+            ticketId={ticket.id}
+          />
         ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-sm text-muted-foreground">
-              Convert your drawing to get started
-            </div>
+          <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
+            Convert your drawing to get started
           </div>
         )}
       </div>

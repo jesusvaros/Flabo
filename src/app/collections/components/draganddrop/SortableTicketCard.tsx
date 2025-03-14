@@ -83,9 +83,16 @@ export const SortableTicketCard = ({
         onClick={handleCardClick}
       >
         <CardHeader className="p-4">
-          <CardTitle className="text-base line-clamp-4 pr-8">
-            {ticket.content}
-          </CardTitle>
+          <div className="space-y-2">
+            <CardTitle className="text-base line-clamp-2">
+              {ticket.content}
+            </CardTitle>
+            {ticket.recipe_conversions && ticket.recipe_conversions.length > 0 && (
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {ticket.recipe_conversions[0].title}
+              </p>
+            )}
+          </div>
         </CardHeader>
         {!disabled && (
           <div

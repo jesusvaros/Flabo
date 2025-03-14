@@ -1,10 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { TicketWithPosition } from "@/types/collections";
+import { TicketWithPositionConversion } from "@/types/collections";
 import { createClient } from "../../../../../../utils/supabase/client";
 
 interface UseTicketPositionsProps {
   collectionId: string;
-  tickets: TicketWithPosition[];
+  tickets: TicketWithPositionConversion[];
 }
 
 export const useTicketPositions = ({
@@ -12,18 +12,27 @@ export const useTicketPositions = ({
   tickets,
 }: UseTicketPositionsProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [localTickets, setLocalTickets] = useState<TicketWithPositionConversion[]>(tickets);
   const supabase = createClient();
   const debounceTimer = useRef<NodeJS.Timeout>();
   const isSavingRef = useRef(false);
 
-  const savePositions = async (tickets: TicketWithPosition[]) => {
+  // Only update localTickets from props when the collection ID changes
+  // or when tickets array length changes (additions/deletions)
+  useEffect(() => {
+    if (tickets.length !== localTickets.length) {
+      setLocalTickets(tickets);
+    }
+  }, [tickets.length, collectionId]);
+
+  const savePositions = async (ticketsToSave: TicketWithPositionConversion[]) => {
     if (!collectionId || isSavingRef.current) return;
     
     try {
       isSavingRef.current = true;
       setIsUpdating(true);
       
-      const updates = tickets.map((ticket, index) => ({
+      const updates = ticketsToSave.map((ticket, index) => ({
         collection_id: collectionId,
         ticket_id: ticket.id,
         position: index,
@@ -54,7 +63,9 @@ export const useTicketPositions = ({
   };
 
   const updatePositions = useCallback(
-    (updatedTickets: TicketWithPosition[]) => {
+    (updatedTickets: TicketWithPositionConversion[]) => {
+      setLocalTickets(updatedTickets);
+
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
       }
@@ -79,6 +90,7 @@ export const useTicketPositions = ({
   }, []);
 
   return {
+    tickets: localTickets,
     updatePositions,
     isUpdating,
     hasPendingChanges: !!debounceTimer.current,

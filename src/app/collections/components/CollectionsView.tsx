@@ -33,7 +33,7 @@ export const CollectionsView = ({
   const isMobile = useIsMobile();
   const { collection: selectedCollection } = useCollection();
 
-  const { updatePositions, isUpdating, hasPendingChanges } = useTicketPositions(
+  const { tickets: localTickets, updatePositions, isUpdating, hasPendingChanges } = useTicketPositions(
     {
       collectionId: selectedCollection?.id || "",
       tickets: selectedCollection?.tickets || [],
@@ -82,7 +82,7 @@ export const CollectionsView = ({
             </div>
           </div>
           <SortableTicketsBoard
-            tickets={selectedCollection.tickets || []}
+            tickets={localTickets}
             onReorder={handleReorder}
           />
           <AddTicketDrawer

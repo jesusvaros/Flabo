@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, MessageSquare, Wand2 } from "lucide-react";
+import { Loader2, MessageSquare, Wand2, History } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RecipeDisplay } from "@/app/components/recipe/RecipeDisplay";
 import { TicketWithPosition } from "@/types/collections";
 import { RecipeConversion } from "@/types/recipe-conversions";
+import { cn } from "@/lib/utils";
 
 interface AIConversionViewProps {
   ticket: TicketWithPosition;
@@ -30,13 +31,13 @@ const NoTicketView = () => (
   </div>
 );
 
-const ConversionForm = ({ 
-  isLoading, 
-  onConvert, 
-  showCustomPrompt, 
-  setShowCustomPrompt, 
-  customPrompt, 
-  setCustomPrompt 
+const ConversionForm = ({
+  isLoading,
+  onConvert,
+  showCustomPrompt,
+  setShowCustomPrompt,
+  customPrompt,
+  setCustomPrompt
 }: {
   isLoading: boolean;
   onConvert: () => void;
@@ -91,34 +92,52 @@ const ConversionForm = ({
   </div>
 );
 
-const ConversionHistory = ({ 
-  conversions, 
-  selectedId, 
-  onSelect 
+const ConversionHistory = ({
+  conversions,
+  selectedId,
+  onSelect,
+  isCollapsed,
+  onToggle
 }: {
   conversions: RecipeConversion[];
   selectedId?: string;
   onSelect: (conversion: RecipeConversion) => void;
+  isCollapsed: boolean;
+  onToggle: () => void;
 }) => (
-  <aside className="w-64 border-l">
-    <div className="border-b p-4">
-      <h3 className="text-sm">Previous Conversions</h3>
+  <div className="absolute right-0 top-0 h-full">
+    <div className="p-2 pt-7 bg-accent flex items-center justify-end">
+      <Button
+        size="icon"
+        onClick={onToggle}
+        className="h-6 w-6"
+      >
+        <History className="h-4 w-4" />
+      </Button>
     </div>
-    <div className="overflow-y-auto">
-      <div className="p-4 space-y-2">
-        {conversions.map((conversion) => (
-          <Button
-            key={conversion.id}
-            variant={selectedId === conversion.id ? "secondary" : "ghost"}
-            className="w-full text-left"
-            onClick={() => onSelect(conversion)}
-          >
-            <span className="truncate">{conversion.title}</span>
-          </Button>
-        ))}
-      </div>
+    <div className={cn(
+      "flex flex-col  bg-accent h-full shadow-lg transition-all duration-200 ",
+      isCollapsed ? "w-0" : "w-64"
+    )}>
+
+      {!isCollapsed && (
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          <h3 className="text-sm">Previous Conversions</h3>
+          {conversions.map((conversion) => (
+            <Button
+              key={conversion.id}
+              variant={selectedId === conversion.id ? "secondary" : "ghost"}
+              className="w-full text-left"
+              onClick={() => onSelect(conversion)}
+            >
+              <span className="truncate">{conversion.title}</span>
+            </Button>
+          ))}
+
+        </div>
+      )}
     </div>
-  </aside>
+  </div>
 );
 
 export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
@@ -126,8 +145,8 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
   const [selectedRecipe, setSelectedRecipe] = useState<RecipeConversion | null>(null);
   const [showCustomPrompt, setShowCustomPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
+  const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(true);
 
-  // Use the recipeConversions from the ticket props
   const conversions = ticket.recipe_conversions;
 
   useEffect(() => {
@@ -172,8 +191,8 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
   }
 
   return (
-    <div className="h-full flex">
-      <div className="flex-1">
+    <div className="h-full relative">
+      <div className="h-full">
         {selectedRecipe ? (
           <RecipeDisplay
             recipe={selectedRecipe}
@@ -190,13 +209,13 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
           />
         )}
       </div>
-      {conversions && conversions.length > 0 && (
-        <ConversionHistory
-          conversions={conversions}
-          selectedId={selectedRecipe?.id}
-          onSelect={setSelectedRecipe}
-        />
-      )}
+      <ConversionHistory
+        conversions={conversions}
+        selectedId={selectedRecipe?.id}
+        onSelect={setSelectedRecipe}
+        isCollapsed={isHistoryCollapsed}
+        onToggle={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
+      />
     </div>
   );
 };

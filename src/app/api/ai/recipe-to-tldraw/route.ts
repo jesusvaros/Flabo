@@ -7,27 +7,50 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Define the tldraw shape format
-const TLDRAW_SHAPE_FORMAT: TldrawShape = {
-  id: "string - Unique identifier for the shape",
-  type: "string - Type of shape (text, rectangle, arrow, etc.)",
-  x: 0,
-  y: 0,
-  rotation: 0,
-  props: {
-    text: "string - Text content if applicable",
-    color: "string - Color of the shape",
-    size: "string - Size of the shape",
-    font: "string - Font for text",
-    align: "string - Text alignment",
-    // Add other shape-specific properties
-  }
-};
 
 const SYSTEM_PROMPT = `You are a recipe visualization assistant. Convert recipes into tldraw JSON format for visual representation.
-ALWAYS respond with a JSON object containing an array of shapes in this format:
+ALWAYS respond with a JSON object containing a session and document structure like this:
+
 {
-  "shapes": [${JSON.stringify(TLDRAW_SHAPE_FORMAT, null, 2)}]
+  "session": {
+    "version": 0,
+    "isGridMode": false,
+    "pageStates": [
+      {
+        "camera": {
+          "x": 0,
+          "y": 0,
+          "z": 1
+        },
+        "pageId": "page:page",
+        "focusedGroupId": null,
+        "selectedShapeIds": []
+      }
+    ],
+    "isDebugMode": false,
+    "isFocusMode": false,
+    "isToolLocked": false,
+    "currentPageId": "page:page",
+    "exportBackground": true
+  },
+  "document": {
+    "store": {
+      "page:page": {
+        "id": "page:page",
+        "meta": {},
+        "name": "Page 1",
+        "index": "a1",
+        "typeName": "page"
+      },
+      // Define shapes here with properties like id, type, x, y, etc.
+    },
+    "schema": {
+      "sequences": {
+        // Define sequence data here
+      },
+      "schemaVersion": 2
+    }
+  }
 }
 
 Rules for creating the visualization:
@@ -112,7 +135,7 @@ ${JSON.stringify(recipe, null, 2)}`
         }
       ],
       temperature: 0.7,
-      max_tokens: 2000,
+      max_tokens: 6000,
       response_format: { type: "json_object" },
     });
 
@@ -121,12 +144,19 @@ ${JSON.stringify(recipe, null, 2)}`
       throw new Error("No content in response");
     }
 
-    // Parse and validate the JSON response
-    const tldrawData = JSON.parse(content);
+    console.log('Raw content:', content);
 
-    // Basic validation of the response structure
-    if (!Array.isArray(tldrawData.shapes)) {
-      throw new Error("Invalid response format from AI");
+    let tldrawData ;
+    try {
+      tldrawData = JSON.parse(content);
+      // Basic validation of the response structure
+      if (!tldrawData || !tldrawData.document || !tldrawData.document.store) {
+        console.error('Invalid tldrawData structure:', tldrawData);
+        throw new Error('Invalid response format from AI');
+      }
+    } catch (error) {
+      console.error('JSON parsing error:', error);
+      throw new Error('Invalid JSON response from AI');
     }
 
     // Store the tldraw data in the database

@@ -19,6 +19,9 @@ interface DesktopTicketCardProps {
   handleDrawingToggle: (checked: boolean) => void;
 }
 
+
+export const DISABLE_GENERATED_DRAWING = true;
+
 export const DesktopTicketCard = ({
   ticket,
   style,
@@ -54,6 +57,7 @@ export const DesktopTicketCard = ({
               </div>
               <div className="flex items-center space-x-2">
                 <Switch
+                  disabled={DISABLE_GENERATED_DRAWING}
                   id="generated-drawing"
                   checked={showGeneratedDrawing}
                   onCheckedChange={handleDrawingToggle}

@@ -5,6 +5,7 @@ import { TicketDrawingBoard } from "../TicketDrawingBoard";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { AIConversionView } from "./AIConversionView";
+import { DISABLE_GENERATED_DRAWING } from "./DesktopTicketCard";
 
 interface MobileTicketDrawerProps {
   ticket: TicketWithPosition;
@@ -46,6 +47,7 @@ export const MobileTicketDrawer = ({
           </div>
           <div className="flex items-center space-x-2 mt-2">
             <Switch
+              disabled={DISABLE_GENERATED_DRAWING}
               id="drawing-toggle"
               checked={showGeneratedDrawing}
               onCheckedChange={handleDrawingToggle}

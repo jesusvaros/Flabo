@@ -15,15 +15,13 @@ interface RecipeDisplayProps {
 
 export const RecipeDisplay = ({ recipe, ticketId, onVisualizationGenerated }: RecipeDisplayProps) => (
   <div className="h-full flex flex-col">
-    <header className="border-b p-6">
-      <div className="flex justify-between">
-        <h2 className="text-2xl font-semibold">{recipe.title}</h2>
-        <GenerateVisualizationButton 
-          recipe={recipe} 
-          ticketId={ticketId} 
-          onVisualizationGenerated={onVisualizationGenerated}
-        />
-      </div>
+    <header className="border-b p-6 flex justify-between pr-12">
+      <h2 className="text-2xl font-semibold">{recipe.title}</h2>
+      <GenerateVisualizationButton
+        recipe={recipe}
+        ticketId={ticketId}
+        onVisualizationGenerated={onVisualizationGenerated}
+      />
     </header>
     <main className="overflow-y-auto flex-1">
       <div className="p-6 space-y-6">

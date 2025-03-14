@@ -24,8 +24,6 @@ export const BigTicketCard = ({
   const drawingEditorRef = useRef<{ saveDrawing: () => void }>(null);
   const { style } = useCardAnimation(clickPosition);
 
-  console.log(ticket);
-
   const handleCloseRequested = () => {
     if (drawingEditorRef.current) {
       drawingEditorRef.current.saveDrawing();
@@ -58,8 +56,6 @@ export const BigTicketCard = ({
     }
   }, [isMobile]);
 
-  const currentDrawing = showGeneratedDrawing ? ticket.drawing_generated : ticket.drawing;
-
   if (isMobile) {
     return (
       <MobileTicketDrawer
@@ -78,29 +74,16 @@ export const BigTicketCard = ({
   }
 
   return (
-    <div>
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="drawing-toggle"
-            checked={showGeneratedDrawing}
-            onChange={(e) => handleDrawingToggle(e.target.checked)}
-          />
-          <label htmlFor="drawing-toggle">Generated Drawing</label>
-        </div>
-      </div>
-      <DesktopTicketCard
-        ticket={ticket}
-        style={style}
-        onClose={handleCloseRequested}
-        isDrawingBoardMounted={isDrawingBoardMounted}
-        drawingEditorRef={drawingEditorRef}
-        showAIView={showAIView}
-        handleAIViewToggle={handleAIViewToggle}
-        showGeneratedDrawing={showGeneratedDrawing}
-        handleDrawingToggle={handleDrawingToggle}
-      />
-    </div>
+    <DesktopTicketCard
+      ticket={ticket}
+      style={style}
+      onClose={handleCloseRequested}
+      isDrawingBoardMounted={isDrawingBoardMounted}
+      drawingEditorRef={drawingEditorRef}
+      showAIView={showAIView}
+      handleAIViewToggle={handleAIViewToggle}
+      showGeneratedDrawing={showGeneratedDrawing}
+      handleDrawingToggle={handleDrawingToggle}
+    />
   );
 };

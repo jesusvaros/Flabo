@@ -10,6 +10,7 @@ import { RecipeDisplay } from "@/app/components/recipe/RecipeDisplay";
 import { TicketWithPosition } from "@/types/collections";
 import { RecipeConversion } from "@/types/recipe-conversions";
 import { cn } from "@/lib/utils";
+import { useCollection } from "@/app/collections/context/CollectionContext";
 
 interface AIConversionViewProps {
   ticket: TicketWithPosition;
@@ -146,7 +147,8 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
   const [showCustomPrompt, setShowCustomPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(true);
-
+  
+  const { refetchTicket } = useCollection();
   const conversions = ticket.recipe_conversions;
 
   useEffect(() => {
@@ -175,9 +177,15 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
       }
 
       const data = await response.json();
-      setSelectedRecipe(data.conversions[0]);
       if (!showCustomPrompt) {
         setCustomPrompt("");
+      }
+      
+      // Refresh the ticket data to update the conversions list
+      const updatedTicket = await refetchTicket(ticket.id);
+      if (updatedTicket && updatedTicket.recipe_conversions) {
+        // Always select the first conversion (latest one) from the updated list
+        setSelectedRecipe(updatedTicket.recipe_conversions[0]);
       }
     } catch (error) {
       console.error("Failed to convert recipe:", error);

@@ -27,7 +27,8 @@ export const CollectionsView = ({
   collections,
   selectedCollection: initialSelectedCollection,
   tabsContent,
-}: CollectionViewProps) => {
+  tickets = [],
+}: CollectionViewProps & { tickets?: TicketWithPositionConversion[] }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
@@ -52,7 +53,7 @@ export const CollectionsView = ({
   const renderMainContent = () => (
     <div className="flex-1 p-4 overflow-hidden">
       <div className="flex justify-end mb-4">
-        {tabsContent && (
+        {selectedCollection && tabsContent && (
           <TabsDrawer>
             {tabsContent}
           </TabsDrawer>
@@ -95,8 +96,14 @@ export const CollectionsView = ({
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8 md:mt-0">
-          <CreateCollectionCard />
+        <div className="h-full flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">All Tickets</h1>
+          </div>
+          <SortableTicketsBoard
+            tickets={tickets}
+            disabled={true}
+          />
         </div>
       )}
     </div>

@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 interface SortableTicketsBoardProps {
   tickets: TicketWithPositionConversion[];
   onReorder?: (tickets: TicketWithPositionConversion[]) => void;
+  disabled?: boolean;
 }
 
 const DeleteBin = ({ isDragging }: { isDragging: boolean }) => {
@@ -65,6 +66,7 @@ const DeleteBin = ({ isDragging }: { isDragging: boolean }) => {
 export const SortableTicketsBoard = ({
   tickets,
   onReorder,
+  disabled = false,
 }: SortableTicketsBoardProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const { collection, refetchCollection } = useCollection();
@@ -121,13 +123,17 @@ export const SortableTicketsBoard = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto">
         <SortableContext items={items} strategy={rectSortingStrategy}>
           {tickets.map((ticket) => (
-            <SortableTicketCard key={ticket.id} ticket={ticket} />
+            <SortableTicketCard 
+              key={ticket.id} 
+              ticket={ticket} 
+              disabled={disabled}
+            />
           ))}
         </SortableContext>
       </div>
-      <DeleteBin isDragging={isDragging} />
+      {!disabled && <DeleteBin isDragging={isDragging} />}
       <DragOverlay>
-        {activeTicket && (
+        {activeTicket && !disabled && (
            <SortableTicketCard key={activeTicket.id} ticket={activeTicket} />
         )}
       </DragOverlay>

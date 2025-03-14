@@ -75,7 +75,7 @@ export const SortableTicketCard = ({
         className={cn(
           "select-none relative cursor-pointer border border-muted bg-accent h-[100px] hover:shadow-md",
           isDragging && "opacity-50",
-          disabled && "opacity-50 cursor-not-allowed",
+          disabled && "",
           "transition-all duration-200 ease-in-out"
         )}
         onClick={handleCardClick}

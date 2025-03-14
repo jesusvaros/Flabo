@@ -1,19 +1,21 @@
 import { SuspenseTab } from "@/app/components/TabContents/SuspenseTab";
 import { CreateTicketCard } from "./CreateTicketCard";
 import { TicketCard } from "./TicketCard";
-import { Ticket, TicketWithPosition } from "@/types/collections";
+import { Ticket, TicketWithPositionConversion } from "@/types/collections";
 
 interface TicketsTabProps {
   tickets: Ticket[];
 }
 
-const transformTicket = (ticket: Ticket): TicketWithPosition => ({
+const transformTicket = (ticket: Ticket): TicketWithPositionConversion => ({
   ...ticket,
   position_x: 0,
   position_y: 0,
   z_index: 0,
   position: 0,
   drawing: null,
+  drawing_generated: null,
+  recipe_conversions: [],
 });
 
 export const TicketsTabSuspense = ({ tickets }: TicketsTabProps) => {

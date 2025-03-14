@@ -4,10 +4,10 @@ import { useState, useRef, useEffect } from "react";
 import { useCardAnimation, useDrawerAnimation } from "../hooks/use-ticket-card";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileTicketDrawer, DesktopTicketCard } from "./ticket-card";
-import { TicketWithPosition } from "@/types/collections";
+import { TicketWithPositionConversion } from "@/types/collections";
 
 interface BigTicketCardProps {
-  ticket: TicketWithPosition;
+  ticket:  TicketWithPositionConversion ;
   onClose: () => void;
   clickPosition?: { x: number; y: number };
 }

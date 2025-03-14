@@ -9,14 +9,14 @@ import {
   useSensors
 } from "@dnd-kit/core";
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
-import { TicketWithPosition } from "@/types/collections";
+import { TicketWithPositionConversion } from "@/types/collections";
 import { SortableTicketCard } from "./SortableTicketCard";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSortableTickets } from "./utils/useSortableTickets";
 
 interface SortableTicketsBoardProps {
-  tickets: TicketWithPosition[];
-  onReorder?: (tickets: TicketWithPosition[]) => void;
+  tickets: TicketWithPositionConversion[];
+  onReorder?: (tickets: TicketWithPositionConversion[]) => void;
 }
 
 export const SortableTicketsBoard = ({

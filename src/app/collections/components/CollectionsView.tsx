@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { CollectionsSidebar } from "./CollectionsSidebar";
 import { CreateCollectionCard } from "./CreateCollectionCard";
-import { CollectionViewProps, TicketWithPosition } from "@/types/collections";
+import { CollectionViewProps, TicketWithPositionConversion } from "@/types/collections";
 import { Button } from "@/components/ui/button";
 import { SortableTicketsBoard } from "./draganddrop/SortableTicketsBoard";
 import { useTicketPositions } from "./draganddrop/utils/useTicketPositions";
@@ -29,7 +29,7 @@ export const CollectionsView = ({
 }: CollectionViewProps) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-  const [localTickets, setLocalTickets] = useState<TicketWithPosition[]>(
+  const [localTickets, setLocalTickets] = useState<TicketWithPositionConversion[]>(
     [...(selectedCollection?.tickets || [])].sort(
       (a, b) => (a.position) - (b.position)
     )
@@ -43,7 +43,7 @@ export const CollectionsView = ({
     }
   );
 
-  const handleReorder = async (tickets: TicketWithPosition[]) => {
+  const handleReorder = async (tickets: TicketWithPositionConversion[]) => {
     try {
       setLocalTickets(tickets);
       updatePositions(tickets);
@@ -89,12 +89,11 @@ export const CollectionsView = ({
             tickets={localTickets}
             onReorder={handleReorder}
           />
-          <AddTicketDrawer 
+          <AddTicketDrawer
             isOpen={isDrawerOpen}
             onOpenChange={setIsDrawerOpen}
             collectionId={selectedCollection.id}
             onTicketsAdded={() => {
-              // Refresh the collection's tickets
               window.location.reload();
             }}
           />
@@ -111,25 +110,25 @@ export const CollectionsView = ({
   const MobileSidebarContent = () => (
     <div className="flex flex-col h-full py-6">
       <SheetClose asChild>
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="flex items-center gap-2 px-4 py-2 hover:bg-accent"
         >
           <Home className="h-5 w-5" />
           <span>Home</span>
         </Link>
       </SheetClose>
-      
+
       <Separator className="my-4" />
-      
+
       <h3 className="px-4 text-sm font-medium text-muted-foreground mb-2">
         Collections
       </h3>
-      
+
       <div className="flex flex-col space-y-1">
         {collections.map((collection) => (
           <SheetClose key={collection.id} asChild>
-            <Link 
+            <Link
               href={`/${collection.id}`}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 hover:bg-accent",
@@ -164,7 +163,7 @@ export const CollectionsView = ({
               <MobileSidebarContent />
             </SheetContent>
           </Sheet>
-          
+
           {/* Main Content */}
           {renderMainContent()}
         </div>

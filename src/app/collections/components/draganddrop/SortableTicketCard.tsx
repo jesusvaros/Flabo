@@ -22,7 +22,7 @@ export const SortableTicketCard = ({
 }: SortableTicketCardProps) => {
   // Use the collection context to get the latest ticket data
   const { collection } = useCollection();
-  const recipeConversions = collection?.recipeConversions || [];
+  const recipe_conversions = collection?.recipe_conversions || [];
   
   // Keep a local state of the ticket that can be updated
   const [ticket, setTicket] = useState<TicketWithPositionConversion>(initialTicket);
@@ -37,7 +37,7 @@ export const SortableTicketCard = ({
         setTicket(updatedTicket);
       }
     }
-  }, [collection, initialTicket.id, recipeConversions]);
+  }, [collection, initialTicket.id, recipe_conversions]);
   
   const {
     attributes,

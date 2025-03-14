@@ -5,6 +5,7 @@ import { TicketDrawingBoard } from "../TicketDrawingBoard";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { AIConversionView } from "./AIConversionView";
+import { DISABLE_GENERATED_DRAWING } from "./DesktopTicketCard";
 
 interface MobileTicketDrawerProps {
   ticket: TicketWithPosition;
@@ -15,6 +16,8 @@ interface MobileTicketDrawerProps {
   drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
   showAIView: boolean;
   handleAIViewToggle: (show: boolean) => void;
+  showGeneratedDrawing: boolean;
+  handleDrawingToggle: (checked: boolean) => void;
 }
 
 export const MobileTicketDrawer = ({
@@ -26,6 +29,8 @@ export const MobileTicketDrawer = ({
   drawingEditorRef,
   showAIView,
   handleAIViewToggle,
+  showGeneratedDrawing,
+  handleDrawingToggle,
 }: MobileTicketDrawerProps) => {
   return (
     <Drawer open={drawerOpen} onOpenChange={onOpenChange}>
@@ -39,6 +44,15 @@ export const MobileTicketDrawer = ({
               onCheckedChange={handleAIViewToggle}
             />
             <Label htmlFor="mobile-ai-mode">AI Mode</Label>
+          </div>
+          <div className="flex items-center space-x-2 mt-2">
+            <Switch
+              disabled={DISABLE_GENERATED_DRAWING}
+              id="drawing-toggle"
+              checked={showGeneratedDrawing}
+              onCheckedChange={handleDrawingToggle}
+            />
+            <Label htmlFor="drawing-toggle">Generated Drawing</Label>
           </div>
         </DrawerHeader>
 
@@ -58,7 +72,7 @@ export const MobileTicketDrawer = ({
             ) : (
               <TicketDrawingBoard
                 ticketId={ticket.id}
-                initialDrawing={ticket.drawing}
+                initialDrawing={showGeneratedDrawing ? ticket.drawing_generated : ticket.drawing}
                 onClose={onClose}
                 ref={drawingEditorRef}
                 className="h-full"

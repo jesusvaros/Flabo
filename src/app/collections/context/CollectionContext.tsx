@@ -1,9 +1,9 @@
 "use client";
 
-import { CollectionProps, TicketWithPosition } from "@/types/collections";
+import { CollectionProps, TicketWithPosition, TicketWithPositionConversion } from "@/types/collections";
+import { RecipeConversion } from "@/types/recipe-conversions";
 import { createContext, useContext, useState, useCallback } from "react";
 import { createClient } from "../../../../utils/supabase/client";
-import { SupabaseCollection, SupabaseTicket } from "../[id]/page";
 import { 
   fetchCollectionWithTickets, 
   fetchTicketPositions, 
@@ -41,6 +41,18 @@ export function CollectionProvider({
 }: CollectionProviderProps) {
   const [collection, setCollection] = useState<CollectionProps | null>(initialCollection);
 
+  // Function to transform tickets with recipe conversions
+  const transformTicketsWithConversions = (tickets: TicketWithPosition[] = []): TicketWithPositionConversion[] => {
+    return tickets.map(ticket => {
+      const ticketConversions = ticket.recipe_conversions || [];
+      // Sort conversions by created_at in descending order (newest first)
+      const sortedConversions = [...ticketConversions].sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+      return { ...ticket, recipeConversions: sortedConversions };
+    });
+  };
+
   // Function to refetch the entire collection
   const refetchCollection = useCallback(async () => {
     if (!collection) return;
@@ -53,7 +65,8 @@ export function CollectionProvider({
     const updatedCollection = transformCollectionData(selectedCollection, ticketPositions);
     
     if (updatedCollection) {
-      setCollection(updatedCollection);
+      const transformedTickets = transformTicketsWithConversions(updatedCollection.tickets);
+      setCollection({ ...updatedCollection, tickets: transformedTickets });
     }
   }, [collection]);
   
@@ -67,6 +80,13 @@ export function CollectionProvider({
     const ticket = await fetchTicketWithDrawing(supabase, ticketId);
     const position = await fetchTicketPosition(supabase, collection.id, ticketId);
     const updatedTicket = transformTicketData(ticket, position);
+    
+    // Sort the conversions by created_at in descending order
+    if (updatedTicket && updatedTicket.recipe_conversions) {
+      updatedTicket.recipe_conversions.sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+    }
     
     // Update the ticket in the collection
     if (updatedTicket) {

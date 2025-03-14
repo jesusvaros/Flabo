@@ -93,7 +93,7 @@ export const CollectionsSidebar: React.FC<CollectionsSidebarProps> = ({
                     isActive={collection.id === currentCollectionId}
                   >
                     <Link 
-                      href={`/collections/${collection.id}`}
+                      href={`/${collection.id}`}
                       className={cn(
                         "no-underline flex items-center gap-2",
                         "transition-[width] duration-200 ease-linear"

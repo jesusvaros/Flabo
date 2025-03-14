@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Menu, Home, Library } from "lucide-react";
 import { AddTicketDrawer } from "./AddTicketDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TabsDrawer } from "./TabsDrawer";
 import {
   Sheet,
   SheetContent,
@@ -24,6 +25,7 @@ import { Separator } from "@/components/ui/separator";
 export const CollectionsView = ({
   collections,
   selectedCollection,
+  tabsContent,
 }: CollectionViewProps) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
@@ -53,9 +55,16 @@ export const CollectionsView = ({
   // Common content for both mobile and desktop views
   const renderMainContent = () => (
     <div className="flex-1 p-4 overflow-hidden">
+      <div className="flex justify-end mb-4">
+        {tabsContent && (
+          <TabsDrawer>
+            {tabsContent}
+          </TabsDrawer>
+        )}
+      </div>
       {selectedCollection ? (
         <div className="h-full flex flex-col">
-          <div className="flex justify-between items-center mb-6 mt-8 md:mt-0">
+          <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">
                 {selectedCollection.title}
@@ -121,7 +130,7 @@ export const CollectionsView = ({
         {collections.map((collection) => (
           <SheetClose key={collection.id} asChild>
             <Link 
-              href={`/collections/${collection.id}`}
+              href={`/${collection.id}`}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 hover:bg-accent",
                 collection.id === selectedCollection?.id ? "bg-accent/50 font-medium" : ""
@@ -137,9 +146,9 @@ export const CollectionsView = ({
   );
 
   return (
-    <div className="h-screen">
+    <>
       {isMobile ? (
-        <div className="h-screen">
+        <div className="h">
           {/* Mobile View with Sheet for sidebar */}
           <Sheet open={showMobileSidebar} onOpenChange={setShowMobileSidebar}>
             <SheetTrigger asChild>
@@ -160,7 +169,7 @@ export const CollectionsView = ({
           {renderMainContent()}
         </div>
       ) : (
-        <div className="flex h-screen">
+        <div className="flex">
           <CollectionsSidebar
             collections={collections}
             currentCollectionId={selectedCollection?.id}
@@ -168,6 +177,6 @@ export const CollectionsView = ({
           {renderMainContent()}
         </div>
       )}
-    </div>
+    </>
   );
 }

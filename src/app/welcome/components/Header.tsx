@@ -5,6 +5,7 @@ import AuthForm from "@/app/auth/confirm/login/authForm";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -28,6 +29,9 @@ export const Header = () => {
             <DialogContent className="fixed left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%] z-[100]">
               <DialogHeader>
                 <DialogTitle>Welcome to Flabo</DialogTitle>
+                <DialogDescription>
+                  Please sign in to continue using Flabo
+                </DialogDescription>
               </DialogHeader>
               <AuthForm onSuccess={() => setOpen(false)} />
             </DialogContent>

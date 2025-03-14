@@ -3,15 +3,16 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { TicketWithPosition } from "@/types/collections";
+import { TicketWithPosition, TicketWithPositionConversion } from "@/types/collections";
 import { CSSProperties, useState, useEffect, useCallback } from "react";
 import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BigTicketCard } from "@/app/tickets/components/BigTicketCard";
 import { useCollection } from "@/app/collections/context/CollectionContext";
+import { RecipeConversion } from "@/types/recipe-conversions";
 
 interface SortableTicketCardProps {
-  ticket: TicketWithPosition;
+  ticket: TicketWithPositionConversion;
   disabled?: boolean;
 }
 
@@ -21,21 +22,22 @@ export const SortableTicketCard = ({
 }: SortableTicketCardProps) => {
   // Use the collection context to get the latest ticket data
   const { collection } = useCollection();
+  const recipeConversions = collection?.recipeConversions || [];
   
   // Keep a local state of the ticket that can be updated
-  const [ticket, setTicket] = useState<TicketWithPosition>(initialTicket);
+  const [ticket, setTicket] = useState<TicketWithPositionConversion>(initialTicket);
   const [isExpanded, setIsExpanded] = useState(false);
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>();
   
-  // Update the ticket when the collection changes
+  // Update the ticket and its conversions when the collection changes
   useEffect(() => {
     if (collection && collection.tickets) {
-      const updatedTicket = collection.tickets.find(t => t.id === initialTicket.id);
+      const updatedTicket = collection.tickets.find(t => t.id === initialTicket.id) as TicketWithPositionConversion;
       if (updatedTicket) {
         setTicket(updatedTicket);
       }
     }
-  }, [collection, initialTicket.id]);
+  }, [collection, initialTicket.id, recipeConversions]);
   
   const {
     attributes,

@@ -20,6 +20,7 @@ export const BigTicketCard = ({
   const isMobile = useIsMobile();
   const [isDrawingBoardMounted, setIsDrawingBoardMounted] = useState(false);
   const [showAIView, setShowAIView] = useState(false);
+  const [showGeneratedDrawing, setShowGeneratedDrawing] = useState(false);
   const drawingEditorRef = useRef<{ saveDrawing: () => void }>(null);
   const { style } = useCardAnimation(clickPosition);
 
@@ -35,6 +36,10 @@ export const BigTicketCard = ({
       drawingEditorRef.current.saveDrawing();
     }
     setShowAIView(checked);
+  };
+
+  const handleDrawingToggle = (checked: boolean) => {
+    setShowGeneratedDrawing(checked);
   };
 
   const { drawerOpen, onDrawerOpenChange } =
@@ -62,6 +67,8 @@ export const BigTicketCard = ({
         drawingEditorRef={drawingEditorRef}
         showAIView={showAIView}
         handleAIViewToggle={handleAIViewToggle}
+        showGeneratedDrawing={showGeneratedDrawing}
+        handleDrawingToggle={handleDrawingToggle}
       />
     );
   }
@@ -75,6 +82,8 @@ export const BigTicketCard = ({
       drawingEditorRef={drawingEditorRef}
       showAIView={showAIView}
       handleAIViewToggle={handleAIViewToggle}
+      showGeneratedDrawing={showGeneratedDrawing}
+      handleDrawingToggle={handleDrawingToggle}
     />
   );
 };

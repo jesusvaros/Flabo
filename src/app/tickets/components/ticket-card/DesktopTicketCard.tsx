@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketWithPositionConversion } from "@/types/collections";
-import { X } from "lucide-react";
+import { X, Pencil } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { AIConversionView } from "./AIConversionView";
+import { Input } from "@/components/ui/input";
 
 interface DesktopTicketCardProps {
   ticket: TicketWithPositionConversion;
@@ -17,6 +18,12 @@ interface DesktopTicketCardProps {
   handleAIViewToggle: (show: boolean) => void;
   showGeneratedDrawing: boolean;
   handleDrawingToggle: (checked: boolean) => void;
+  isEditing: boolean;
+  editedContent: string;
+  onTitleEdit: () => void;
+  onTitleSave: () => void;
+  onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onTitleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 
@@ -32,6 +39,12 @@ export const DesktopTicketCard = ({
   handleAIViewToggle,
   showGeneratedDrawing,
   handleDrawingToggle,
+  isEditing,
+  editedContent,
+  onTitleEdit,
+  onTitleSave,
+  onTitleChange,
+  onTitleKeyDown,
 }: DesktopTicketCardProps) => {
   return (
     <>
@@ -43,9 +56,30 @@ export const DesktopTicketCard = ({
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <CardHeader className="p-4">
+        <CardHeader className="py-8 px-6 group h-14 flex justify-center">
           <div className="flex justify-between items-center mb-2">
-            <CardTitle>{ticket.content}</CardTitle>
+            <div className=" relative flex items-center">
+              {isEditing ? (
+                  <Input
+                    value={editedContent}
+                    onChange={onTitleChange}
+                    onKeyDown={onTitleKeyDown}
+                    onBlur={onTitleSave}
+                    autoFocus
+                    className="font-semibold text-xl"
+                  />
+              ) : (
+                <div className="flex items-center">
+                  <CardTitle >{ticket.content}</CardTitle>
+                  <button
+                    onClick={onTitleEdit}
+                    className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Switch

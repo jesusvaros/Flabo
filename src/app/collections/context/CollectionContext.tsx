@@ -17,6 +17,7 @@ interface CollectionContextType {
   refetchCollection: () => Promise<void>;
   refetchTicket: (ticketId: string) => Promise<TicketWithPositionConversion | null>;
   updateTicketInCollection: (updatedTicket: TicketWithPositionConversion) => void;
+  patchTicket: (ticketId: string, updates: Partial<TicketWithPositionConversion>) => Promise<TicketWithPositionConversion | null>;
   tickets: TicketWithPositionConversion[];
   updateTickets: (updatedTickets: TicketWithPositionConversion[]) => void;
 }
@@ -62,7 +63,6 @@ export function CollectionProvider({
 
     const supabase = createClient();
 
-    // Use utility functions to fetch and transform data
     const selectedCollection = await fetchCollectionWithTickets(supabase, collection.id);
     const ticketPositions = await fetchTicketPositions(supabase, collection.id);
     const updatedCollection = transformCollectionData(selectedCollection, ticketPositions);
@@ -91,10 +91,6 @@ export function CollectionProvider({
   const updateTickets = useCallback((updatedTickets: TicketWithPositionConversion[]) => {
     const transformedTickets = transformTicketsWithConversions(updatedTickets);
     setTickets(transformedTickets);
-
-    console.log('ticekts upadted')
-
-    // If we're in a collection view, also update the collection's tickets
     if (collection) {
       setCollection(prevCollection => {
         if (!prevCollection) return null;
@@ -145,8 +141,8 @@ export function CollectionProvider({
         updatedTickets.push(updatedTicket);
       }
 
-      // Update the tickets state
-      updateTickets(updatedTickets);
+      // Update the tickets state without replacing the collection tickets
+      setTickets(updatedTickets);
     }
 
     return updatedTicket;
@@ -155,12 +151,40 @@ export function CollectionProvider({
   // Function to update a ticket in the collection
 
 
+  // Function to update a ticket in the database and then refetch it
+  const patchTicket = useCallback(async (ticketId: string, updates: Partial<TicketWithPositionConversion>): Promise<TicketWithPositionConversion | null> => {
+    if (!ticketId) return null;
+    
+    const supabase = createClient();
+    
+    try {
+      const { error } = await supabase
+        .from("tickets")
+        .update({
+          content: updates.content,
+        })
+        .eq("id", ticketId);
+      
+      if (error) {
+        console.error("Error updating ticket:", error);
+        return null;
+      }
+      
+      // Refetch the ticket to get the updated data
+      return await refetchTicket(ticketId);
+    } catch (error) {
+      console.error("Error in patchTicket:", error);
+      return null;
+    }
+  }, [refetchTicket]);
+
   return (
     <CollectionContext.Provider value={{
       collection,
       refetchCollection,
       refetchTicket,
       updateTicketInCollection,
+      patchTicket,
       tickets,
       updateTickets
     }}>

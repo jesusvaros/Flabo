@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { SortableTicketsBoard } from "./draganddrop/SortableTicketsBoard";
 import { useTicketPositions } from "./draganddrop/utils/useTicketPositions";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Menu, Home, Library } from "lucide-react";
+import { Loader2, Menu, Home, Library, Filter } from "lucide-react";
 import { AddTicketDrawer } from "./AddTicketDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TabsDrawer } from "./TabsDrawer";
@@ -22,6 +22,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useCollection } from "../context/CollectionContext";
+import { AITicketFilter } from "@/app/components/AITicketFilter";
 
 export const CollectionsView = ({
   collections,
@@ -31,10 +32,11 @@ export const CollectionsView = ({
 }: CollectionViewProps & { tickets?: TicketWithPositionConversion[] }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [filteredTicketIds, setFilteredTicketIds] = useState<string[]>([]);
   const isMobile = useIsMobile();
   const { collection: selectedCollection } = useCollection();
 
-  const { tickets: localTickets, updatePositions, isUpdating, hasPendingChanges } = useTicketPositions(
+  const { tickets: localTickets, updatePositions, isUpdating } = useTicketPositions(
     {
       collectionId: selectedCollection?.id || "",
       tickets: selectedCollection?.tickets || [],
@@ -48,6 +50,13 @@ export const CollectionsView = ({
       console.log(error);
     }
   };
+
+  // Filter tickets based on search results
+  const displayedTickets = filteredTicketIds.length > 0
+    ? tickets.filter(ticket => filteredTicketIds.includes(ticket.id)) as TicketWithPositionConversion[]
+    : tickets;
+
+  const isFiltered = filteredTicketIds.length > 0;
 
   // Common content for both mobile and desktop views
   const renderMainContent = () => (
@@ -98,12 +107,31 @@ export const CollectionsView = ({
       ) : (
         <div className="h-full flex flex-col">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">All Tickets</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">All Tickets</h1>
+              {isFiltered && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Filter className="h-3 w-3 mr-1" />
+                  Filtered: {displayedTickets.length} of {tickets.length}
+                </Badge>
+              )}
+            </div>
           </div>
-          <SortableTicketsBoard
-            tickets={tickets}
-            disabled={true}
-          />
+
+          <AITicketFilter onFilterResults={setFilteredTicketIds} />
+
+          {displayedTickets.length > 0 ? (
+            <SortableTicketsBoard
+              tickets={displayedTickets}
+              disabled={true}
+            />
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+              {isFiltered ?
+                "No tickets match your filter criteria" :
+                "You don't have any tickets yet"}
+            </div>
+          )}
         </div>
       )}
     </div>

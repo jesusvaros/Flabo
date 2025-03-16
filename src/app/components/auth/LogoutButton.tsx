@@ -15,7 +15,8 @@ export const LogoutButton = () => {
     <Button
       onClick={handleLogout}
       type="button"
-      variant="destructive"
+      variant="ghost"
+      className="bg-accent hover:bg-accent/80"
     >
       Logout
     </Button>

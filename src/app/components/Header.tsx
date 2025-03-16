@@ -11,14 +11,12 @@ interface HeaderProps {
 export const HeaderLoggedIn = ({ userEmail, className }: HeaderProps) => {
   return (
     <header className={cn(
-      "flex justify-end items-center p-4 border-b bg-background z-10",
+      "flex justify-end items-center border-b bg-accent z-10",
       className
     )}>
-      <div className="flex justify-end items-center p-4">
-        <div className="flex gap-4 items-center">
-          <span>{userEmail}</span>
-          <LogoutButton />
-        </div>
+      <div className="flex gap-4 items-center flex justify-end items-center p-2">
+        <span>{userEmail}</span>
+        <LogoutButton />
       </div>
     </header>
   );

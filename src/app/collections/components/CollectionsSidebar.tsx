@@ -35,7 +35,7 @@ export const CollectionsSidebar: React.FC<CollectionsSidebarProps> = ({
     <Sidebar 
       collapsible="icon"
       className={cn(
-        "border-r bg-background",
+        "border-r bg-accent",
         "transition-[width] duration-200 ease-linear"
       )}
     >

@@ -17,8 +17,6 @@ export const useTicketPositions = ({
   const debounceTimer = useRef<NodeJS.Timeout>();
   const isSavingRef = useRef(false);
 
-  // Only update localTickets from props when the collection ID changes
-  // or when tickets array length changes (additions/deletions)
   useEffect(() => {
     if (tickets.length !== localTickets.length) {
       setLocalTickets(tickets);

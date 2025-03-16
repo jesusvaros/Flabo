@@ -15,7 +15,6 @@ import {
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { TicketWithPositionConversion } from "@/types/collections";
 import { SortableTicketCard } from "./SortableTicketCard";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSortableTickets } from "./utils/useSortableTickets";
 import { Trash2 } from "lucide-react";
 import { createClient } from "../../../../../utils/supabase/client";

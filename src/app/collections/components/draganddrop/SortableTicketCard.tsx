@@ -3,7 +3,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { TicketWithPosition, TicketWithPositionConversion } from "@/types/collections";
+import { TicketWithPositionConversion } from "@/types/collections";
 import { CSSProperties, useState, useEffect } from "react";
 import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,25 +19,21 @@ export const SortableTicketCard = ({
   ticket: initialTicket,
   disabled = false,
 }: SortableTicketCardProps) => {
-  // Use the collection context to get the latest ticket data
-  const { collection } = useCollection();
-  const recipe_conversions = collection?.recipe_conversions || [];
-  
-  // Keep a local state of the ticket that can be updated
+  const { tickets } = useCollection();
   const [ticket, setTicket] = useState<TicketWithPositionConversion>(initialTicket);
   const [isExpanded, setIsExpanded] = useState(false);
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>();
 
 
   useEffect(() => {
-    if (collection && collection.tickets) {
-      const updatedTicket = collection.tickets.find(t => t.id === initialTicket.id) as TicketWithPositionConversion;
+    if (tickets) {
+      const updatedTicket = tickets.find(t => t.id === initialTicket.id);
       if (updatedTicket) {
         setTicket(updatedTicket);
       }
     }
-  }, [collection, initialTicket.id, recipe_conversions]);
-  
+  }, [tickets , initialTicket.id]);
+
   const {
     attributes,
     listeners,
@@ -59,13 +55,13 @@ export const SortableTicketCard = ({
     if ((e.target as HTMLElement).closest("[data-drag-handle]")) {
       return;
     }
-    
+
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     setClickPosition({
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2,
     });
-    
+
     setIsExpanded(true);
   };
 
@@ -105,9 +101,9 @@ export const SortableTicketCard = ({
         )}
       </Card>
       {isExpanded && (
-        <BigTicketCard 
-          ticket={ticket} 
-          onClose={() => setIsExpanded(false)} 
+        <BigTicketCard
+          ticket={ticket}
+          onClose={() => setIsExpanded(false)}
           clickPosition={clickPosition}
         />
       )}

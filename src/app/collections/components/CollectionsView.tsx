@@ -26,15 +26,20 @@ import { AITicketFilter } from "@/app/components/AITicketFilter";
 
 export const CollectionsView = ({
   collections,
-  selectedCollection: initialSelectedCollection,
   tabsContent,
-  tickets = [],
+  tickets: initialTickets = [],
 }: CollectionViewProps & { tickets?: TicketWithPositionConversion[] }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [filteredTicketIds, setFilteredTicketIds] = useState<string[]>([]);
   const isMobile = useIsMobile();
-  const { collection: selectedCollection } = useCollection();
+  const { collection: selectedCollection, tickets, updateTickets } = useCollection();
+
+  useEffect(() => {
+    if (initialTickets.length > 0) {
+      updateTickets(initialTickets);
+    }
+  }, [initialTickets, updateTickets]);
 
   const { tickets: localTickets, updatePositions, isUpdating } = useTicketPositions(
     {
@@ -51,7 +56,6 @@ export const CollectionsView = ({
     }
   };
 
-  // Filter tickets based on search results
   const displayedTickets = filteredTicketIds.length > 0
     ? tickets.filter(ticket => filteredTicketIds.includes(ticket.id)) as TicketWithPositionConversion[]
     : tickets;
@@ -179,7 +183,6 @@ export const CollectionsView = ({
     <>
       {isMobile ? (
         <div className="h">
-          {/* Mobile View with Sheet for sidebar */}
           <Sheet open={showMobileSidebar} onOpenChange={setShowMobileSidebar}>
             <SheetTrigger asChild>
               <Button
@@ -194,8 +197,6 @@ export const CollectionsView = ({
               <MobileSidebarContent />
             </SheetContent>
           </Sheet>
-
-          {/* Main Content */}
           {renderMainContent()}
         </div>
       ) : (

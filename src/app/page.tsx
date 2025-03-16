@@ -1,9 +1,6 @@
 import { createClient } from "../../utils/supabase/server";
 import { CollectionsView } from "./collections/components/CollectionsView";
 import { redirect } from "next/navigation";
-import { Tabs } from "./components/TabContents/Tabs";
-import { TicketsTabSuspense } from "./tickets/components/TicketsTab";
-import { IngredientsTabSuspense } from "./ingredients/components/IngredientsTab";
 import { HeaderLoggedIn } from "./components/Header";
 import { CollectionProvider } from "./collections/context/CollectionContext";
 import { SupabaseTicket } from "./[id]/page";

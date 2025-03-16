@@ -1,7 +1,6 @@
 import { createClient } from "../../../utils/supabase/server";
 import { redirect } from "next/navigation";
 import { CollectionsView } from "../collections/components/CollectionsView";
-import { CollectionProps } from "@/types/collections";
 import { CollectionProvider } from "../collections/context/CollectionContext";
 import { fetchCollectionWithTickets, fetchTicketPositions, transformCollectionData } from "../collections/utils/collection-utils";
 import { Tabs } from "@/app/components/TabContents/Tabs";

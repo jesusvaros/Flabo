@@ -14,7 +14,7 @@ interface RecipeDisplayProps {
 }
 
 export const RecipeDisplay = ({ recipe, ticketId, onVisualizationGenerated }: RecipeDisplayProps) => (
-  <div className="h-full flex flex-col">
+  <div className="h-full flex flex-col flex-1 overflow-auto">
     <header className="border-b p-6 flex justify-between pr-12">
       <h2 className="text-2xl font-semibold">{recipe.title}</h2>
       <GenerateVisualizationButton

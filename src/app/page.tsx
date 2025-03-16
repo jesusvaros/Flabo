@@ -1,10 +1,9 @@
 import { createClient } from "../../utils/supabase/server";
 import { CollectionsView } from "./collections/components/CollectionsView";
 import { redirect } from "next/navigation";
-import { Tabs } from "./components/TabContents/Tabs";
-import { TicketsTabSuspense } from "./tickets/components/TicketsTab";
-import { IngredientsTabSuspense } from "./ingredients/components/IngredientsTab";
 import { HeaderLoggedIn } from "./components/Header";
+import { CollectionProvider } from "./collections/context/CollectionContext";
+import { SupabaseTicket } from "./[id]/page";
 
 export default async function CollectionPage() {
   const supabase = await createClient();
@@ -23,35 +22,61 @@ export default async function CollectionPage() {
     .select("id, title, creator_id")
     .eq("creator_id", user.id);
 
-  // Get all tickets for the user
+  // Get all tickets with their recipe conversions
   const { data: tickets } = await supabase
     .from("tickets")
-    .select("*")
-    .eq("creator_id", user.id);
+    .select(`
+      id,
+      content,
+      created_at,
+      creator_id,
+      ticket_drawings (
+        data
+      ),
+      ticket_drawings_generated (
+        data
+      ),
+      recipe_conversions (
+        id,
+        ticket_id,
+        title,
+        ingredients,
+        instructions,
+        notes,
+        created_at,
+        updated_at,
+        created_by,
+        custom_prompt
+      )
+    `)
+    .eq("creator_id", user.id) as { data: SupabaseTicket[] | null };
+  // Transform tickets to include recipe conversions
+  const transformedTickets = tickets?.map(ticket => ({
+    id: ticket.id,
+    content: ticket.content,
+    created_at: ticket.created_at,
+    creator_id: ticket.creator_id,
+    position_x: 0,
+    position_y: 0,
+    z_index: 0,
+    position: 0,
+    drawing: ticket.ticket_drawings?.data ?? null,
+    drawing_generated: ticket.ticket_drawings_generated?.data ?? null,
+    recipe_conversions: ticket.recipe_conversions || [],
+  })) || [];
 
-  // Get all ingredients for the user
-  const { data: ingredients } = await supabase
-    .from("ingredients")
-    .select("*")
-    .eq("creator_id", user.id);
-
-  // Pre-render the tabs content on the server
-  const tabsContent = (
-    <Tabs defaultValue="collections">
-      <TicketsTabSuspense tickets={tickets || []} />
-      <IngredientsTabSuspense ingredients={ingredients || []} />
-    </Tabs>
-  );
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <HeaderLoggedIn userEmail={user.email || ""} />
-      <div className="flex-1">
-        <CollectionsView 
-          collections={collections || []} 
-          tabsContent={tabsContent}
-        />
+    <CollectionProvider collection={null}>
+      <div className="flex flex-col min-h-screen">
+        <HeaderLoggedIn userEmail={user.email || ""} />
+        <div className="flex-1">
+          <CollectionsView 
+            collections={collections || []} 
+            tickets={transformedTickets}
+          />
+        </div>
       </div>
-    </div>
+    </CollectionProvider>
   );
 }

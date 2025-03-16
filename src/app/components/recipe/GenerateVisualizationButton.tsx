@@ -1,6 +1,6 @@
 "use client";
 
-import { DISABLE_GENERATED_DRAWING } from "@/app/tickets/components/ticket-card";
+import { DISABLE_GENERATED_DRAWING } from "@/app/tickets/components/ticket-card/DesktopTicketCard";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Wand2 } from "lucide-react";

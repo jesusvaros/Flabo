@@ -1,11 +1,12 @@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { TicketWithPositionConversion } from "@/types/collections";
-import { X } from "lucide-react";
+import { X, Pencil } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { AIConversionView } from "./AIConversionView";
 import { DISABLE_GENERATED_DRAWING } from "./DesktopTicketCard";
+import { Input } from "@/components/ui/input";
 
 interface MobileTicketDrawerProps {
   ticket: TicketWithPositionConversion;
@@ -18,6 +19,12 @@ interface MobileTicketDrawerProps {
   handleAIViewToggle: (show: boolean) => void;
   showGeneratedDrawing: boolean;
   handleDrawingToggle: (checked: boolean) => void;
+  isEditing: boolean;
+  editedContent: string;
+  onTitleEdit: () => void;
+  onTitleSave: () => void;
+  onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onTitleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export const MobileTicketDrawer = ({
@@ -31,12 +38,41 @@ export const MobileTicketDrawer = ({
   handleAIViewToggle,
   showGeneratedDrawing,
   handleDrawingToggle,
+  isEditing,
+  editedContent,
+  onTitleEdit,
+  onTitleSave,
+  onTitleChange,
+  onTitleKeyDown,
 }: MobileTicketDrawerProps) => {
   return (
     <Drawer open={drawerOpen} onOpenChange={onOpenChange}>
       <DrawerContent className="p-0 h-auto max-h-[90vh]">
         <DrawerHeader className="border-b border-muted py-4 px-4 pb-5">
-          <DrawerTitle>{ticket.content}</DrawerTitle>
+          <div className="group relative flex items-center mb-2">
+            {isEditing ? (
+              <div className="flex items-center w-full">
+                <Input
+                  value={editedContent}
+                  onChange={onTitleChange}
+                  onKeyDown={onTitleKeyDown}
+                  onBlur={onTitleSave}
+                  autoFocus
+                  className="font-semibold text-xl"
+                />
+              </div>
+            ) : (
+              <div className="flex items-center w-full">
+                <DrawerTitle>{ticket.content}</DrawerTitle>
+                <button
+                  onClick={onTitleEdit}
+                  className="ml-2 p-1 hover:bg-accent rounded-full"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
           <div className="flex items-center space-x-2">
             <Switch
               id="mobile-ai-mode"

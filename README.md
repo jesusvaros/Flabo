@@ -12,13 +12,12 @@ Flabo lets users visually organize and create recipes with **drag-and-drop Tldra
 - 🧠 AI-generated structured recipes from drawings
 
 ### 🌐 Live Demo (if deployed)
-[Link to Vercel Deployment]()
+wip
 
 ---
 
 ### 📸 Screenshots
-![Flabo Screenshot](path-to-image)
-
+wip
 ---
 
 ### 🛠️ Setup

@@ -1,7 +1,7 @@
-import { getLocalEmbedding } from './localEmbedding';
-import { cosineSimilarity } from './similarity';
+import { getLocalEmbedding } from "./localEmbedding";
+import { cosineSimilarity } from "./similarity";
 
-interface SearchResult {
+export interface SearchResult {
   text: string;
   score: number;
   originalIndex?: number;
@@ -9,18 +9,10 @@ interface SearchResult {
 
 export async function searchLocally(query: string, recipeTexts: string[]): Promise<SearchResult[]> {
   try {
-    console.log("Starting local search with query:", query);
-    console.log("Number of texts to search:", recipeTexts.length);
+    console.log(`Searching ${recipeTexts.length} texts for: "${query}"`);
     
     // Generate embedding for the query
-    let queryVec: number[];
-    try {
-      queryVec = await getLocalEmbedding(query);
-      console.log("Query vector generated successfully, length:", queryVec.length);
-    } catch (error) {
-      console.error("Failed to generate query embedding:", error);
-      throw new Error("Could not generate embedding for search query");
-    }
+    const queryVec = await getLocalEmbedding(query);
     
     // Generate embeddings for all recipes
     const recipeVecs: number[][] = [];
@@ -32,57 +24,40 @@ export async function searchLocally(query: string, recipeTexts: string[]): Promi
         recipeVecs.push(vec);
         validRecipeIndices.push(i);
       } catch (error) {
-        console.error(`Error generating embedding for text at index ${i}:`, error);
-        // Skip this recipe
+        // Skip this recipe if embedding fails
+        console.log(`Skipping text #${i} - embedding failed`);
       }
     }
     
-    console.log("Successfully generated embeddings for", recipeVecs.length, "out of", recipeTexts.length, "texts");
-    
     if (recipeVecs.length === 0) {
-      console.warn("No valid embeddings were generated for any texts");
       return [];
     }
 
-    // Calculate similarity scores only for valid recipes
-    const scores: SearchResult[] = validRecipeIndices.map((originalIndex, i) => {
-      const text = recipeTexts[originalIndex];
-      const vec = recipeVecs[i];
-      const score = cosineSimilarity(queryVec, vec);
-      return { text, score, originalIndex };
-    }).filter(result => !isNaN(result.score) && isFinite(result.score));
-
-    console.log("Generated", scores.length, "valid similarity scores");
+    // Calculate similarity scores
+    const scores = validRecipeIndices.map((originalIndex, i) => ({
+      text: recipeTexts[originalIndex],
+      score: cosineSimilarity(queryVec, recipeVecs[i]),
+      originalIndex
+    })).filter(result => !isNaN(result.score));
     
     // Sort by score in descending order
     const sortedScores = scores.sort((a, b) => b.score - a.score);
     
-    // Log some of the top results
-    if (sortedScores.length > 0) {
-      console.log("Top results:", sortedScores.slice(0, 3).map(r => ({ 
-        score: r.score, 
-        textPreview: r.text.substring(0, 50) + "..." 
-      })));
-    }
+    // Log top results
+    console.log(`Found ${sortedScores.length} results. Top score: ${sortedScores[0]?.score.toFixed(3) || 'none'}`);
     
     return sortedScores;
   } catch (error) {
-    console.error("Error in searchLocally:", error);
-    throw error; // Rethrow to handle in the calling function
+    console.error("Search failed:", error);
+    return [];
   }
 }
 
-export async function searchRecipes({
-  query,
-  recipeTexts,
-}: {
+export interface SearchRecipesOptions {
   query: string;
   recipeTexts: string[];
-}): Promise<SearchResult[]> {
-  try {
-    return await searchLocally(query, recipeTexts);
-  } catch (error) {
-    console.error("Error in searchRecipes:", error);
-    return []; // Return empty array on error at this level
-  }
+}
+
+export async function searchRecipes({ query, recipeTexts }: SearchRecipesOptions): Promise<SearchResult[]> {
+  return searchLocally(query, recipeTexts);
 }

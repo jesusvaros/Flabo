@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Loader2, Wand2, AlertCircle, Cpu, Cloud } from "lucide-react";
+import { Loader2, Wand2, AlertCircle, Cpu, Cloud } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "../../components/ui/toggle";
@@ -16,16 +16,19 @@ interface AITicketFilterProps {
 }
 
 export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
+    // Input and search state
     const [searchQuery, setSearchQuery] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [noResults, setNoResults] = useState(false);
-    const [activeFilter, setActiveFilter] = useState(false);
+    const [activeQuery, setActiveQuery] = useState("");
+    
+    // Search status states
+    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "no-results">("idle");
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    
+    // AI mode state
     const [useLocalAI, setUseLocalAI] = useState(true);
-    const [modelLoading, setModelLoading] = useState(false);
     const [localAIFailed, setLocalAIFailed] = useState(false);
+    
     const { toast } = useToast();
-    // Get tickets from the collection context
     const { tickets } = useCollection();
 
     // Function to prepare recipe texts for embedding
@@ -47,29 +50,20 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
     // Function to perform local search using client-side embeddings
     const performLocalSearch = async () => {
         try {
-            setModelLoading(true);
             // Prepare the recipe texts for embedding
             const recipeTexts = prepareRecipeTexts();
             
-            console.log("Starting local search with", recipeTexts.length, "texts");
-
             // Perform local search
             const searchResults = await searchRecipes({
                 query: searchQuery,
                 recipeTexts
             });
 
-            console.log("Search results:", searchResults);
-            setModelLoading(false);
-
             if (!searchResults || searchResults.length === 0) {
-                console.log("No search results returned");
-                setNoResults(true);
-                onFilterResults([]);
-                return false;
+                return { success: false, matchingIds: [] };
             }
 
-            // Use a lower threshold for better results - 0.2 is more permissive
+            // Use a lower threshold for better results
             const similarityThreshold = 0.2;
             
             // Map search results back to ticket IDs
@@ -87,28 +81,10 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                 })
                 .filter(Boolean) as string[];
 
-            console.log("Matching IDs:", matchingIds);
-
-            if (matchingIds.length === 0) {
-                console.log("No matching IDs found after filtering");
-                setNoResults(true);
-                onFilterResults([]);
-                return false;
-            } else {
-                console.log(`Found ${matchingIds.length} matching tickets`);
-                setNoResults(false);
-                onFilterResults(matchingIds);
-                setActiveFilter(true);
-                return true;
-            }
+            return { success: matchingIds.length > 0, matchingIds };
         } catch (error) {
             console.error("Local search failed:", error);
-            setModelLoading(false);
             setLocalAIFailed(true);
-            setError("Local AI search failed. Switching to Cloud AI.");
-            
-            // Automatically switch to server search
-            setUseLocalAI(false);
             
             // Show toast notification
             toast({
@@ -117,23 +93,20 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                 duration: 3000,
             });
             
-            return false;
+            // Automatically switch to server search
+            setUseLocalAI(false);
+            
+            throw error;
         }
     };
 
     // Function to perform server-side search using OpenAI
     const performServerSearch = async () => {
         try {
-            // Use the tickets from the collection context
             const response = await fetch("/api/ai/filter-tickets", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    query: searchQuery,
-                    useLocal: false
-                }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query: searchQuery, useLocal: false }),
             });
 
             if (!response.ok) {
@@ -146,20 +119,12 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                 throw new Error(data.error);
             }
 
-            if (!data.ticketIds || data.ticketIds.length === 0) {
-                setNoResults(true);
-                onFilterResults([]);
-                return false;
-            } else {
-                setNoResults(false);
-                onFilterResults(data.ticketIds);
-                setActiveFilter(true);
-                return true;
-            }
+            return { 
+                success: data.ticketIds && data.ticketIds.length > 0, 
+                matchingIds: data.ticketIds || [] 
+            };
         } catch (error) {
-            console.error("Server search failed:", error);
-            setError(error instanceof Error ? error.message : "Failed to search tickets");
-            return false;
+            throw error;
         }
     };
 
@@ -170,39 +135,40 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
             return;
         }
 
-        setIsLoading(true);
-        setError(null);
-        setNoResults(false);
+        setStatus("loading");
+        setErrorMessage(null);
 
         try {
-            let searchSuccessful = false;
+            let searchResult;
             
             // If local AI previously failed, don't try it again
             if (useLocalAI && !localAIFailed) {
-                // Try local search first
-                searchSuccessful = await performLocalSearch();
-                
-                // If local search fails, try server search as fallback
-                if (!searchSuccessful && error) {
+                try {
+                    // Try local search first
+                    searchResult = await performLocalSearch();
+                } catch (error) {
+                    // If local search fails, try server search as fallback
                     console.log("Local search failed, falling back to server search");
-                    setError(null); // Clear the error before trying server search
-                    searchSuccessful = await performServerSearch();
+                    searchResult = await performServerSearch();
                 }
             } else {
                 // Use server search directly
-                searchSuccessful = await performServerSearch();
+                searchResult = await performServerSearch();
             }
             
-            if (!searchSuccessful && !error) {
-                setNoResults(true);
+            if (searchResult.success) {
+                setStatus("success");
+                onFilterResults(searchResult.matchingIds);
+                setActiveQuery(searchQuery);
+            } else {
+                setStatus("no-results");
                 onFilterResults([]);
             }
         } catch (error) {
             console.error("Search failed:", error);
-            setError(error instanceof Error ? error.message : "Failed to search tickets");
+            setStatus("error");
+            setErrorMessage(error instanceof Error ? error.message : "Failed to search tickets");
             onFilterResults([]);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -215,9 +181,9 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
 
     const clearSearch = () => {
         setSearchQuery("");
-        setActiveFilter(false);
-        setError(null);
-        setNoResults(false);
+        setStatus("idle");
+        setErrorMessage(null);
+        setActiveQuery("");
         onFilterResults([]);
     };
 
@@ -254,7 +220,7 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                                     "px-3",
                                     useLocalAI ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"
                                 )}
-                                disabled={isLoading || localAIFailed}
+                                disabled={status === "loading" || localAIFailed}
                             >
                                 {useLocalAI ? (
                                     <Cpu className="h-4 w-4" />
@@ -275,13 +241,13 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
 
                 <Button
                     type="submit"
-                    disabled={isLoading || !searchQuery.trim() || modelLoading}
+                    disabled={status === "loading" || !searchQuery.trim()}
                     className="bg-accent hover:bg-accent/80"
                 >
-                    {isLoading || modelLoading ? (
+                    {status === "loading" ? (
                         <>
-                            <Loader2 className=" mr-2 h-4 w-4 animate-spin" />
-                            {modelLoading ? "Loading model..." : "Searching..."}
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Searching...
                         </>
                     ) : (
                         <>
@@ -292,22 +258,22 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                 </Button>
             </form>
 
-            {error && (
+            {status === "error" && errorMessage && (
                 <div className="text-sm text-red-500 flex items-center gap-1">
                     <AlertCircle className="h-4 w-4" />
-                    {error}
+                    {errorMessage}
                 </div>
             )}
 
-            {noResults && !error && (
+            {status === "no-results" && (
                 <div className="text-sm text-gray-500">
                     No matches found for "{searchQuery}"
                 </div>
             )}
 
-            {activeFilter && !noResults && !error && (
+            {status === "success" && (
                 <div className="text-sm text-blue-500">
-                    Showing AI filtered results for "{searchQuery}"
+                    Showing AI filtered results for "{activeQuery}"
                 </div>
             )}
         </div>

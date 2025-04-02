@@ -1,10 +1,21 @@
 import { OpenAI } from "openai";
 import { NextResponse } from "next/server";
 import { createClient } from "../../../../../utils/supabase/server";
+import { searchRecipes } from "../../../../../utils/embeddings";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI client only when needed
+let openai: OpenAI | null = null;
+
+const getOpenAIClient = () => {
+  if (!openai) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error("OPENAI_API_KEY is not set. Please add it to your environment variables.");
+    }
+    openai = new OpenAI({ apiKey });
+  }
+  return openai;
+};
 
 // Define the system prompt for the AI
 const SYSTEM_PROMPT = `You are an AI assistant that helps users find tickets in their collection based on natural language queries.
@@ -30,21 +41,12 @@ export async function POST(req: Request) {
   try {
     // Get the current user from Supabase
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    // Get the query from the request body
+    const { data: { user } } = await supabase.auth.getUser();
     const { query } = await req.json();
 
-    if (!query) {
+    if (!query || !user?.id) {
       return NextResponse.json(
-        { error: "Query is required" },
+        { error: "Query is required or user is not authenticated" },
         { status: 400 }
       );
     }
@@ -68,8 +70,6 @@ export async function POST(req: Request) {
       .order("created_at", { ascending: false })
       .limit(100);
 
-    console.log("tickets", tickets);
-
     if (ticketsError) {
       console.error("Error fetching tickets:", ticketsError);
       return NextResponse.json(
@@ -77,82 +77,83 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
-
-    const userPrompt = `
-      I'm looking for tickets that match the following description: ${query}
-      
-      Here are my tickets:
-      ${JSON.stringify(tickets, null, 2)}
-      
-      Return the IDs of matching tickets in a JSON object with the key "matching_ids".
-    `;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o", 
-      messages: [
-        {
-          role: "system",
-          content: SYSTEM_PROMPT,
-        },
-        {
-          role: "user",
-          content: userPrompt,
-        }
-      ],
-      temperature: 0.3, 
-      max_tokens: 500,
-      response_format: { type: "json_object" },
-    });
-
-    const content = completion.choices[0].message.content;
     
-    if (!content) {
-      return NextResponse.json(
-        { error: "No content in response from AI" },
-        { status: 500 }
-      );
-    }
-
-    // Parse the response
-    let ticketIds: string[] = [];
     try {
-      const parsedResponse = JSON.parse(content);
+      const client = getOpenAIClient();
+      
+      const userPrompt = `
+        I'm looking for tickets that match the following description: ${query}
+        
+        Here are my tickets:
+        ${JSON.stringify(tickets, null, 2)}
+        
+        Return the IDs of matching tickets in a JSON object with the key "matching_ids".
+      `;
 
-      console.log("parsedResponse", parsedResponse);
+      const completion = await client.chat.completions.create({
+        model: "gpt-4o-mini", 
+        messages: [
+          {
+            role: "system",
+            content: SYSTEM_PROMPT,
+          },
+          {
+            role: "user",
+            content: userPrompt,
+          }
+        ],
+        temperature: 0.3, 
+        max_tokens: 500,
+        response_format: { type: "json_object" },
+      });
+
+      const content = completion.choices[0].message.content;
       
-      // Check for matching_ids format first (our preferred format)
-      if (parsedResponse.matching_ids && Array.isArray(parsedResponse.matching_ids)) {
-        ticketIds = parsedResponse.matching_ids;
-      } 
-      // Fall back to other possible formats
-      else if (Array.isArray(parsedResponse)) {
-        ticketIds = parsedResponse;
-      } 
-      else if (parsedResponse.ticketIds && Array.isArray(parsedResponse.ticketIds)) {
-        ticketIds = parsedResponse.ticketIds;
+      if (!content) {
+        return NextResponse.json(
+          { error: "No content in response from AI" },
+          { status: 500 }
+        );
       }
-      else if (parsedResponse.ids && Array.isArray(parsedResponse.ids)) {
-        ticketIds = parsedResponse.ids;
+
+      // Parse the response
+      let ticketIds: string[] = [];
+      try {
+        const parsedResponse = JSON.parse(content);
+
+        console.log("parsedResponse", parsedResponse);
+        
+        // Check for matching_ids format first (our preferred format)
+        if (parsedResponse.matching_ids && Array.isArray(parsedResponse.matching_ids)) {
+          ticketIds = parsedResponse.matching_ids;
+        } 
+        // Fall back to other possible formats
+        else if (Array.isArray(parsedResponse)) {
+          ticketIds = parsedResponse;
+        } 
+        else {
+          // If we can't find a valid format, log the issue and return an empty array
+          console.error("Unexpected response format:", parsedResponse);
+          ticketIds = [];
+        }
+        
+      } catch (error) {
+        console.error("Failed to parse AI response:", error);
+        return NextResponse.json(
+          { error: "Failed to parse AI response" },
+          { status: 500 }
+        );
       }
-      else {
-        // If we can't find a valid format, log the issue and return an empty array
-        console.error("Unexpected response format:", parsedResponse);
-        ticketIds = [];
-      }
-      
-      // Ensure all returned IDs actually exist in the user's tickets
-      const validTicketIds = tickets.map(t => t.id);
-      ticketIds = ticketIds.filter((id: string) => validTicketIds.includes(id));
-      
+
+      return NextResponse.json({ ticketIds });
     } catch (error) {
-      console.error("Failed to parse AI response:", error);
+      console.error("Error with OpenAI search:", error);
+      
       return NextResponse.json(
-        { error: "Failed to parse AI response" },
+        { error: "Search failed. Please try again later or add an OpenAI API key." },
         { status: 500 }
       );
     }
-
-    return NextResponse.json({ ticketIds });
     
   } catch (error) {
     console.error("Error in filter-tickets API:", error);
@@ -161,4 +162,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-} 
+}

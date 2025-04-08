@@ -1,6 +1,5 @@
 "use client";
 
-import { DISABLE_GENERATED_DRAWING } from "@/app/tickets/components/ticket-card/DesktopTicketCard";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Wand2 } from "lucide-react";
@@ -65,7 +64,7 @@ export const GenerateVisualizationButton = ({
   return (
     <Button
       onClick={handleGenerateVisualization}
-      disabled={isGenerating || DISABLE_GENERATED_DRAWING}
+      disabled={isGenerating }
       className="flex items-center gap-2"
     >
       <Wand2 className="h-4 w-4" />

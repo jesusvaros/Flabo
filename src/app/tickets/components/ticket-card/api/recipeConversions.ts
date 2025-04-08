@@ -1,22 +1,25 @@
 import { RecipeConversion } from '@/types/recipe-conversions';
 import { createClient } from '../../../../../../utils/supabase/client';
 
+interface RecipeSource {
+  text?: string;
+  linkUrl?: string;
+  pictures?: string[];
+  customPrompt?: string;
+}
+
 interface CreateConversionParams {
   ticketId: string;
-  content: string;
-  type: 'text' | 'link' | 'image' | 'drawing';
-  customPrompt?: string;
+  sources: RecipeSource;
 }
 
 // Create a new recipe conversion
 export const createConversion = async ({
   ticketId,
-  content,
-  type,
-  customPrompt
+  sources,
 }: CreateConversionParams): Promise<RecipeConversion | null> => {
   // Client-side AI processing
-  const processedRecipe = await processRecipeWithAI(content, customPrompt);
+  const processedRecipe = await processRecipeWithAI(sources);
   
   const supabase = createClient();
   // Create entry in Supabase
@@ -24,10 +27,8 @@ export const createConversion = async ({
     .from('recipe_conversions')
     .insert({
       ticket_id: ticketId,
-      content: content,
+      content: JSON.stringify(sources),
       processed_content: processedRecipe,
-      type: type,
-      custom_prompt: customPrompt,
       created_at: new Date().toISOString(),
     })
     .select('*')
@@ -41,11 +42,31 @@ export const createConversion = async ({
   return data as RecipeConversion;
 };
 
+// Process recipe content with AI (client-side)
+// This is a placeholder for the actual AI processing logic
+async function processRecipeWithAI(sources: RecipeSource): Promise<string> {
+  console.log('Processing recipe with AI using multiple sources:', sources);
+  
+  const sourceDescription = [
+    sources.text ? `Text (${sources.text.substring(0, 30)}...)` : '',
+    sources.linkUrl ? `Link (${sources.linkUrl})` : '',
+    sources.pictures ? `Pictures (${sources.pictures.length})` : '',
+  ].filter(Boolean).join(', ');
+  
+  // In a real implementation, this would call an API endpoint or client-side AI model
+  return `Processed recipe from sources: ${sourceDescription}`;
+}
+
+interface UpdateConversionParams {
+  conversionId: string;
+  updates: Partial<RecipeConversion>;
+}
+
 // Update an existing conversion
-export const updateConversion = async (
-  conversionId: string, 
-  updates: Partial<RecipeConversion>
-): Promise<RecipeConversion | null> => {
+export const updateConversion = async ({
+  conversionId,
+  updates,
+}: UpdateConversionParams): Promise<RecipeConversion | null> => {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('recipe_conversions')
@@ -70,76 +91,11 @@ export const getConversions = async (ticketId: string): Promise<RecipeConversion
     .select('*')
     .eq('ticket_id', ticketId)
     .order('created_at', { ascending: false });
-  
+
   if (error) {
     console.error('Error fetching recipe conversions:', error);
     throw new Error(`Failed to fetch recipe conversions: ${error.message}`);
   }
   
   return data as RecipeConversion[];
-};
-
-// Client-side AI processing
-// This function processes the recipe text with client-side AI
-const processRecipeWithAI = async (content: string, customPrompt?: string): Promise<any> => {
-  // Replace with your actual AI processing logic
-  // This is a placeholder that simulates AI processing
-  try {
-    // In a real implementation, you would call your AI service here
-    // For now, we'll create a basic structure that mimics the expected format
-    
-    const defaultPrompt = "Extract the title, ingredients, instructions, and notes from this recipe.";
-    const prompt = customPrompt || defaultPrompt;
-    
-    console.log(`Processing recipe with prompt: ${prompt}`);
-    console.log(`Content to process: ${content}`);
-    
-    // Simple parsing logic - in production, this would be replaced with actual AI processing
-    const lines = content.split('\n').filter(line => line.trim().length > 0);
-    
-    let title = '';
-    const ingredients = [];
-    const instructions = [];
-    const notes = [];
-    
-    let currentSection = 'title';
-    
-    for (const line of lines) {
-      const lowerLine = line.toLowerCase().trim();
-      
-      if (lowerLine.includes('ingredient') || lowerLine === 'ingredients:') {
-        currentSection = 'ingredients';
-        continue;
-      } else if (lowerLine.includes('instruction') || lowerLine.includes('directions') || lowerLine === 'instructions:' || lowerLine === 'steps:') {
-        currentSection = 'instructions';
-        continue;
-      } else if (lowerLine.includes('note') || lowerLine === 'notes:') {
-        currentSection = 'notes';
-        continue;
-      }
-      
-      if (currentSection === 'title' && !title) {
-        title = line.trim();
-        currentSection = 'ingredients'; // Assume ingredients come after title
-      } else if (currentSection === 'ingredients') {
-        ingredients.push(line.trim());
-      } else if (currentSection === 'instructions') {
-        instructions.push(line.trim());
-      } else if (currentSection === 'notes') {
-        notes.push(line.trim());
-      }
-    }
-    
-    // Format the result to match what's expected by the recipe display
-    return {
-      title,
-      ingredients: ingredients.map(item => ({ text: item })),
-      instructions: instructions.map(item => ({ text: item })),
-      notes: notes.join('\n')
-    };
-    
-  } catch (error) {
-    console.error('Error processing recipe with AI:', error);
-    throw new Error('Failed to process recipe with AI');
-  }
 };

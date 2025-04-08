@@ -17,11 +17,6 @@ export const RecipeDisplay = ({ recipe, ticketId, onVisualizationGenerated }: Re
   <div className="h-full flex flex-col flex-1 overflow-auto">
     <header className="border-b p-6 flex justify-between pr-12">
       <h2 className="text-2xl font-semibold">{recipe.title}</h2>
-      <GenerateVisualizationButton
-        recipe={recipe}
-        ticketId={ticketId}
-        onVisualizationGenerated={onVisualizationGenerated}
-      />
     </header>
     <main className="overflow-y-auto flex-1">
       <div className="p-6 space-y-6">

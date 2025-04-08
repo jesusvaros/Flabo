@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketWithPositionConversion } from "@/types/collections";
-import { X, Pencil, Image, Link, FileEdit, ChevronLeft } from "lucide-react";
+import { X, Pencil, Image, Link, ChevronLeft } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
 import { AIConversionView } from "./AIConversionView";
 import TicketPictureBoard from "./TicketPictureBoard";
@@ -9,9 +9,11 @@ import TicketTextBoard from "./TicketTextBoard";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import { Input } from "@/components/ui/input";
 import { useTicketCard } from "./context/TicketCardContext";
+
+export type TabType = "recipe" | "notes" | "image" | "link" | "text";
 
 interface DesktopTicketCardProps {
   ticket: TicketWithPositionConversion;
@@ -27,7 +29,7 @@ interface DesktopTicketCardProps {
   style: React.CSSProperties;
 }
 
-export const DesktopTicketCard = ({
+export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
   ticket,
   onClose,
   isDrawingBoardMounted,
@@ -39,19 +41,28 @@ export const DesktopTicketCard = ({
   onTitleChange,
   onKeyDown,
   style,
-}: DesktopTicketCardProps) => {
+}) => {
   // Use the ticket card context for state management
   const { state, setActiveTab } = useTicketCard();
   const { activeTab } = state;
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab as "recipe" | "drawing" | "image" | "link" | "text");
+    // If we're changing away from the notes tab, save the drawing
+    if (activeTab === 'notes' && tab !== 'notes' && drawingEditorRef.current) {
+      console.log('Saving drawing on tab change');
+      drawingEditorRef.current.saveDrawing();
+    }
+    setActiveTab(tab as TabType);
   };
 
   const handleBackToOptions = () => {
-    if (activeTab !== "recipe") {
-      setActiveTab("recipe");
+    // Save drawing if we're on the notes tab
+    if (activeTab === 'notes' && drawingEditorRef.current) {
+      console.log('Saving drawing before navigating to recipe');
+      drawingEditorRef.current.saveDrawing();
     }
+    // Switch to recipe tab instead of closing
+    setActiveTab('recipe');
   };
 
   return (
@@ -89,7 +100,7 @@ export const DesktopTicketCard = ({
               )}
             </div>
             <Button
-              onClick={onClose}
+              onClick={handleBackToOptions}
               className="rounded-full p-1 hover:bg-gray-100 text-black"
             >
               <X className="h-4 w-4" />
@@ -107,9 +118,9 @@ export const DesktopTicketCard = ({
 
             <Tabs value={activeTab} onValueChange={handleTabChange}>
               <TabsList className="grid grid-cols-4 w-full max-w-md bg-gray-100">
-                <TabsTrigger value="drawing" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
-                  <FileEdit className="h-4 w-4 mr-2" />
-                  Drawing
+                <TabsTrigger value="notes" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Notes
                 </TabsTrigger>
                 <TabsTrigger value="image" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                   <Image className="h-4 w-4 mr-2" />
@@ -120,7 +131,7 @@ export const DesktopTicketCard = ({
                   Link
                 </TabsTrigger>
                 <TabsTrigger value="text" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
-                  <FileEdit className="h-4 w-4 mr-2" />
+                  <Pencil className="h-4 w-4 mr-2" />
                   Text
                 </TabsTrigger>
               </TabsList>
@@ -139,7 +150,7 @@ export const DesktopTicketCard = ({
                 <TabsContent value="recipe" className="h-full m-0 bg-accent">
                   <AIConversionView ticket={ticket} />
                 </TabsContent>
-                <TabsContent value="drawing" className="h-full m-0">
+                <TabsContent value="notes" className="h-full m-0">
                   <TicketDrawingBoard
                     ticketId={ticket.id}
                     initialDrawing={ticket.drawing}

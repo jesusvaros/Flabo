@@ -13,10 +13,10 @@ interface TicketCardState {
   // Picture tab state
   pictures: string[];
   
-  // Drawing tab state (already handled by ref)
+  // Notes tab state (already handled by ref)
   
   // Active tab
-  activeTab: 'recipe' | 'drawing' | 'image' | 'link' | 'text';
+  activeTab: 'recipe' | 'notes' | 'image' | 'link' | 'text';
   
   // Flag to check if any content has been modified
   isDirty: boolean;
@@ -25,7 +25,7 @@ interface TicketCardState {
 interface TicketCardContextProps {
   ticket: TicketWithPositionConversion;
   state: TicketCardState;
-  setActiveTab: (tab: 'recipe' | 'drawing' | 'image' | 'link' | 'text') => void;
+  setActiveTab: (tab: 'recipe' | 'notes' | 'image' | 'link' | 'text') => void;
   updateTextContent: (content: string) => void;
   updateLinkUrl: (url: string) => void;
   updateLinkDescription: (description: string) => void;
@@ -54,7 +54,7 @@ export const TicketCardProvider: React.FC<{
   });
   
   // Methods to update state
-  const setActiveTab = (tab: 'recipe' | 'drawing' | 'image' | 'link' | 'text') => {
+  const setActiveTab = (tab: 'recipe' | 'notes' | 'image' | 'link' | 'text') => {
     setState(prev => ({ ...prev, activeTab: tab }));
   };
   

@@ -7,6 +7,13 @@ interface UseRecipeConversionProps {
   existingConversions?: RecipeConversion[];
 }
 
+interface RecipeSource {
+  text?: string;
+  linkUrl?: string;
+  pictures?: string[];
+  customPrompt?: string;
+}
+
 export function useRecipeConversion({ ticketId, existingConversions = [] }: UseRecipeConversionProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,18 +22,16 @@ export function useRecipeConversion({ ticketId, existingConversions = [] }: UseR
     existingConversions.length > 0 ? existingConversions[0] : null
   );
 
-  // Convert text recipe to structured format
-  const convertTextToRecipe = async (textContent: string, customPrompt?: string) => {
+  // Create recipe from multiple sources
+  const createRecipeFromSources = async (sources: RecipeSource) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Create conversion in database
+      // Create conversion in database with all sources
       const newConversion = await createConversion({
         ticketId,
-        content: textContent,
-        type: 'text',
-        customPrompt,
+        sources,
       });
 
       // Update local state if conversion was successful
@@ -37,8 +42,8 @@ export function useRecipeConversion({ ticketId, existingConversions = [] }: UseR
 
       return newConversion;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to convert recipe');
-      console.error('Error converting text to recipe:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create recipe');
+      console.error('Error creating recipe:', err);
       return null;
     } finally {
       setIsLoading(false);
@@ -51,7 +56,10 @@ export function useRecipeConversion({ ticketId, existingConversions = [] }: UseR
     setError(null);
 
     try {
-      const updatedConversion = await updateConversion(conversionId, updates);
+      const updatedConversion = await updateConversion({
+        conversionId,
+        updates
+      });
 
       // Update local state if the update was successful
       if (updatedConversion) {
@@ -84,7 +92,7 @@ export function useRecipeConversion({ ticketId, existingConversions = [] }: UseR
     error,
     recipeConversions,
     selectedConversion,
-    convertTextToRecipe,
+    createRecipeFromSources,
     updateRecipeConversion,
     selectConversion,
   };

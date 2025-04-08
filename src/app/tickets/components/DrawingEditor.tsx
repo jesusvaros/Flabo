@@ -26,7 +26,7 @@ export const DrawingEditor = forwardRef<
     }
   }, [editor, initialDrawing, ticketId]);
 
-  // Define the save drawing function
+  // Define the save drawing function for explicit saves
   const handleSaveDrawing = useCallback(() => {
     if (!editor) return;
 

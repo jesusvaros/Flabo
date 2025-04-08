@@ -10,8 +10,8 @@ import TicketTextBoard from "./TicketTextBoard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState, useEffect } from "react";
 import { useTicketCard } from "./context/TicketCardContext";
+import { TabType } from "./DesktopTicketCard";
 
 interface MobileTicketDrawerProps {
   ticket: TicketWithPositionConversion;
@@ -43,13 +43,20 @@ export const MobileTicketDrawer = ({
   const { activeTab } = state;
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab as "recipe" | "drawing" | "image" | "link" | "text");
+    // If we're changing away from the notes tab, save the drawing
+    if (activeTab === 'notes' && tab !== 'notes' && drawingEditorRef.current) {
+      console.log('Saving drawing on tab change');
+      drawingEditorRef.current.saveDrawing();
+    }
+    setActiveTab(tab as TabType);
   };
 
-  const handleBackToOptions = () => {
-    if (activeTab !== "recipe") {
-      setActiveTab("recipe");
+  const handleGoToRecipe = () => {
+    // Save drawing if we're on the notes tab
+    if (activeTab === 'notes' && drawingEditorRef.current) {
+      drawingEditorRef.current.saveDrawing();
     }
+    setActiveTab('recipe');
   };
 
   return (
@@ -83,7 +90,7 @@ export const MobileTicketDrawer = ({
             </div>
 
             <Button
-              onClick={handleBackToOptions}
+              onClick={handleGoToRecipe}
               className="rounded-full px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-black flex items-center"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
@@ -93,9 +100,9 @@ export const MobileTicketDrawer = ({
 
           <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="grid grid-cols-4 w-full bg-gray-100">
-              <TabsTrigger value="drawing" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
-                <FileEdit className="h-4 w-4 mr-2" />
-                Drawing
+              <TabsTrigger value="notes" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+                <Pencil className="mr-2 h-4 w-4" />
+                Notes
               </TabsTrigger>
               <TabsTrigger value="image" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                 <Image className="h-4 w-4 mr-2" />
@@ -127,7 +134,7 @@ export const MobileTicketDrawer = ({
               <TabsContent value="recipe" className="h-full m-0 bg-accent">
                 <AIConversionView ticket={ticket} />
               </TabsContent>
-              <TabsContent value="drawing" className="h-full m-0">
+              <TabsContent value="notes" className="h-full m-0">
                 <TicketDrawingBoard
                   ticketId={ticket.id}
                   initialDrawing={ticket.drawing}

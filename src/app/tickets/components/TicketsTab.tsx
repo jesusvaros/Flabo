@@ -14,7 +14,6 @@ const transformTicket = (ticket: Ticket): TicketWithPositionConversion => ({
   z_index: 0,
   position: 0,
   drawing: null,
-  drawing_generated: null,
   recipe_conversions: [],
 });
 

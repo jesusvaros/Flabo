@@ -31,9 +31,6 @@ export async function fetchCollectionWithTickets(
           ticket_drawings (
             data
           ),
-          ticket_drawings_generated (
-            data
-          ),
           recipe_conversions (
             id,
             ticket_id,
@@ -97,7 +94,6 @@ export function transformCollectionData(
         z_index: position?.z_index ?? 0,
         position: position?.position ?? 0,
         drawing: ticket.ticket_drawings?.data ?? null,
-        drawing_generated: ticket.ticket_drawings_generated?.data ?? null,
         recipe_conversions: ticket.recipe_conversions || [],
       };
     }),
@@ -120,9 +116,6 @@ export async function fetchTicketWithDrawing(
       created_at,
       creator_id,
       ticket_drawings (
-        data
-      ),
-      ticket_drawings_generated (
         data
       ),
       recipe_conversions (
@@ -182,7 +175,6 @@ export function transformTicketData(
     z_index: position?.z_index ?? 0,
     position: position?.position ?? 0,
     drawing: ticket.ticket_drawings?.data ?? null,
-    drawing_generated: ticket.ticket_drawings_generated?.data ?? null,
     recipe_conversions: ticket.recipe_conversions.map(rc => ({
       id: rc.id,
       ticket_id: rc.ticket_id,

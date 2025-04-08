@@ -33,9 +33,6 @@ export default async function CollectionPage() {
       ticket_drawings (
         data
       ),
-      ticket_drawings_generated (
-        data
-      ),
       recipe_conversions (
         id,
         ticket_id,
@@ -61,7 +58,6 @@ export default async function CollectionPage() {
     z_index: 0,
     position: 0,
     drawing: ticket.ticket_drawings?.data ?? null,
-    drawing_generated: ticket.ticket_drawings_generated?.data ?? null,
     recipe_conversions: ticket.recipe_conversions || [],
   })) || [];
 

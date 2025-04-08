@@ -26,7 +26,6 @@ export interface TicketWithPosition extends Ticket {
   z_index: number;
   position: number;
   drawing: TLEditorSnapshot | null;
-  drawing_generated: TLEditorSnapshot | null;
 }
 
 export interface TicketWithPositionConversion extends TicketWithPosition {

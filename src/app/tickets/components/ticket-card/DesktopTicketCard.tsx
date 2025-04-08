@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketWithPositionConversion } from "@/types/collections";
-import { X, Pencil, Image, Link, FileEdit } from "lucide-react";
+import { X, Pencil, Image, Link, FileEdit, ChevronLeft } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
 import { cn } from "@/lib/utils";
 import { AIConversionView } from "./AIConversionView";
@@ -36,14 +36,11 @@ export const DesktopTicketCard = ({
   onTitleChange,
   onTitleKeyDown,
 }: DesktopTicketCardProps) => {
-  const hasRecipe = ticket.recipe_conversions && ticket.recipe_conversions.length > 0;
-  const [activeTab, setActiveTab] = useState<string>(hasRecipe ? "recipe" : "drawing");
+  const [activeTab, setActiveTab] = useState<string>("recipe");
 
-  useEffect(() => {
-    if (hasRecipe && activeTab === "drawing") {
-      setActiveTab("recipe");
-    }
-  }, [hasRecipe, ticket.recipe_conversions]);
+  const handleBackToOptions = () => {
+    setActiveTab("recipe");
+  };
 
   return (
     <>
@@ -65,7 +62,7 @@ export const DesktopTicketCard = ({
                   onKeyDown={onTitleKeyDown}
                   onBlur={onTitleSave}
                   autoFocus
-                  className="font-semibold text-xl text-black"
+                  className="font-semibold text-xl text-black bg-accent"
                 />
               ) : (
                 <div className="flex items-center">
@@ -79,31 +76,46 @@ export const DesktopTicketCard = ({
                 </div>
               )}
             </div>
-            <button
+            <Button
               onClick={onClose}
               className="rounded-full p-1 hover:bg-gray-100 text-black"
             >
               <X className="h-4 w-4" />
-            </button>
+            </Button>
+
           </div>
-          
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-            <TabsList className="grid grid-cols-4 w-full max-w-md mx-auto bg-gray-100">
-              <TabsTrigger value="recipe" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">Recipe</TabsTrigger>
-              <TabsTrigger value="drawing" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
-                <FileEdit className="h-4 w-4 mr-2" />
-                Drawing
-              </TabsTrigger>
-              <TabsTrigger value="image" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
-                <Image className="h-4 w-4 mr-2" />
-                Picture
-              </TabsTrigger>
-              <TabsTrigger value="link" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
-                <Link className="h-4 w-4 mr-2" />
-                Link
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+
+          <div className="flex items-center justify-between w-full mt-4">
+            <Button
+              onClick={handleBackToOptions}
+              className="rounded-full px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-black flex items-center"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              <span className="text-sm font-medium">Recipe</span>
+            </Button>
+
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid grid-cols-4 w-full max-w-md bg-gray-100">
+                <TabsTrigger value="drawing" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+                  <FileEdit className="h-4 w-4 mr-2" />
+                  Drawing
+                </TabsTrigger>
+                <TabsTrigger value="image" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+                  <Image className="h-4 w-4 mr-2" />
+                  Picture
+                </TabsTrigger>
+                <TabsTrigger value="link" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+                  <Link className="h-4 w-4 mr-2" />
+                  Link
+                </TabsTrigger>
+                <TabsTrigger value="text" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+                  <FileEdit className="h-4 w-4 mr-2" />
+                  Text
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
         </CardHeader>
         <CardContent className="p-0">
           <div className="transition-all duration-200 ease-in-out bg-accent" style={{
@@ -155,6 +167,24 @@ export const DesktopTicketCard = ({
                       />
                       <Button variant="outline" className="w-full mt-2 bg-accent border text-black hover:bg-gray-50">
                         Add Link
+                      </Button>
+                    </div>
+                  </div>
+                </TabsContent>
+                <TabsContent value="text" className="h-full m-0 bg-accent">
+                  <div className="h-full flex flex-col items-center justify-center p-6">
+                    <FileEdit className="h-12 w-12 mb-4 text-gray-600" />
+                    <h3 className="text-lg font-medium mb-2 text-black">Add Text</h3>
+                    <p className="text-sm text-gray-600 text-center mb-4">
+                      Add additional text notes to your recipe
+                    </p>
+                    <div className="w-full max-w-md">
+                      <textarea
+                        placeholder="Add your notes here..."
+                        className="w-full h-32 p-3 bg-accent text-black border rounded-md resize-none"
+                      />
+                      <Button variant="outline" className="w-full mt-2 bg-accent border text-black hover:bg-gray-50">
+                        Save Notes
                       </Button>
                     </div>
                   </div>

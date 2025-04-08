@@ -1,6 +1,6 @@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { TicketWithPositionConversion } from "@/types/collections";
-import { X, Pencil, Image, Link, FileEdit } from "lucide-react";
+import { X, Pencil, Image, Link, FileEdit, ChevronLeft } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
 import { AIConversionView } from "./AIConversionView";
 import { Input } from "@/components/ui/input";
@@ -37,49 +37,54 @@ export const MobileTicketDrawer = ({
   onTitleChange,
   onTitleKeyDown,
 }: MobileTicketDrawerProps) => {
-  // Determine which tab to show by default based on whether a recipe exists
-  const hasRecipe = ticket.recipe_conversions && ticket.recipe_conversions.length > 0;
-  const [activeTab, setActiveTab] = useState<string>(hasRecipe ? "recipe" : "drawing");
-
-  // Update the default tab whenever the recipe status changes
-  useEffect(() => {
-    if (hasRecipe && activeTab === "drawing") {
-      setActiveTab("recipe");
-    }
-  }, [hasRecipe, ticket.recipe_conversions]);
+  const [activeTab, setActiveTab] = useState<string>("recipe");
+  const handleBackToOptions = () => {
+    setActiveTab("recipe");
+  };
 
   return (
     <Drawer open={drawerOpen} onOpenChange={onOpenChange}>
       <DrawerContent className="p-0 h-auto max-h-[90vh] bg-accent">
         <DrawerHeader className="border-b py-4 px-4 bg-accent">
-          <div className="group relative flex items-center mb-2">
-            {isEditing ? (
-              <div className="flex items-center w-full">
-                <Input
-                  value={editedContent}
-                  onChange={onTitleChange}
-                  onKeyDown={onTitleKeyDown}
-                  onBlur={onTitleSave}
-                  autoFocus
-                  className="font-semibold text-xl text-black"
-                />
-              </div>
-            ) : (
-              <div className="flex items-center w-full">
-                <DrawerTitle className="font-semibold text-black">{ticket.content}</DrawerTitle>
-                <button
-                  onClick={onTitleEdit}
-                  className="ml-2 p-1 hover:bg-gray-100 rounded-full"
-                >
-                  <Pencil className="h-4 w-4 text-black" />
-                </button>
-              </div>
+          <div className="flex justify-between items-center">
+            <div className="group relative flex items-center mb-2">
+              {isEditing ? (
+                <div className="flex items-center w-full">
+                  <Input
+                    value={editedContent}
+                    onChange={onTitleChange}
+                    onKeyDown={onTitleKeyDown}
+                    onBlur={onTitleSave}
+                    autoFocus
+                    className="font-semibold text-xl text-black bg-accent"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center w-full">
+                  <DrawerTitle className="font-semibold text-black">{ticket.content}</DrawerTitle>
+                  <button
+                    onClick={onTitleEdit}
+                    className="ml-2 p-1 hover:bg-gray-100 rounded-full"
+                  >
+                    <Pencil className="h-4 w-4 text-black" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {activeTab !== "recipe" && (
+              <button
+                onClick={handleBackToOptions}
+                className="rounded-full p-1.5 bg-gray-100 hover:bg-gray-200 text-black flex items-center"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                <span className="text-sm font-medium">Back to Recipe</span>
+              </button>
             )}
           </div>
-          
+
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
             <TabsList className="grid grid-cols-4 w-full bg-gray-100">
-              <TabsTrigger value="recipe" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">Recipe</TabsTrigger>
               <TabsTrigger value="drawing" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                 <FileEdit className="h-4 w-4 mr-2" />
                 Drawing
@@ -91,6 +96,10 @@ export const MobileTicketDrawer = ({
               <TabsTrigger value="link" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                 <Link className="h-4 w-4 mr-2" />
                 Link
+              </TabsTrigger>
+              <TabsTrigger value="text" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+                <FileEdit className="h-4 w-4 mr-2" />
+                Text
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -152,9 +161,28 @@ export const MobileTicketDrawer = ({
                   </div>
                 </div>
               </TabsContent>
+              <TabsContent value="text" className="h-full m-0 bg-accent">
+                <div className="h-full flex flex-col items-center justify-center p-6">
+                  <FileEdit className="h-12 w-12 mb-4 text-gray-600" />
+                  <h3 className="text-lg font-medium mb-2 text-black">Add Text</h3>
+                  <p className="text-sm text-gray-600 text-center mb-4">
+                    Add additional text notes to your recipe
+                  </p>
+                  <div className="w-full">
+                    <textarea
+                      placeholder="Add your notes here..."
+                      className="w-full h-32 p-3 bg-accent text-black border rounded-md resize-none"
+                    />
+                    <Button variant="outline" className="w-full mt-2 bg-accent border text-black hover:bg-gray-50">
+                      Save Notes
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
             </Tabs>
           </div>
-        )}
+        )
+        }
       </DrawerContent>
       <button
         onClick={onClose}

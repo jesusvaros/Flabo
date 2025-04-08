@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { CollectionsSidebar } from "./CollectionsSidebar";
-import { CreateCollectionCard } from "./CreateCollectionCard";
 import { CollectionViewProps, TicketWithPositionConversion } from "@/types/collections";
 import { Button } from "@/components/ui/button";
 import { SortableTicketsBoard } from "./draganddrop/SortableTicketsBoard";
@@ -55,88 +54,72 @@ export const CollectionsView = ({
       console.log(error);
     }
   };
+  const ticketsToUse = selectedCollection ? localTickets : tickets;
 
   const displayedTickets = filteredTicketIds.length > 0
-    ? tickets.filter(ticket => filteredTicketIds.includes(ticket.id)) as TicketWithPositionConversion[]
-    : tickets;
+    ? filteredTicketIds.map(id => ticketsToUse.find(ticket => ticket.id === id))
+      .filter(Boolean) as TicketWithPositionConversion[]
+    : ticketsToUse;
 
   const isFiltered = filteredTicketIds.length > 0;
 
-  // Common content for both mobile and desktop views
   const renderMainContent = () => (
-    <div className="flex-1 p-4 overflow-hidden">
-      <div className="flex justify-end mb-4">
-        {selectedCollection && tabsContent && (
-          <TabsDrawer>
-            {tabsContent}
-          </TabsDrawer>
+    <div className="flex-1 p-4 overflow-hidden flex flex-col">
+      {selectedCollection && tabsContent && (
+        <div className="flex justify-end mb-4">
+          <TabsDrawer>{tabsContent}</TabsDrawer>
+        </div>
+      )}
+
+      <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
+        {selectedCollection ? selectedCollection.title : "All Tickets"}
+        {isUpdating && (
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Saving
+          </Badge>
         )}
-      </div>
-      {selectedCollection ? (
-        <div className="h-full flex flex-col">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">
-                {selectedCollection.title}
-              </h1>
-              {isUpdating && (
-                <Badge
-                  variant="secondary"
-                  className="flex items-center gap-1"
-                >
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Saving
-                </Badge>
-              )}
-            </div>
-            <div className="flex items-center gap-4">
-              <Button onClick={() => setIsDrawerOpen(true)}>
-                Add Tickets
-              </Button>
-            </div>
-          </div>
-          <SortableTicketsBoard
-            tickets={localTickets}
-            onReorder={handleReorder}
-          />
-          <AddTicketDrawer
-            isOpen={isDrawerOpen}
-            onOpenChange={setIsDrawerOpen}
-            collectionId={selectedCollection.id}
-            onTicketsAdded={() => {
-              window.location.reload();
-            }}
-          />
-        </div>
+        {isFiltered && (
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <Filter className="h-3 w-3 mr-1" />
+            Filtered: {displayedTickets.length} of {selectedCollection ? localTickets.length : tickets.length}
+          </Badge>
+        )}
+      </h1>
+
+      <AITicketFilter
+        onFilterResults={setFilteredTicketIds}
+        tickets={selectedCollection ? localTickets : tickets}
+      />
+      {selectedCollection && (
+        <Button onClick={() => setIsDrawerOpen(true)} className="bg-accent hover:bg-accent/80 mb-4">
+          Add Tickets
+        </Button>
+      )}
+
+      {displayedTickets.length > 0 || (!isFiltered && selectedCollection) ? (
+        <SortableTicketsBoard
+          tickets={isFiltered ? displayedTickets : (selectedCollection ? localTickets : displayedTickets)}
+          onReorder={!isFiltered && selectedCollection ? handleReorder : undefined}
+          disabled={isFiltered || !selectedCollection}
+        />
       ) : (
-        <div className="h-full flex flex-col">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">All Tickets</h1>
-              {isFiltered && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  <Filter className="h-3 w-3 mr-1" />
-                  Filtered: {displayedTickets.length} of {tickets.length}
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          <AITicketFilter onFilterResults={setFilteredTicketIds} />
-
-          {displayedTickets.length > 0 ? (
-            <SortableTicketsBoard
-              tickets={displayedTickets}
-              disabled={true}
-            />
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground">
-              {isFiltered ?
-                "No tickets match your filter criteria" :
-                "You don't have any tickets yet"}
-            </div>
-          )}
+        <div className="flex-1 flex items-center justify-center text-muted-foreground">
+          {isFiltered ?
+            "No tickets match your filter criteria" :
+            "You don't have any tickets yet"}
         </div>
+      )}
+
+      {selectedCollection && (
+        <AddTicketDrawer
+          isOpen={isDrawerOpen}
+          onOpenChange={setIsDrawerOpen}
+          collectionId={selectedCollection.id}
+          onTicketsAdded={() => {
+            window.location.reload();
+          }}
+        />
       )}
     </div>
   );

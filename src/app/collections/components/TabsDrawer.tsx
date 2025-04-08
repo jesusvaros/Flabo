@@ -12,16 +12,16 @@ export function TabsDrawer({ children }: TabsDrawerProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
+        <Button className="flex items-center gap-2">
           <Layers className="h-4 w-4" />
-          <span>Show All</span>
+          <span>Ingredients</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>All Content</SheetTitle>
+          <SheetTitle>Ingredients</SheetTitle>
           <SheetDescription>
-            View and manage all your content in one place
+            View all the ingredients for this collection
           </SheetDescription>
         </SheetHeader>
         <div className="h-full w-full pt-6">

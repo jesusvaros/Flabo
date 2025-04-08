@@ -19,15 +19,15 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
     // Input and search state
     const [searchQuery, setSearchQuery] = useState("");
     const [activeQuery, setActiveQuery] = useState("");
-    
+
     // Search status states
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "no-results">("idle");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    
+
     // AI mode state
     const [useLocalAI, setUseLocalAI] = useState(true);
     const [localAIFailed, setLocalAIFailed] = useState(false);
-    
+
     const { toast } = useToast();
     const { tickets } = useCollection();
 
@@ -36,12 +36,11 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
         return tickets.map(ticket => {
             const recipeConversion = ticket.recipe_conversions?.[0];
             if (recipeConversion) {
-                return `
-                    Title: ${recipeConversion.title || ''}
+                return `Main Title: ${ticket.content || ''}
+                    Recipe Title: ${recipeConversion.title || ''}
                     Ingredients: ${recipeConversion.ingredients || ''}
                     Instructions: ${recipeConversion.instructions || ''}
-                    Notes: ${recipeConversion.notes || ''}
-                `;
+                    Notes: ${recipeConversion.notes || ''}`;
             }
             return ticket.content || '';
         });
@@ -52,7 +51,7 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
         try {
             // Prepare the recipe texts for embedding
             const recipeTexts = prepareRecipeTexts();
-            
+
             // Perform local search
             const searchResults = await searchRecipes({
                 query: searchQuery,
@@ -65,7 +64,9 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
 
             // Use a lower threshold for better results
             const similarityThreshold = 0.2;
-            
+
+            console.log("Search results:", searchResults);
+
             // Map search results back to ticket IDs
             const matchingIds = searchResults
                 .filter(result => result.score > similarityThreshold)
@@ -74,7 +75,7 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                     if (result.originalIndex !== undefined && result.originalIndex >= 0 && result.originalIndex < tickets.length) {
                         return tickets[result.originalIndex].id;
                     }
-                    
+
                     // Otherwise fall back to finding the index by text
                     const index = recipeTexts.findIndex(text => text === result.text);
                     return index >= 0 ? tickets[index].id : null;
@@ -85,17 +86,13 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
         } catch (error) {
             console.error("Local search failed:", error);
             setLocalAIFailed(true);
-            
+
             // Show toast notification
             toast({
                 title: "Local AI unavailable",
                 description: "Switched to Cloud AI for better results.",
                 duration: 3000,
             });
-            
-            // Automatically switch to server search
-            setUseLocalAI(false);
-            
             throw error;
         }
     };
@@ -119,9 +116,9 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                 throw new Error(data.error);
             }
 
-            return { 
-                success: data.ticketIds && data.ticketIds.length > 0, 
-                matchingIds: data.ticketIds || [] 
+            return {
+                success: data.ticketIds && data.ticketIds.length > 0,
+                matchingIds: data.ticketIds || []
             };
         } catch (error) {
             throw error;
@@ -140,22 +137,15 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
 
         try {
             let searchResult;
-            
+
             // If local AI previously failed, don't try it again
             if (useLocalAI && !localAIFailed) {
-                try {
-                    // Try local search first
-                    searchResult = await performLocalSearch();
-                } catch (error) {
-                    // If local search fails, try server search as fallback
-                    console.log("Local search failed, falling back to server search");
-                    searchResult = await performServerSearch();
-                }
+                searchResult = await performLocalSearch();
+
             } else {
-                // Use server search directly
                 searchResult = await performServerSearch();
             }
-            
+
             if (searchResult.success) {
                 setStatus("success");
                 onFilterResults(searchResult.matchingIds);
@@ -165,7 +155,6 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                 onFilterResults([]);
             }
         } catch (error) {
-            console.error("Search failed:", error);
             setStatus("error");
             setErrorMessage(error instanceof Error ? error.message : "Failed to search tickets");
             onFilterResults([]);
@@ -230,10 +219,10 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                             </Toggle>
                         </TooltipTrigger>
                         <TooltipContent>
-                            {localAIFailed 
-                                ? "Local AI unavailable" 
-                                : useLocalAI 
-                                    ? "Using local AI (faster)" 
+                            {localAIFailed
+                                ? "Local AI unavailable"
+                                : useLocalAI
+                                    ? "Using local AI (faster)"
                                     : "Using cloud AI (more accurate)"}
                         </TooltipContent>
                     </Tooltip>

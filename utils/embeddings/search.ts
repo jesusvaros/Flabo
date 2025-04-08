@@ -44,7 +44,7 @@ export async function searchLocally(query: string, recipeTexts: string[]): Promi
     const sortedScores = scores.sort((a, b) => b.score - a.score);
     
     // Log top results
-    console.log(`Found ${sortedScores.length} results. Top score: ${sortedScores[0]?.score.toFixed(3) || 'none'}`);
+    console.log(`Found ${sortedScores.length} results. Top score: ${sortedScores[0].text || 'none'}`);
     
     return sortedScores;
   } catch (error) {

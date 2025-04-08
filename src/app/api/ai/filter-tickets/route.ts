@@ -1,7 +1,6 @@
 import { OpenAI } from "openai";
 import { NextResponse } from "next/server";
 import { createClient } from "../../../../../utils/supabase/server";
-import { searchRecipes } from "../../../../../utils/embeddings";
 
 // Initialize OpenAI client only when needed
 let openai: OpenAI | null = null;

@@ -57,7 +57,8 @@ export const CollectionsView = ({
   };
 
   const displayedTickets = filteredTicketIds.length > 0
-    ? tickets.filter(ticket => filteredTicketIds.includes(ticket.id)) as TicketWithPositionConversion[]
+    ? filteredTicketIds.map(id => tickets.find(ticket => ticket.id === id))
+        .filter(Boolean) as TicketWithPositionConversion[]
     : tickets;
 
   const isFiltered = filteredTicketIds.length > 0;

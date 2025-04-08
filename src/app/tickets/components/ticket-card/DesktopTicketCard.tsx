@@ -154,7 +154,6 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
                   <TicketDrawingBoard
                     ticketId={ticket.id}
                     initialDrawing={ticket.drawing}
-                    onClose={onClose}
                     ref={drawingEditorRef}
                     className="h-full"
                     fullHeight

@@ -2,8 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketWithPositionConversion } from "@/types/collections";
 import { X, Pencil, Image, Link, FileEdit, ChevronLeft } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
-import { cn } from "@/lib/utils";
 import { AIConversionView } from "./AIConversionView";
+import TicketPictureBoard from "./TicketPictureBoard";
+import TicketLinkBoard from "./TicketLinkBoard";
+import TicketTextBoard from "./TicketTextBoard";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -140,54 +143,28 @@ export const DesktopTicketCard = ({
                   />
                 </TabsContent>
                 <TabsContent value="image" className="h-full m-0 bg-accent">
-                  <div className="h-full flex flex-col items-center justify-center p-6">
-                    <Image className="h-12 w-12 mb-4 text-gray-600" />
-                    <h3 className="text-lg font-medium mb-2 text-black">Add an Image</h3>
-                    <p className="text-sm text-gray-600 text-center mb-4">
-                      Upload an image to accompany your recipe
-                    </p>
-                    <div className="w-full max-w-md p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-gray-50 transition-colors bg-accent">
-                      <p className="text-sm font-medium text-black">Click to upload or drag and drop</p>
-                      <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
-                    </div>
-                  </div>
+                  <TicketPictureBoard
+                    ticketId={ticket.id}
+                    onClose={onClose}
+                    className="h-full"
+                    fullHeight
+                  />
                 </TabsContent>
                 <TabsContent value="link" className="h-full m-0 bg-accent">
-                  <div className="h-full flex flex-col items-center justify-center p-6">
-                    <Link className="h-12 w-12 mb-4 text-gray-600" />
-                    <h3 className="text-lg font-medium mb-2 text-black">Add a Link</h3>
-                    <p className="text-sm text-gray-600 text-center mb-4">
-                      Add a link to an external resource for your recipe
-                    </p>
-                    <div className="w-full max-w-md">
-                      <Input
-                        type="url"
-                        placeholder="https://example.com/recipe"
-                        className="w-full bg-accent text-black"
-                      />
-                      <Button variant="outline" className="w-full mt-2 bg-accent border text-black hover:bg-gray-50">
-                        Add Link
-                      </Button>
-                    </div>
-                  </div>
+                  <TicketLinkBoard
+                    ticketId={ticket.id}
+                    onClose={onClose}
+                    className="h-full"
+                    fullHeight
+                  />
                 </TabsContent>
                 <TabsContent value="text" className="h-full m-0 bg-accent">
-                  <div className="h-full flex flex-col items-center justify-center p-6">
-                    <FileEdit className="h-12 w-12 mb-4 text-gray-600" />
-                    <h3 className="text-lg font-medium mb-2 text-black">Add Text</h3>
-                    <p className="text-sm text-gray-600 text-center mb-4">
-                      Add additional text notes to your recipe
-                    </p>
-                    <div className="w-full max-w-md">
-                      <textarea
-                        placeholder="Add your notes here..."
-                        className="w-full h-32 p-3 bg-accent text-black border rounded-md resize-none"
-                      />
-                      <Button variant="outline" className="w-full mt-2 bg-accent border text-black hover:bg-gray-50">
-                        Save Notes
-                      </Button>
-                    </div>
-                  </div>
+                  <TicketTextBoard
+                    ticketId={ticket.id}
+                    onClose={onClose}
+                    className="h-full"
+                    fullHeight
+                  />
                 </TabsContent>
               </Tabs>
             )}

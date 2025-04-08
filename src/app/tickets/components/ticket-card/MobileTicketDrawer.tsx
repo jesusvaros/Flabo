@@ -50,8 +50,8 @@ export const MobileTicketDrawer = ({
 
   return (
     <Drawer open={drawerOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="p-0 h-auto max-h-[90vh]">
-        <DrawerHeader className="border-b border-muted py-4 px-4">
+      <DrawerContent className="p-0 h-auto max-h-[90vh] bg-accent">
+        <DrawerHeader className="border-b py-4 px-4 bg-accent">
           <div className="group relative flex items-center mb-2">
             {isEditing ? (
               <div className="flex items-center w-full">
@@ -61,34 +61,34 @@ export const MobileTicketDrawer = ({
                   onKeyDown={onTitleKeyDown}
                   onBlur={onTitleSave}
                   autoFocus
-                  className="font-semibold text-xl"
+                  className="font-semibold text-xl text-black"
                 />
               </div>
             ) : (
               <div className="flex items-center w-full">
-                <DrawerTitle>{ticket.content}</DrawerTitle>
+                <DrawerTitle className="font-semibold text-black">{ticket.content}</DrawerTitle>
                 <button
                   onClick={onTitleEdit}
-                  className="ml-2 p-1 hover:bg-accent rounded-full"
+                  className="ml-2 p-1 hover:bg-gray-100 rounded-full"
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Pencil className="h-4 w-4 text-black" />
                 </button>
               </div>
             )}
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-            <TabsList className="grid grid-cols-4 w-full">
-              <TabsTrigger value="recipe">Recipe</TabsTrigger>
-              <TabsTrigger value="drawing">
+            <TabsList className="grid grid-cols-4 w-full bg-gray-100">
+              <TabsTrigger value="recipe" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">Recipe</TabsTrigger>
+              <TabsTrigger value="drawing" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                 <FileEdit className="h-4 w-4 mr-2" />
                 Drawing
               </TabsTrigger>
-              <TabsTrigger value="image">
+              <TabsTrigger value="image" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                 <Image className="h-4 w-4 mr-2" />
                 Picture
               </TabsTrigger>
-              <TabsTrigger value="link">
+              <TabsTrigger value="link" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                 <Link className="h-4 w-4 mr-2" />
                 Link
               </TabsTrigger>
@@ -98,7 +98,7 @@ export const MobileTicketDrawer = ({
 
         {isDrawingBoardMounted && (
           <div
-            className="transition-all duration-200 ease-in-out"
+            className="transition-all duration-200 ease-in-out bg-accent"
             style={{
               height: "80vh",
               overflow: "hidden",
@@ -107,7 +107,7 @@ export const MobileTicketDrawer = ({
             }}
           >
             <Tabs value={activeTab} className="h-full">
-              <TabsContent value="recipe" className="h-full m-0">
+              <TabsContent value="recipe" className="h-full m-0 bg-accent">
                 <AIConversionView ticket={ticket} />
               </TabsContent>
               <TabsContent value="drawing" className="h-full m-0">
@@ -120,33 +120,33 @@ export const MobileTicketDrawer = ({
                   fullHeight
                 />
               </TabsContent>
-              <TabsContent value="image" className="h-full m-0">
+              <TabsContent value="image" className="h-full m-0 bg-accent">
                 <div className="h-full flex flex-col items-center justify-center p-6">
-                  <Image className="h-12 w-12 mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-medium mb-2">Add an Image</h3>
-                  <p className="text-sm text-muted-foreground text-center mb-4">
+                  <Image className="h-12 w-12 mb-4 text-gray-600" />
+                  <h3 className="text-lg font-medium mb-2 text-black">Add an Image</h3>
+                  <p className="text-sm text-gray-600 text-center mb-4">
                     Upload an image to accompany your recipe
                   </p>
-                  <div className="w-full p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50 transition-colors">
-                    <p className="text-sm font-medium">Click to upload or drag and drop</p>
-                    <p className="text-xs text-muted-foreground mt-1">PNG, JPG, GIF up to 10MB</p>
+                  <div className="w-full p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-gray-50 transition-colors bg-accent">
+                    <p className="text-sm font-medium text-black">Click to upload or drag and drop</p>
+                    <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="link" className="h-full m-0">
+              <TabsContent value="link" className="h-full m-0 bg-accent">
                 <div className="h-full flex flex-col items-center justify-center p-6">
-                  <Link className="h-12 w-12 mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-medium mb-2">Add a Link</h3>
-                  <p className="text-sm text-muted-foreground text-center mb-4">
+                  <Link className="h-12 w-12 mb-4 text-gray-600" />
+                  <h3 className="text-lg font-medium mb-2 text-black">Add a Link</h3>
+                  <p className="text-sm text-gray-600 text-center mb-4">
                     Add a link to an external resource for your recipe
                   </p>
                   <div className="w-full">
                     <Input
                       type="url"
                       placeholder="https://example.com/recipe"
-                      className="w-full"
+                      className="w-full bg-accent text-black"
                     />
-                    <Button variant="secondary" className="w-full mt-2">
+                    <Button variant="outline" className="w-full mt-2 bg-accent border text-black hover:bg-gray-50">
                       Add Link
                     </Button>
                   </div>
@@ -158,7 +158,7 @@ export const MobileTicketDrawer = ({
       </DrawerContent>
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 rounded-full p-1 hover:bg-accent"
+        className="absolute top-4 right-4 rounded-full p-1 hover:bg-gray-100 text-black"
       >
         <X className="h-4 w-4" />
       </button>

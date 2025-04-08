@@ -42,7 +42,7 @@ export default async function TicketPage(props: Props) {
     <div className="px-6 py-6 max-w-3xl mx-auto">
       <BackButton />
       <h1 className="text-2xl font-semibold mb-4">{ticket.content}</h1>
-      <div className="bg-white p-6 rounded-lg shadow-sm">
+      <div className="bg-accent p-6 rounded-lg shadow-sm">
         <p>{ticket.content}</p>
       </div>
       <div className="mt-6 text-sm text-muted-foreground">

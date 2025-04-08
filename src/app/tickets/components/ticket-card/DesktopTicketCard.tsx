@@ -50,12 +50,12 @@ export const DesktopTicketCard = ({
       <Card
         style={style}
         className={cn(
-          "select-none fixed z-50 bg-accent border-muted shadow-lg",
+          "select-none fixed z-50 bg-accent border shadow-lg",
           "w-[90%] max-w-6xl"
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <CardHeader className="py-6 px-6 group">
+        <CardHeader className="py-6 px-6 group border-b bg-accent">
           <div className="flex justify-between items-center mb-2">
             <div className="relative flex items-center">
               {isEditing ? (
@@ -65,48 +65,48 @@ export const DesktopTicketCard = ({
                   onKeyDown={onTitleKeyDown}
                   onBlur={onTitleSave}
                   autoFocus
-                  className="font-semibold text-xl"
+                  className="font-semibold text-xl text-black"
                 />
               ) : (
                 <div className="flex items-center">
-                  <CardTitle>{ticket.content}</CardTitle>
+                  <CardTitle className="font-semibold text-black">{ticket.content}</CardTitle>
                   <button
                     onClick={onTitleEdit}
-                    className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full"
+                    className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-gray-100"
                   >
-                    <Pencil className="h-4 w-4" />
+                    <Pencil className="h-4 w-4 text-black" />
                   </button>
                 </div>
               )}
             </div>
             <button
               onClick={onClose}
-              className="rounded-full p-1 hover:bg-accent"
+              className="rounded-full p-1 hover:bg-gray-100 text-black"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-            <TabsList className="grid grid-cols-4 w-full max-w-md mx-auto">
-              <TabsTrigger value="recipe">Recipe</TabsTrigger>
-              <TabsTrigger value="drawing">
+            <TabsList className="grid grid-cols-4 w-full max-w-md mx-auto bg-gray-100">
+              <TabsTrigger value="recipe" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">Recipe</TabsTrigger>
+              <TabsTrigger value="drawing" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                 <FileEdit className="h-4 w-4 mr-2" />
                 Drawing
               </TabsTrigger>
-              <TabsTrigger value="image">
+              <TabsTrigger value="image" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                 <Image className="h-4 w-4 mr-2" />
                 Picture
               </TabsTrigger>
-              <TabsTrigger value="link">
+              <TabsTrigger value="link" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                 <Link className="h-4 w-4 mr-2" />
                 Link
               </TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>
-        <CardContent>
-          <div className="transition-all duration-200 ease-in-out" style={{
+        <CardContent className="p-0">
+          <div className="transition-all duration-200 ease-in-out bg-accent" style={{
             height: isDrawingBoardMounted ? "80vh" : "0",
             overflow: "hidden",
             borderRadius: "0.375rem",
@@ -114,7 +114,7 @@ export const DesktopTicketCard = ({
           }}>
             {isDrawingBoardMounted && (
               <Tabs value={activeTab} className="h-full">
-                <TabsContent value="recipe" className="h-full m-0">
+                <TabsContent value="recipe" className="h-full m-0 bg-accent">
                   <AIConversionView ticket={ticket} />
                 </TabsContent>
                 <TabsContent value="drawing" className="h-full m-0">
@@ -123,35 +123,37 @@ export const DesktopTicketCard = ({
                     initialDrawing={ticket.drawing}
                     onClose={onClose}
                     ref={drawingEditorRef}
+                    className="h-full"
+                    fullHeight
                   />
                 </TabsContent>
-                <TabsContent value="image" className="h-full m-0">
+                <TabsContent value="image" className="h-full m-0 bg-accent">
                   <div className="h-full flex flex-col items-center justify-center p-6">
-                    <Image className="h-12 w-12 mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-medium mb-2">Add an Image</h3>
-                    <p className="text-sm text-muted-foreground text-center mb-4">
+                    <Image className="h-12 w-12 mb-4 text-gray-600" />
+                    <h3 className="text-lg font-medium mb-2 text-black">Add an Image</h3>
+                    <p className="text-sm text-gray-600 text-center mb-4">
                       Upload an image to accompany your recipe
                     </p>
-                    <div className="w-full max-w-md p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50 transition-colors">
-                      <p className="text-sm font-medium">Click to upload or drag and drop</p>
-                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG, GIF up to 10MB</p>
+                    <div className="w-full max-w-md p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-gray-50 transition-colors bg-accent">
+                      <p className="text-sm font-medium text-black">Click to upload or drag and drop</p>
+                      <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
                     </div>
                   </div>
                 </TabsContent>
-                <TabsContent value="link" className="h-full m-0">
+                <TabsContent value="link" className="h-full m-0 bg-accent">
                   <div className="h-full flex flex-col items-center justify-center p-6">
-                    <Link className="h-12 w-12 mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-medium mb-2">Add a Link</h3>
-                    <p className="text-sm text-muted-foreground text-center mb-4">
+                    <Link className="h-12 w-12 mb-4 text-gray-600" />
+                    <h3 className="text-lg font-medium mb-2 text-black">Add a Link</h3>
+                    <p className="text-sm text-gray-600 text-center mb-4">
                       Add a link to an external resource for your recipe
                     </p>
                     <div className="w-full max-w-md">
                       <Input
                         type="url"
                         placeholder="https://example.com/recipe"
-                        className="w-full"
+                        className="w-full bg-accent text-black"
                       />
-                      <Button variant="secondary" className="w-full mt-2">
+                      <Button variant="outline" className="w-full mt-2 bg-accent border text-black hover:bg-gray-50">
                         Add Link
                       </Button>
                     </div>

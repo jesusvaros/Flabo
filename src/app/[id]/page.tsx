@@ -3,8 +3,6 @@ import { redirect } from "next/navigation";
 import { CollectionsView } from "../collections/components/CollectionsView";
 import { CollectionProvider } from "../collections/context/CollectionContext";
 import { fetchCollectionWithTickets, fetchTicketPositions, transformCollectionData } from "../collections/utils/collection-utils";
-import { Tabs } from "@/app/components/TabContents/Tabs";
-import { TicketsTabSuspense } from "@/app/tickets/components/TicketsTab";
 import { IngredientsTabSuspense } from "@/app/ingredients/components/IngredientsTab";
 import { HeaderLoggedIn } from "@/app/components/Header";
 
@@ -88,10 +86,7 @@ export default async function CollectionPage(props: Props) {
   const transformedCollection = transformCollectionData(selectedCollection, ticketPositions);
 
   const tabsContent = (
-    <Tabs defaultValue="tickets">
-      <TicketsTabSuspense tickets={tickets || []} />
       <IngredientsTabSuspense ingredients={ingredients || []} />
-    </Tabs>
   );
 
   return (

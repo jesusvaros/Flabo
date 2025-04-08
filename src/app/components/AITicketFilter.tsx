@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Loader2, Wand2, AlertCircle, Cpu, Cloud } from "lucide-react";
+import { useState } from "react";
+import { Loader2, Wand2, X, Cpu, Cloud } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "../../components/ui/toggle";
@@ -10,12 +10,14 @@ import { cn } from "@/lib/utils";
 import { searchRecipes } from "../../../utils/embeddings";
 import { useCollection } from "../collections/context/CollectionContext";
 import { useToast } from "@/components/ui/use-toast";
+import { TicketWithPositionConversion } from "@/types/collections";
 
 interface AITicketFilterProps {
     onFilterResults: (filteredTicketIds: string[]) => void;
+    tickets?: TicketWithPositionConversion[];
 }
 
-export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
+export function AITicketFilter({ onFilterResults, tickets: propTickets }: AITicketFilterProps) {
     // Input and search state
     const [searchQuery, setSearchQuery] = useState("");
     const [activeQuery, setActiveQuery] = useState("");
@@ -26,10 +28,12 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
 
     // AI mode state
     const [useLocalAI, setUseLocalAI] = useState(true);
-    const [localAIFailed, setLocalAIFailed] = useState(false);
 
     const { toast } = useToast();
-    const { tickets } = useCollection();
+    const { tickets: contextTickets } = useCollection();
+    
+    // Use provided tickets or fall back to context tickets
+    const tickets = propTickets || contextTickets;
 
     // Function to prepare recipe texts for embedding
     const prepareRecipeTexts = () => {
@@ -46,13 +50,10 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
         });
     };
 
-    // Function to perform local search using client-side embeddings
     const performLocalSearch = async () => {
         try {
-            // Prepare the recipe texts for embedding
             const recipeTexts = prepareRecipeTexts();
 
-            // Perform local search
             const searchResults = await searchRecipes({
                 query: searchQuery,
                 recipeTexts
@@ -62,42 +63,38 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                 return { success: false, matchingIds: [] };
             }
 
-            // Use a lower threshold for better results
-            const similarityThreshold = 0.2;
+            const similarityThreshold = 0.3;
 
-            console.log("Search results:", searchResults);
-
-            // Map search results back to ticket IDs
             const matchingIds = searchResults
-                .filter(result => result.score > similarityThreshold)
+                .filter(result => {
+                    const passes = result.score > similarityThreshold;
+                    return passes;
+                })
                 .map(result => {
                     // If we have the originalIndex property, use it directly
                     if (result.originalIndex !== undefined && result.originalIndex >= 0 && result.originalIndex < tickets.length) {
-                        return tickets[result.originalIndex].id;
+                        const id = tickets[result.originalIndex].id;
+                        return id;
                     }
 
                     // Otherwise fall back to finding the index by text
                     const index = recipeTexts.findIndex(text => text === result.text);
-                    return index >= 0 ? tickets[index].id : null;
+                    if (index >= 0 && index < tickets.length) {
+                        const id = tickets[index].id;
+                        return id;
+                    } else {
+                        return null;
+                    }
                 })
                 .filter(Boolean) as string[];
-
+            
             return { success: matchingIds.length > 0, matchingIds };
         } catch (error) {
             console.error("Local search failed:", error);
-            setLocalAIFailed(true);
-
-            // Show toast notification
-            toast({
-                title: "Local AI unavailable",
-                description: "Switched to Cloud AI for better results.",
-                duration: 3000,
-            });
             throw error;
         }
     };
 
-    // Function to perform server-side search using OpenAI
     const performServerSearch = async () => {
         try {
             const response = await fetch("/api/ai/filter-tickets", {
@@ -139,7 +136,7 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
             let searchResult;
 
             // If local AI previously failed, don't try it again
-            if (useLocalAI && !localAIFailed) {
+            if (useLocalAI) {
                 searchResult = await performLocalSearch();
 
             } else {
@@ -161,13 +158,6 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
         }
     };
 
-    // Reset local AI failed state when toggling back to local AI
-    useEffect(() => {
-        if (useLocalAI) {
-            setLocalAIFailed(false);
-        }
-    }, [useLocalAI]);
-
     const clearSearch = () => {
         setSearchQuery("");
         setStatus("idle");
@@ -188,14 +178,14 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                         className="pl-8 bg-accent"
                     />
                     {searchQuery && (
-                        <button
-                            type="button"
+                        <Button
+                            variant="ghost"
                             onClick={clearSearch}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
-                            <AlertCircle className="h-4 w-4" />
+                            <X className="h-4 w-4" />
                             <span className="sr-only">Clear search</span>
-                        </button>
+                        </Button>
                     )}
                 </div>
 
@@ -209,7 +199,7 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                                     "px-3",
                                     useLocalAI ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"
                                 )}
-                                disabled={status === "loading" || localAIFailed}
+                                disabled={status === "loading"}
                             >
                                 {useLocalAI ? (
                                     <Cpu className="h-4 w-4" />
@@ -219,11 +209,9 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                             </Toggle>
                         </TooltipTrigger>
                         <TooltipContent>
-                            {localAIFailed
-                                ? "Local AI unavailable"
-                                : useLocalAI
-                                    ? "Using local AI (faster)"
-                                    : "Using cloud AI (more accurate)"}
+                            {useLocalAI
+                                ? "Using local AI (faster)"
+                                : "Using cloud AI (more accurate)"}
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -241,7 +229,7 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
                     ) : (
                         <>
                             <Wand2 className="mr-2 h-4 w-4" />
-                            AI Search
+                            Search
                         </>
                     )}
                 </Button>
@@ -249,7 +237,7 @@ export function AITicketFilter({ onFilterResults }: AITicketFilterProps) {
 
             {status === "error" && errorMessage && (
                 <div className="text-sm text-red-500 flex items-center gap-1">
-                    <AlertCircle className="h-4 w-4" />
+                    <X className="h-4 w-4" />
                     {errorMessage}
                 </div>
             )}

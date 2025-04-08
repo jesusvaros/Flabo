@@ -8,7 +8,7 @@ import { TicketWithPositionConversion } from "@/types/collections";
 import { useCollection } from "@/app/collections/context/CollectionContext";
 
 interface BigTicketCardProps {
-  ticket:  TicketWithPositionConversion ;
+  ticket: TicketWithPositionConversion;
   onClose: () => void;
   clickPosition?: { x: number; y: number };
 }
@@ -20,8 +20,6 @@ export const BigTicketCard = ({
 }: BigTicketCardProps) => {
   const isMobile = useIsMobile();
   const [isDrawingBoardMounted, setIsDrawingBoardMounted] = useState(false);
-  const [showAIView, setShowAIView] = useState(false);
-  const [showGeneratedDrawing, setShowGeneratedDrawing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(ticket.content);
   const drawingEditorRef = useRef<{ saveDrawing: () => void }>(null);
@@ -69,17 +67,6 @@ export const BigTicketCard = ({
     }
   };
 
-  const handleAIViewToggle = (checked: boolean) => {
-    if (checked && drawingEditorRef.current) {
-      drawingEditorRef.current.saveDrawing();
-    }
-    setShowAIView(checked);
-  };
-
-  const handleDrawingToggle = (checked: boolean) => {
-    setShowGeneratedDrawing(checked);
-  };
-
   const { drawerOpen, onDrawerOpenChange } =
     useDrawerAnimation(handleCloseRequested);
 
@@ -103,10 +90,6 @@ export const BigTicketCard = ({
         onClose={handleCloseRequested}
         isDrawingBoardMounted={isDrawingBoardMounted}
         drawingEditorRef={drawingEditorRef}
-        showAIView={showAIView}
-        handleAIViewToggle={handleAIViewToggle}
-        showGeneratedDrawing={showGeneratedDrawing}
-        handleDrawingToggle={handleDrawingToggle}
         isEditing={isEditing}
         editedContent={editedContent}
         onTitleEdit={handleTitleEdit}
@@ -124,10 +107,6 @@ export const BigTicketCard = ({
       onClose={handleCloseRequested}
       isDrawingBoardMounted={isDrawingBoardMounted}
       drawingEditorRef={drawingEditorRef}
-      showAIView={showAIView}
-      handleAIViewToggle={handleAIViewToggle}
-      showGeneratedDrawing={showGeneratedDrawing}
-      handleDrawingToggle={handleDrawingToggle}
       isEditing={isEditing}
       editedContent={editedContent}
       onTitleEdit={handleTitleEdit}

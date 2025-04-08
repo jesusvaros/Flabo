@@ -1,12 +1,12 @@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { TicketWithPositionConversion } from "@/types/collections";
-import { X, Pencil } from "lucide-react";
+import { X, Pencil, Image, Link, FileEdit } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { AIConversionView } from "./AIConversionView";
-import { DISABLE_GENERATED_DRAWING } from "./DesktopTicketCard";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState, useEffect } from "react";
 
 interface MobileTicketDrawerProps {
   ticket: TicketWithPositionConversion;
@@ -15,10 +15,6 @@ interface MobileTicketDrawerProps {
   onClose: () => void;
   isDrawingBoardMounted: boolean;
   drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
-  showAIView: boolean;
-  handleAIViewToggle: (show: boolean) => void;
-  showGeneratedDrawing: boolean;
-  handleDrawingToggle: (checked: boolean) => void;
   isEditing: boolean;
   editedContent: string;
   onTitleEdit: () => void;
@@ -34,10 +30,6 @@ export const MobileTicketDrawer = ({
   onClose,
   isDrawingBoardMounted,
   drawingEditorRef,
-  showAIView,
-  handleAIViewToggle,
-  showGeneratedDrawing,
-  handleDrawingToggle,
   isEditing,
   editedContent,
   onTitleEdit,
@@ -45,10 +37,21 @@ export const MobileTicketDrawer = ({
   onTitleChange,
   onTitleKeyDown,
 }: MobileTicketDrawerProps) => {
+  // Determine which tab to show by default based on whether a recipe exists
+  const hasRecipe = ticket.recipe_conversions && ticket.recipe_conversions.length > 0;
+  const [activeTab, setActiveTab] = useState<string>(hasRecipe ? "recipe" : "drawing");
+
+  // Update the default tab whenever the recipe status changes
+  useEffect(() => {
+    if (hasRecipe && activeTab === "drawing") {
+      setActiveTab("recipe");
+    }
+  }, [hasRecipe, ticket.recipe_conversions]);
+
   return (
     <Drawer open={drawerOpen} onOpenChange={onOpenChange}>
       <DrawerContent className="p-0 h-auto max-h-[90vh]">
-        <DrawerHeader className="border-b border-muted py-4 px-4 pb-5">
+        <DrawerHeader className="border-b border-muted py-4 px-4">
           <div className="group relative flex items-center mb-2">
             {isEditing ? (
               <div className="flex items-center w-full">
@@ -73,23 +76,24 @@ export const MobileTicketDrawer = ({
               </div>
             )}
           </div>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="mobile-ai-mode"
-              checked={showAIView}
-              onCheckedChange={handleAIViewToggle}
-            />
-            <Label htmlFor="mobile-ai-mode">AI Mode</Label>
-          </div>
-          <div className="flex items-center space-x-2 mt-2">
-            <Switch
-              disabled={DISABLE_GENERATED_DRAWING}
-              id="drawing-toggle"
-              checked={showGeneratedDrawing}
-              onCheckedChange={handleDrawingToggle}
-            />
-            <Label htmlFor="drawing-toggle">Generated Drawing</Label>
-          </div>
+          
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger value="recipe">Recipe</TabsTrigger>
+              <TabsTrigger value="drawing">
+                <FileEdit className="h-4 w-4 mr-2" />
+                Drawing
+              </TabsTrigger>
+              <TabsTrigger value="image">
+                <Image className="h-4 w-4 mr-2" />
+                Picture
+              </TabsTrigger>
+              <TabsTrigger value="link">
+                <Link className="h-4 w-4 mr-2" />
+                Link
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </DrawerHeader>
 
         {isDrawingBoardMounted && (
@@ -98,23 +102,57 @@ export const MobileTicketDrawer = ({
             style={{
               height: "80vh",
               overflow: "hidden",
-              transitionDelay: "500ms",
               borderRadius: "0.375rem",
               boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
             }}
           >
-            {showAIView ? (
-              <AIConversionView ticket={ticket} />
-            ) : (
-              <TicketDrawingBoard
-                ticketId={ticket.id}
-                initialDrawing={showGeneratedDrawing ? ticket.drawing_generated : ticket.drawing}
-                onClose={onClose}
-                ref={drawingEditorRef}
-                className="h-full"
-                fullHeight
-              />
-            )}
+            <Tabs value={activeTab} className="h-full">
+              <TabsContent value="recipe" className="h-full m-0">
+                <AIConversionView ticket={ticket} />
+              </TabsContent>
+              <TabsContent value="drawing" className="h-full m-0">
+                <TicketDrawingBoard
+                  ticketId={ticket.id}
+                  initialDrawing={ticket.drawing}
+                  onClose={onClose}
+                  ref={drawingEditorRef}
+                  className="h-full"
+                  fullHeight
+                />
+              </TabsContent>
+              <TabsContent value="image" className="h-full m-0">
+                <div className="h-full flex flex-col items-center justify-center p-6">
+                  <Image className="h-12 w-12 mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-medium mb-2">Add an Image</h3>
+                  <p className="text-sm text-muted-foreground text-center mb-4">
+                    Upload an image to accompany your recipe
+                  </p>
+                  <div className="w-full p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50 transition-colors">
+                    <p className="text-sm font-medium">Click to upload or drag and drop</p>
+                    <p className="text-xs text-muted-foreground mt-1">PNG, JPG, GIF up to 10MB</p>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="link" className="h-full m-0">
+                <div className="h-full flex flex-col items-center justify-center p-6">
+                  <Link className="h-12 w-12 mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-medium mb-2">Add a Link</h3>
+                  <p className="text-sm text-muted-foreground text-center mb-4">
+                    Add a link to an external resource for your recipe
+                  </p>
+                  <div className="w-full">
+                    <Input
+                      type="url"
+                      placeholder="https://example.com/recipe"
+                      className="w-full"
+                    />
+                    <Button variant="secondary" className="w-full mt-2">
+                      Add Link
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         )}
       </DrawerContent>

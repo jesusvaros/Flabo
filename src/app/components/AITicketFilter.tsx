@@ -175,6 +175,12 @@ export function AITicketFilter({ onFilterResults, tickets: propTickets }: AITick
                         placeholder="Search with AI..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && searchQuery.trim()) {
+                                e.preventDefault();
+                                handleSearch(e);
+                            }
+                        }}
                         className="pl-8 bg-accent"
                     />
                     {searchQuery && (

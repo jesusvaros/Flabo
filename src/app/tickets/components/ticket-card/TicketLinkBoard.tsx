@@ -1,54 +1,67 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "lucide-react";
+import { Link as LinkIcon, ExternalLink } from "lucide-react";
+import { useTicketCard } from "./context/TicketCardContext";
 
 interface TicketLinkBoardProps {
-  ticketId: string;
-  onClose?: () => void;
   className?: string;
-  fullHeight?: boolean;
 }
 
-export const TicketLinkBoard = ({
-  ticketId,
-  onClose,
-  className = "",
-  fullHeight = false,
-}: TicketLinkBoardProps) => {
-  const [linkUrl, setLinkUrl] = useState<string>("");
-  
-  const handleLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLinkUrl(e.target.value);
+export const TicketLinkBoard = ({ className = "" }: TicketLinkBoardProps) => {
+
+  const {
+    state,
+    updateLinkUrl,
+  } = useTicketCard();
+  const { linkUrl } = state;
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateLinkUrl(e.target.value);
   };
-  
-  const handleAddLink = () => {
-    // TODO: Implement link saving functionality
-    console.log("Adding link:", linkUrl);
+
+  const isValidUrl = () => {
+    try {
+      new URL(linkUrl);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   return (
-    <div className={`h-full flex flex-col items-center justify-center p-6 ${className}`}>
-      <Link className="h-12 w-12 mb-4 text-gray-600" />
-      <h3 className="text-lg font-medium mb-2 text-black">Add a Link</h3>
-      <p className="text-sm text-gray-600 text-center mb-4">
-        Add a link to an external resource for your recipe
+    <div className={`h-full flex flex-col p-6 ${className}`}>
+      <div className="flex items-center mb-4">
+        <LinkIcon className="h-6 w-6 mr-2 text-gray-600" />
+        <h3 className="text-lg font-medium text-black">Add Recipe Link</h3>
+      </div>
+
+      <p className="text-sm text-gray-600 mb-4">
+        Add a link to an external recipe.
       </p>
-      <div className="w-full max-w-md">
-        <Input
-          type="url"
-          value={linkUrl}
-          onChange={handleLinkChange}
-          placeholder="https://example.com/recipe"
-          className="w-full bg-accent text-black"
-        />
-        <Button 
-          variant="outline" 
-          onClick={handleAddLink}
-          className="w-full mt-2 bg-accent border text-black hover:bg-gray-50"
-        >
-          Add Link
-        </Button>
+
+      <div className="space-y-4">
+        <label htmlFor="recipe-url" className="block text-sm font-medium text-gray-700 mb-1">
+          Recipe URL
+        </label>
+        <div className="flex gap-2">
+          <Input
+            id="recipe-url"
+            type="url"
+            value={linkUrl}
+            onChange={handleUrlChange}
+            placeholder="https://example.com/recipe"
+            className="w-full bg-accent text-black"
+          />
+          <Button
+            variant="outline"
+            onClick={() => console.log(linkUrl)}
+            disabled={!isValidUrl()}
+            className="bg-accent border text-black hover:bg-gray-50"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

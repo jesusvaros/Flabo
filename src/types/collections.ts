@@ -31,6 +31,10 @@ export interface TicketWithPosition extends Ticket {
 
 export interface TicketWithPositionConversion extends TicketWithPosition {
   recipe_conversions: RecipeConversion[];
+  text_content?: string;
+  link_url?: string;
+  link_description?: string;
+  pictures?: string[];
 }
 
 export interface CollectionProps {

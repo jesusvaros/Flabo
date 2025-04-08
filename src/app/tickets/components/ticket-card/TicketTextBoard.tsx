@@ -1,53 +1,36 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { FileEdit } from "lucide-react";
+import { useTicketCard } from "./context/TicketCardContext";
 
 interface TicketTextBoardProps {
-  ticketId: string;
-  onClose?: () => void;
   className?: string;
-  fullHeight?: boolean;
 }
 
-export const TicketTextBoard = ({
-  ticketId,
-  onClose,
-  className = "",
-  fullHeight = false,
-}: TicketTextBoardProps) => {
-  const [textContent, setTextContent] = useState<string>("");
-  
+export const TicketTextBoard = ({ className = "" }: TicketTextBoardProps) => {
+  const { state, updateTextContent } = useTicketCard();
+  const { textContent } = state;
+
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTextContent(e.target.value);
-  };
-  
-  const handleSaveNotes = () => {
-    // TODO: Implement notes saving functionality
-    console.log("Saving notes:", textContent);
+    updateTextContent(e.target.value);
   };
 
   return (
-    <div className={`h-full flex flex-col items-center justify-center p-6 ${className}`}>
-      <FileEdit className="h-12 w-12 mb-4 text-gray-600" />
-      <h3 className="text-lg font-medium mb-2 text-black">Add Text</h3>
-      <p className="text-sm text-gray-600 text-center mb-4">
-        Add additional text notes to your recipe
-      </p>
-      <div className="w-full max-w-md">
-        <textarea
-          value={textContent}
-          onChange={handleTextChange}
-          placeholder="Add your notes here..."
-          className="w-full h-32 p-3 bg-accent text-black border rounded-md resize-none"
-        />
-        <Button 
-          variant="outline" 
-          onClick={handleSaveNotes}
-          className="w-full mt-2 bg-accent border text-black hover:bg-gray-50"
-        >
-          Save Notes
-        </Button>
+    <div className={`h-full flex flex-col p-6 ${className}`}>
+      <div className="flex items-center mb-4">
+        <FileEdit className="h-6 w-6 mr-2 text-gray-600" />
+        <h3 className="text-lg font-medium text-black">Add Recipe Text</h3>
       </div>
+
+      <p className="text-sm text-gray-600 mb-4">
+        Paste or type your recipe text below. Our AI will automatically convert it to our structured recipe format.
+      </p>
+
+      <textarea
+        value={textContent}
+        onChange={handleTextChange}
+        placeholder="Paste your recipe here... (e.g., title, ingredients, instructions, notes)"
+        className="w-full h-64 p-3 bg-accent text-black border rounded-md resize-none mb-4 font-medium"
+      />
     </div>
   );
 };

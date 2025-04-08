@@ -1,4 +1,5 @@
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { TicketWithPositionConversion } from "@/types/collections";
 import { X, Pencil, Image, Link, FileEdit, ChevronLeft } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
@@ -10,11 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
+import { useTicketCard } from "./context/TicketCardContext";
 
 interface MobileTicketDrawerProps {
   ticket: TicketWithPositionConversion;
-  drawerOpen: boolean;
-  onOpenChange: (open: boolean) => void;
   onClose: () => void;
   isDrawingBoardMounted: boolean;
   drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
@@ -28,8 +28,6 @@ interface MobileTicketDrawerProps {
 
 export const MobileTicketDrawer = ({
   ticket,
-  drawerOpen,
-  onOpenChange,
   onClose,
   isDrawingBoardMounted,
   drawingEditorRef,
@@ -40,13 +38,22 @@ export const MobileTicketDrawer = ({
   onTitleChange,
   onTitleKeyDown,
 }: MobileTicketDrawerProps) => {
-  const [activeTab, setActiveTab] = useState<string>("recipe");
+  // Use the ticket card context for state management
+  const { state, setActiveTab } = useTicketCard();
+  const { activeTab } = state;
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab as "recipe" | "drawing" | "image" | "link" | "text");
+  };
+
   const handleBackToOptions = () => {
-    setActiveTab("recipe");
+    if (activeTab !== "recipe") {
+      setActiveTab("recipe");
+    }
   };
 
   return (
-    <Drawer open={drawerOpen} onOpenChange={onOpenChange}>
+    <Drawer open onClose={onClose}>
       <DrawerContent className="p-0 h-auto max-h-[90vh] bg-accent">
         <DrawerHeader className="border-b py-4 px-4 bg-accent">
           <div className="flex justify-between items-center">
@@ -75,18 +82,16 @@ export const MobileTicketDrawer = ({
               )}
             </div>
 
-            {activeTab !== "recipe" && (
-              <button
-                onClick={handleBackToOptions}
-                className="rounded-full p-1.5 bg-gray-100 hover:bg-gray-200 text-black flex items-center"
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                <span className="text-sm font-medium">Back to Recipe</span>
-              </button>
-            )}
+            <Button
+              onClick={handleBackToOptions}
+              className="rounded-full px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-black flex items-center"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              <span className="text-sm font-medium">Recipe</span>
+            </Button>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="grid grid-cols-4 w-full bg-gray-100">
               <TabsTrigger value="drawing" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                 <FileEdit className="h-4 w-4 mr-2" />
@@ -134,26 +139,17 @@ export const MobileTicketDrawer = ({
               </TabsContent>
               <TabsContent value="image" className="h-full m-0 bg-accent">
                 <TicketPictureBoard
-                  ticketId={ticket.id}
-                  onClose={onClose}
                   className="h-full"
-                  fullHeight
                 />
               </TabsContent>
               <TabsContent value="link" className="h-full m-0 bg-accent">
                 <TicketLinkBoard
-                  ticketId={ticket.id}
-                  onClose={onClose}
                   className="h-full"
-                  fullHeight
                 />
               </TabsContent>
               <TabsContent value="text" className="h-full m-0 bg-accent">
                 <TicketTextBoard
-                  ticketId={ticket.id}
-                  onClose={onClose}
                   className="h-full"
-                  fullHeight
                 />
               </TabsContent>
             </Tabs>

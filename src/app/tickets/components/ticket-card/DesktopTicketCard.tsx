@@ -7,14 +7,14 @@ import TicketPictureBoard from "./TicketPictureBoard";
 import TicketLinkBoard from "./TicketLinkBoard";
 import TicketTextBoard from "./TicketTextBoard";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState, useEffect } from "react";
+import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React, { useState, useRef, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { useTicketCard } from "./context/TicketCardContext";
 
 interface DesktopTicketCardProps {
   ticket: TicketWithPositionConversion;
-  style: React.CSSProperties;
   onClose: () => void;
   isDrawingBoardMounted: boolean;
   drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
@@ -23,12 +23,12 @@ interface DesktopTicketCardProps {
   onTitleEdit: () => void;
   onTitleSave: () => void;
   onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onTitleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  style: React.CSSProperties;
 }
 
 export const DesktopTicketCard = ({
   ticket,
-  style,
   onClose,
   isDrawingBoardMounted,
   drawingEditorRef,
@@ -37,12 +37,21 @@ export const DesktopTicketCard = ({
   onTitleEdit,
   onTitleSave,
   onTitleChange,
-  onTitleKeyDown,
+  onKeyDown,
+  style,
 }: DesktopTicketCardProps) => {
-  const [activeTab, setActiveTab] = useState<string>("recipe");
+  // Use the ticket card context for state management
+  const { state, setActiveTab } = useTicketCard();
+  const { activeTab } = state;
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab as "recipe" | "drawing" | "image" | "link" | "text");
+  };
 
   const handleBackToOptions = () => {
-    setActiveTab("recipe");
+    if (activeTab !== "recipe") {
+      setActiveTab("recipe");
+    }
   };
 
   return (
@@ -62,7 +71,7 @@ export const DesktopTicketCard = ({
                 <Input
                   value={editedContent}
                   onChange={onTitleChange}
-                  onKeyDown={onTitleKeyDown}
+                  onKeyDown={onKeyDown}
                   onBlur={onTitleSave}
                   autoFocus
                   className="font-semibold text-xl text-black bg-accent"
@@ -85,7 +94,6 @@ export const DesktopTicketCard = ({
             >
               <X className="h-4 w-4" />
             </Button>
-
           </div>
 
           <div className="flex items-center justify-between w-full mt-4">
@@ -97,7 +105,7 @@ export const DesktopTicketCard = ({
               <span className="text-sm font-medium">Recipe</span>
             </Button>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
               <TabsList className="grid grid-cols-4 w-full max-w-md bg-gray-100">
                 <TabsTrigger value="drawing" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                   <FileEdit className="h-4 w-4 mr-2" />
@@ -118,7 +126,6 @@ export const DesktopTicketCard = ({
               </TabsList>
             </Tabs>
           </div>
-
         </CardHeader>
         <CardContent className="p-0">
           <div className="transition-all duration-200 ease-in-out bg-accent" style={{
@@ -144,26 +151,17 @@ export const DesktopTicketCard = ({
                 </TabsContent>
                 <TabsContent value="image" className="h-full m-0 bg-accent">
                   <TicketPictureBoard
-                    ticketId={ticket.id}
-                    onClose={onClose}
                     className="h-full"
-                    fullHeight
                   />
                 </TabsContent>
                 <TabsContent value="link" className="h-full m-0 bg-accent">
                   <TicketLinkBoard
-                    ticketId={ticket.id}
-                    onClose={onClose}
                     className="h-full"
-                    fullHeight
                   />
                 </TabsContent>
                 <TabsContent value="text" className="h-full m-0 bg-accent">
                   <TicketTextBoard
-                    ticketId={ticket.id}
-                    onClose={onClose}
                     className="h-full"
-                    fullHeight
                   />
                 </TabsContent>
               </Tabs>

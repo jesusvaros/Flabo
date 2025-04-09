@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import React from "react";
 import { Input } from "@/components/ui/input";
-import { useTicketCard } from "./context/TicketCardContext";
+import { useTicketCard } from "../../context/TicketCardContext";
 
 export type TabType = "recipe" | "notes" | "image" | "link" | "text";
 

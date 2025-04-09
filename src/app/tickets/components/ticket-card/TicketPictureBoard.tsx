@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Image as ImageIcon, Upload, X } from "lucide-react";
-import { useTicketCard } from "./context/TicketCardContext";
+import { useTicketCard } from "../../context/TicketCardContext";
 
 interface TicketPictureBoardProps {
   className?: string;

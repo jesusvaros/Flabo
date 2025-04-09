@@ -10,7 +10,7 @@ import TicketTextBoard from "./TicketTextBoard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTicketCard } from "./context/TicketCardContext";
+import { useTicketCard } from "../../context/TicketCardContext";
 import { TabType } from "./DesktopTicketCard";
 
 interface MobileTicketDrawerProps {

@@ -1,5 +1,5 @@
 import { RecipeConversion } from '@/types/recipe-conversions';
-import { createClient } from '../../../../../../utils/supabase/client';
+import { createClient } from '../../../../utils/supabase/client';
 
 interface RecipeSource {
   text?: string;

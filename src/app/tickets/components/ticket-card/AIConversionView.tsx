@@ -1,15 +1,14 @@
 "use client";
 
 import { Loader2, FileText, Link, Image, Wand2, History } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RecipeDisplay } from "@/app/components/recipe/RecipeDisplay";
 import { TicketWithPositionConversion } from "@/types/collections";
 import { RecipeConversion } from "@/types/recipe-conversions";
 import { cn } from "@/lib/utils";
-import { useCollection } from "@/app/collections/context/CollectionContext";
-import { useTicketCard } from "./context/TicketCardContext";
-import { useRecipeConversion } from "./hooks/useRecipeConversion";
+import { useTicketCard } from "../../context/TicketCardContext";
+import { useRecipeConversion } from "../../hooks/useRecipeConversion";
 
 interface AIConversionViewProps {
   ticket: TicketWithPositionConversion;

@@ -6,7 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileTicketDrawer, DesktopTicketCard } from "./ticket-card";
 import { TicketWithPositionConversion } from "@/types/collections";
 import { useCollection } from "@/app/collections/context/CollectionContext";
-import { TicketCardProvider } from "./ticket-card/context/TicketCardContext";
+import { TicketCardProvider } from "../context/TicketCardContext";
 
 interface BigTicketCardProps {
   ticket: TicketWithPositionConversion;

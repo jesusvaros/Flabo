@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link as LinkIcon, ExternalLink } from "lucide-react";
-import { useTicketCard } from "./context/TicketCardContext";
+import { useTicketCard } from "../../context/TicketCardContext";
 
 interface TicketLinkBoardProps {
   className?: string;

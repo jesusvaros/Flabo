@@ -1,6 +1,6 @@
 import React from "react";
 import { FileEdit } from "lucide-react";
-import { useTicketCard } from "./context/TicketCardContext";
+import { useTicketCard } from "../../context/TicketCardContext";
 
 interface TicketTextBoardProps {
   className?: string;

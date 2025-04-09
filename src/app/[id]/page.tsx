@@ -14,6 +14,7 @@ type Props = {
 export type SupabaseTicket = {
   id: string;
   content: string;
+  text_content?: string;
   created_at: string;
   creator_id: string;
   collections_tickets: {
@@ -25,6 +26,18 @@ export type SupabaseTicket = {
   ticket_drawings: {
     data: any;
   };
+  ticket_urls?: {
+    id: string;
+    ticket_id: string;
+    url: string;
+    metadata?: string;
+  };
+  ticket_images?: {
+    id: string;
+    ticket_id: string;
+    image_description?: string;
+    image_title?: string;
+  }[];
   recipe_conversions: {
     id: string;
     ticket_id: string;
@@ -79,24 +92,24 @@ export default async function CollectionPage(props: Props) {
 
   const selectedCollection = await fetchCollectionWithTickets(supabase, collectionId);
   const ticketPositions = await fetchTicketPositions(supabase, collectionId);
-  
+
   const transformedCollection = transformCollectionData(selectedCollection, ticketPositions);
 
   const tabsContent = (
-      <IngredientsTabSuspense ingredients={ingredients || []} />
+    <IngredientsTabSuspense ingredients={ingredients || []} />
   );
 
   return (
     <CollectionProvider collection={transformedCollection}>
-        <div className="flex-1">
+      <div className="flex-1">
 
         <HeaderLoggedIn userEmail={user.email || ""} />
-          <CollectionsView
-            collections={collections || []}
-            selectedCollection={transformedCollection}
-            tabsContent={tabsContent}
-          />
-      
+        <CollectionsView
+          collections={collections || []}
+          selectedCollection={transformedCollection}
+          tabsContent={tabsContent}
+        />
+
       </div>
     </CollectionProvider>
   );

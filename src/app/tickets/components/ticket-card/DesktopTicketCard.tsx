@@ -54,16 +54,21 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
     setActiveTab(tab as TabType);
   };
 
-  const handleBackToOptions = async () => {
-    // Save drawing if we're on the notes tab
-    if (activeTab === 'notes' && drawingEditorRef.current) {
-      console.log('Saving drawing before navigating to recipe');
+  const handleCloseRequested = async () => {
+    handleNotesTabChange();
+    await contextOnClose();
+    onClose();
+  };
+
+  const handleNotesTabChange = () => {
+     if (activeTab === 'notes' && drawingEditorRef.current) {
       drawingEditorRef.current.saveDrawing();
     }
-    // Call context onClose to ensure changes are saved
-    await contextOnClose();
-    // Then call the component's onClose prop
-    onClose();
+  };
+
+  const tabToRecipe = () => {
+    handleNotesTabChange();
+    setActiveTab('recipe');
   };
 
   return (
@@ -101,8 +106,8 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
               )}
             </div>
             <Button
-              onClick={handleBackToOptions}
-              className="rounded-full p-1 hover:bg-gray-100 text-black"
+              onClick={handleCloseRequested}
+              className="rounded-full p-1 hover:bg-muted"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
@@ -111,7 +116,7 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
 
           <div className="flex items-center justify-between w-full mt-4">
             <Button
-              onClick={handleBackToOptions}
+              onClick={tabToRecipe}
               className="rounded-full px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-black flex items-center"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
@@ -119,8 +124,8 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
             </Button>
 
             <Tabs value={activeTab} onValueChange={handleTabChange}>
-              <TabsList className="grid grid-cols-4 w-full max-w-md bg-gray-100">
-                <TabsTrigger value="notes" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+            <TabsList className="grid grid-cols-4 w-full max-w-md bg-gray-100">
+            <TabsTrigger value="notes" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                   <Pencil className="mr-2 h-4 w-4" />
                   Notes
                 </TabsTrigger>
@@ -152,7 +157,7 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
                 <TabsContent value="recipe" className="h-full m-0 bg-accent">
                   <AIConversionView ticket={ticket} />
                 </TabsContent>
-                <TabsContent value="notes" className="h-full m-0">
+                <TabsContent value="notes" className="h-full m-0 bg-accent">
                   <TicketDrawingBoard
                     ticketId={ticket.id}
                     initialDrawing={ticket.drawing}
@@ -181,7 +186,7 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
           </div>
         </CardContent>
       </Card>
-      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div className="fixed inset-0 z-40" onClick={handleCloseRequested} />
     </>
   );
 };

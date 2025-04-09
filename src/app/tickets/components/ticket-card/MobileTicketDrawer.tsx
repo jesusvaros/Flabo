@@ -39,16 +39,26 @@ export const MobileTicketDrawer = ({
   onTitleKeyDown,
 }: MobileTicketDrawerProps) => {
   // Use the ticket card context for state management
-  const { state, setActiveTab } = useTicketCard();
+  const { state, setActiveTab, onClose: contextOnClose } = useTicketCard();
   const { activeTab } = state;
 
   const handleTabChange = (tab: string) => {
     // If we're changing away from the notes tab, save the drawing
     if (activeTab === 'notes' && tab !== 'notes' && drawingEditorRef.current) {
-      console.log('Saving drawing on tab change');
       drawingEditorRef.current.saveDrawing();
     }
     setActiveTab(tab as TabType);
+  };
+
+  const handleCloseDrawer = async () => {
+    // Save drawing if we're on the notes tab
+    if (activeTab === 'notes' && drawingEditorRef.current) {
+      drawingEditorRef.current.saveDrawing();
+    }
+    // Call context onClose to ensure changes are saved
+    await contextOnClose();
+    // Then call the component's onClose prop
+    onClose();
   };
 
   const handleGoToRecipe = () => {
@@ -60,7 +70,7 @@ export const MobileTicketDrawer = ({
   };
 
   return (
-    <Drawer open onClose={onClose}>
+    <Drawer open onClose={handleCloseDrawer}>
       <DrawerContent className="p-0 h-auto max-h-[90vh] bg-accent">
         <DrawerHeader className="border-b py-4 px-4 bg-accent">
           <div className="flex justify-between items-center">
@@ -73,17 +83,17 @@ export const MobileTicketDrawer = ({
                     onKeyDown={onTitleKeyDown}
                     onBlur={onTitleSave}
                     autoFocus
-                    className="font-semibold text-xl text-black bg-accent"
+                    className="font-semibold text-xl bg-accent"
                   />
                 </div>
               ) : (
                 <div className="flex items-center w-full">
-                  <DrawerTitle className="font-semibold text-black">{ticket.content}</DrawerTitle>
+                  <DrawerTitle className="font-semibold">{ticket.content}</DrawerTitle>
                   <button
                     onClick={onTitleEdit}
-                    className="ml-2 p-1 hover:bg-gray-100 rounded-full"
+                    className="ml-2 p-1 hover:bg-muted rounded-full"
                   >
-                    <Pencil className="h-4 w-4 text-black" />
+                    <Pencil className="h-4 w-4" />
                   </button>
                 </div>
               )}
@@ -91,7 +101,7 @@ export const MobileTicketDrawer = ({
 
             <Button
               onClick={handleGoToRecipe}
-              className="rounded-full px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-black flex items-center"
+              className="rounded-full px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground flex items-center"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               <span className="text-sm font-medium">Recipe</span>
@@ -99,7 +109,7 @@ export const MobileTicketDrawer = ({
           </div>
 
           <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="grid grid-cols-4 w-full bg-gray-100">
+            <TabsList className="grid grid-cols-4 w-full">
               <TabsTrigger value="notes" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
                 <Pencil className="mr-2 h-4 w-4" />
                 Notes
@@ -122,7 +132,7 @@ export const MobileTicketDrawer = ({
 
         {isDrawingBoardMounted && (
           <div
-            className="transition-all duration-200 ease-in-out bg-accent"
+            className="transition-all duration-200 ease-in-out"
             style={{
               height: "80vh",
               overflow: "hidden",
@@ -131,7 +141,7 @@ export const MobileTicketDrawer = ({
             }}
           >
             <Tabs value={activeTab} className="h-full">
-              <TabsContent value="recipe" className="h-full m-0 bg-accent">
+              <TabsContent value="recipe" className="h-full m-0">
                 <AIConversionView ticket={ticket} />
               </TabsContent>
               <TabsContent value="notes" className="h-full m-0">
@@ -143,17 +153,17 @@ export const MobileTicketDrawer = ({
                   fullHeight
                 />
               </TabsContent>
-              <TabsContent value="image" className="h-full m-0 bg-accent">
+              <TabsContent value="image" className="h-full m-0">
                 <TicketPictureBoard
                   className="h-full"
                 />
               </TabsContent>
-              <TabsContent value="link" className="h-full m-0 bg-accent">
+              <TabsContent value="link" className="h-full m-0">
                 <TicketLinkBoard
                   className="h-full"
                 />
               </TabsContent>
-              <TabsContent value="text" className="h-full m-0 bg-accent">
+              <TabsContent value="text" className="h-full m-0">
                 <TicketTextBoard
                   className="h-full"
                 />
@@ -163,8 +173,8 @@ export const MobileTicketDrawer = ({
         )}
       </DrawerContent>
       <button
-        onClick={onClose}
-        className="absolute top-4 right-4 rounded-full p-1 hover:bg-gray-100 text-black"
+        onClick={handleCloseDrawer}
+        className="absolute top-4 right-4 rounded-full p-1 hover:bg-muted"
       >
         <X className="h-4 w-4" />
       </button>

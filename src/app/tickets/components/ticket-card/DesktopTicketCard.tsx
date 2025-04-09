@@ -43,26 +43,27 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
   style,
 }) => {
   // Use the ticket card context for state management
-  const { state, setActiveTab } = useTicketCard();
+  const { state, setActiveTab, onClose: contextOnClose } = useTicketCard();
   const { activeTab } = state;
 
   const handleTabChange = (tab: string) => {
     // If we're changing away from the notes tab, save the drawing
     if (activeTab === 'notes' && tab !== 'notes' && drawingEditorRef.current) {
-      console.log('Saving drawing on tab change');
       drawingEditorRef.current.saveDrawing();
     }
     setActiveTab(tab as TabType);
   };
 
-  const handleBackToOptions = () => {
+  const handleBackToOptions = async () => {
     // Save drawing if we're on the notes tab
     if (activeTab === 'notes' && drawingEditorRef.current) {
       console.log('Saving drawing before navigating to recipe');
       drawingEditorRef.current.saveDrawing();
     }
-    // Switch to recipe tab instead of closing
-    setActiveTab('recipe');
+    // Call context onClose to ensure changes are saved
+    await contextOnClose();
+    // Then call the component's onClose prop
+    onClose();
   };
 
   return (
@@ -102,6 +103,7 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
             <Button
               onClick={handleBackToOptions}
               className="rounded-full p-1 hover:bg-gray-100 text-black"
+              aria-label="Close"
             >
               <X className="h-4 w-4" />
             </Button>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FileEdit } from "lucide-react";
 import { useTicketCard } from "../../context/TicketCardContext";
 
@@ -8,10 +8,18 @@ interface TicketTextBoardProps {
 
 export const TicketTextBoard = ({ className = "" }: TicketTextBoardProps) => {
   const { state, updateTextContent } = useTicketCard();
-  const { textContent } = state;
+  // Use local state to track the textarea value
+  const [localText, setLocalText] = useState(state.textContent);
+  
+  // When ticket text content changes externally, update local state
+  useEffect(() => {
+    setLocalText(state.textContent);
+  }, [state.textContent]);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    updateTextContent(e.target.value);
+    const newText = e.target.value;
+    setLocalText(newText);
+    updateTextContent(newText);
   };
 
   return (
@@ -26,11 +34,15 @@ export const TicketTextBoard = ({ className = "" }: TicketTextBoardProps) => {
       </p>
 
       <textarea
-        value={textContent}
+        value={localText}
         onChange={handleTextChange}
         placeholder="Paste your recipe here... (e.g., title, ingredients, instructions, notes)"
         className="w-full h-64 p-3 bg-accent text-black border rounded-md resize-none mb-4 font-medium"
       />
+      
+      <div className="text-xs text-gray-500 mt-1">
+        {localText ? `${localText.length} characters` : 'No text entered'}
+      </div>
     </div>
   );
 };

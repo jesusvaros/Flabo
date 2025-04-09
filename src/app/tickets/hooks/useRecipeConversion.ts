@@ -10,7 +10,12 @@ interface UseRecipeConversionProps {
 interface RecipeSource {
   text?: string;
   linkUrl?: string;
-  pictures?: string[];
+  images?: {
+    id?: string;
+    ticket_id?: string;
+    image_title?: string;
+    image_description?: string;
+  }[];
   customPrompt?: string;
 }
 

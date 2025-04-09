@@ -4,7 +4,12 @@ import { createClient } from '../../../../utils/supabase/client';
 interface RecipeSource {
   text?: string;
   linkUrl?: string;
-  pictures?: string[];
+  images?: {
+    id?: string;
+    ticket_id?: string;
+    image_title?: string;
+    image_description?: string;
+  }[];
   customPrompt?: string;
 }
 
@@ -50,7 +55,7 @@ async function processRecipeWithAI(sources: RecipeSource): Promise<string> {
   const sourceDescription = [
     sources.text ? `Text (${sources.text.substring(0, 30)}...)` : '',
     sources.linkUrl ? `Link (${sources.linkUrl})` : '',
-    sources.pictures ? `Pictures (${sources.pictures.length})` : '',
+    sources.images ? `Images (${sources.images.length})` : '',
   ].filter(Boolean).join(', ');
   
   // In a real implementation, this would call an API endpoint or client-side AI model

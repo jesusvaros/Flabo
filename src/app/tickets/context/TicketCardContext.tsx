@@ -1,6 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { TicketWithPositionConversion } from '@/types/collections';
 import { useCollection } from '@/app/collections/context/CollectionContext';
+import { createClient } from '@supabase/supabase-js';
+
+interface TicketImage {
+  id: string;
+  ticket_id: string;
+  image_title?: string;
+  image_description?: string;
+}
 
 interface TicketCardState {
   // Text tab state
@@ -8,12 +16,10 @@ interface TicketCardState {
   
   // Link tab state
   linkUrl: string;
-  linkDescription: string;
+  linkMetadata: string;
   
   // Picture tab state
-  pictures: string[];
-  
-  // Notes tab state (already handled by ref)
+  images: Partial<TicketImage>[];
   
   // Active tab
   activeTab: 'recipe' | 'notes' | 'image' | 'link' | 'text';
@@ -28,11 +34,12 @@ interface TicketCardContextProps {
   setActiveTab: (tab: 'recipe' | 'notes' | 'image' | 'link' | 'text') => void;
   updateTextContent: (content: string) => void;
   updateLinkUrl: (url: string) => void;
-  updateLinkDescription: (description: string) => void;
-  addPicture: (pictureUrl: string) => void;
-  removePicture: (pictureUrl: string) => void;
+  updateLinkMetadata: (metadata: string) => void;
+  addImage: (imageData: { image_title?: string; image_description?: string }) => void;
+  removeImage: (index: number) => void;
   saveChanges: () => Promise<void>;
   resetState: () => void;
+  onClose: () => Promise<void>;
 }
 
 const TicketCardContext = createContext<TicketCardContextProps | undefined>(undefined);
@@ -40,15 +47,16 @@ const TicketCardContext = createContext<TicketCardContextProps | undefined>(unde
 export const TicketCardProvider: React.FC<{
   ticket: TicketWithPositionConversion;
   children: ReactNode;
-}> = ({ ticket, children }) => {
-  const { patchTicket } = useCollection();
+  onClose?: () => void;
+}> = ({ ticket, children, onClose }) => {
+  const { patchTicket, refetchTicket } = useCollection();
   
   // Initialize state from ticket data
   const [state, setState] = useState<TicketCardState>({
     textContent: ticket.text_content || '',
-    linkUrl: ticket.link_url || '',
-    linkDescription: ticket.link_description || '',
-    pictures: ticket.pictures || [],
+    linkUrl: ticket.ticket_url?.url || '',
+    linkMetadata: ticket.ticket_url?.metadata || '',
+    images: ticket.ticket_images || [],
     activeTab: 'recipe',
     isDirty: false,
   });
@@ -66,65 +74,112 @@ export const TicketCardProvider: React.FC<{
     setState(prev => ({ ...prev, linkUrl: url, isDirty: true }));
   };
   
-  const updateLinkDescription = (description: string) => {
-    setState(prev => ({ ...prev, linkDescription: description, isDirty: true }));
+  const updateLinkMetadata = (metadata: string) => {
+    setState(prev => ({ ...prev, linkMetadata: metadata, isDirty: true }));
   };
   
-  const addPicture = (pictureUrl: string) => {
+  const addImage = (imageData: { image_title?: string; image_description?: string }) => {
+    // Generate a temporary ID for new images
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    
     setState(prev => ({ 
       ...prev, 
-      pictures: [...prev.pictures, pictureUrl], 
+      images: [...prev.images, {
+        ...imageData,
+        id: tempId,
+        ticket_id: ticket.id
+      }], 
       isDirty: true 
     }));
   };
   
-  const removePicture = (pictureUrl: string) => {
-    setState(prev => ({ 
-      ...prev, 
-      pictures: prev.pictures.filter(p => p !== pictureUrl),
-      isDirty: true 
-    }));
+  const removeImage = (index: number) => {
+    setState(prev => {
+      const newImages = [...prev.images];
+      newImages.splice(index, 1);
+      return { 
+        ...prev, 
+        images: newImages,
+        isDirty: true 
+      };
+    });
   };
   
   // Save changes to backend
   const saveChanges = async () => {
     if (!state.isDirty) return;
     
-    const updates: Record<string, any> = {};
+    const updates: Partial<TicketWithPositionConversion> = {};
     
-    // Only include changed fields
+    // Update text content if changed
     if (state.textContent !== ticket.text_content) {
+      console.log('Saving text content:', state.textContent);
       updates.text_content = state.textContent;
     }
     
-    if (state.linkUrl !== ticket.link_url) {
-      updates.link_url = state.linkUrl;
+    // Update URL if changed
+    const urlChanged = state.linkUrl !== ticket.ticket_url?.url || 
+                       state.linkMetadata !== ticket.ticket_url?.metadata;
+    
+    if (urlChanged) {
+      updates.ticket_url = state.linkUrl ? {
+        id: ticket.ticket_url?.id || '',
+        ticket_id: ticket.id,
+        url: state.linkUrl,
+        metadata: state.linkMetadata
+      } : null;
     }
     
-    if (state.linkDescription !== ticket.link_description) {
-      updates.link_description = state.linkDescription;
-    }
-    
-    if (JSON.stringify(state.pictures) !== JSON.stringify(ticket.pictures)) {
-      updates.pictures = state.pictures;
+    // Update images if changed
+    const imagesChanged = JSON.stringify(state.images) !== JSON.stringify(ticket.ticket_images);
+    if (imagesChanged) {
+      // Make sure all images have the ticket_id and convert to the expected format
+      updates.ticket_images = state.images.map(img => ({
+        id: img.id || `temp-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+        ticket_id: ticket.id,
+        image_title: img.image_title || '',
+        image_description: img.image_description || ''
+      }));
     }
     
     // Only patch if there are changes
     if (Object.keys(updates).length > 0) {
-      await patchTicket(ticket.id, updates);
-      console.log('Ticket updates saved:', updates);
+      console.log('Sending updates to patchTicket:', updates);
+      try {
+        const updatedTicket = await patchTicket(ticket.id, updates);
+        if (updatedTicket) {
+          console.log('Ticket updates saved successfully:', updatedTicket);
+        } else {
+          console.error('Error saving ticket updates');
+        }
+      } catch (error) {
+        console.error('Exception in saveChanges:', error);
+      }
     }
     
     setState(prev => ({ ...prev, isDirty: false }));
+  };
+  
+  // Handle close - simple function to save if dirty
+  const handleClose = async () => {
+    console.log('Modal closing, isDirty:', state.isDirty);
+    if (state.isDirty) {
+      console.log('Changes detected, saving before close');
+      await saveChanges();
+    }
+    // If parent provides an onClose callback, call it
+    if (onClose) {
+      onClose();
+    }
   };
   
   // Reset state
   const resetState = () => {
     setState({
       textContent: ticket.text_content || '',
-      linkUrl: ticket.link_url || '',
-      linkDescription: ticket.link_description || '',
-      pictures: ticket.pictures || [],
+      linkUrl: ticket.ticket_url?.url || '',
+      linkMetadata: ticket.ticket_url?.metadata || '',
+      images: ticket.ticket_images || [],
       activeTab: 'recipe',
       isDirty: false,
     });
@@ -136,13 +191,14 @@ export const TicketCardProvider: React.FC<{
     setActiveTab,
     updateTextContent,
     updateLinkUrl,
-    updateLinkDescription,
-    addPicture,
-    removePicture,
+    updateLinkMetadata,
+    addImage,
+    removeImage,
     saveChanges,
     resetState,
+    onClose: handleClose
   };
-
+  
   return (
     <TicketCardContext.Provider value={contextValue}>
       {children}

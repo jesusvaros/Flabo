@@ -67,7 +67,7 @@ export const BigTicketCard = ({
   }, []);
 
   return (
-    <TicketCardProvider ticket={ticket}>
+    <TicketCardProvider ticket={ticket} onClose={onClose}>
       {isMobile ? (
         <MobileTicketDrawer
           ticket={ticket}

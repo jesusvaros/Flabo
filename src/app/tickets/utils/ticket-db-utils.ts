@@ -13,10 +13,11 @@ export async function updateTicketContent(
   
   if (Object.keys(updates).length === 0) return null;
   
-  return await supabase
+  const result = await supabase
     .from("tickets")
     .update(updates)
     .eq("id", ticketId);
+  return result;
 }
 
 export async function updateTicketUrl(

@@ -28,15 +28,15 @@ const ConversionForm = ({
   onConvert: () => void;
 }) => {
   const { state } = useTicketCard();
-  const { textContent, linkUrl, pictures } = state;
+  const { textContent, linkUrl, images } = state;
   
-  const hasContent = textContent.trim() !== '' || linkUrl.trim() !== '' || pictures.length > 0;
+  const hasContent = textContent.trim() !== '' || linkUrl.trim() !== '' || images.length > 0;
   
   // Count sources with content
   const sourceCount = [
     textContent.trim() !== '',
     linkUrl.trim() !== '',
-    pictures.length > 0
+    images.length > 0
   ].filter(Boolean).length;
   
   return (
@@ -63,7 +63,7 @@ const ConversionForm = ({
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {textContent.trim() !== '' && <FileText className="h-3 w-3" />}
             {linkUrl.trim() !== '' && <Link className="h-3 w-3" />}
-            {pictures.length > 0 && <Image className="h-3 w-3" />}
+            {images.length > 0 && <Image className="h-3 w-3" />}
             <span>Using {sourceCount} source{sourceCount !== 1 ? 's' : ''}</span>
           </div>
         ) : (
@@ -134,7 +134,7 @@ const ConversionHistory = ({
 
 export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
   const { state } = useTicketCard();
-  const { textContent, linkUrl, pictures } = state;
+  const { textContent, linkUrl, images } = state;
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(true);
 
   const { 
@@ -154,7 +154,7 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
       const sources = {
         text: textContent.trim() !== '' ? textContent : undefined,
         linkUrl: linkUrl.trim() !== '' ? linkUrl : undefined,
-        pictures: pictures.length > 0 ? pictures : undefined
+        images: images.length > 0 ? images : undefined
       };
       
       // Create the recipe from all sources

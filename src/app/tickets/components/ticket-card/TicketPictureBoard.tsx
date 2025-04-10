@@ -15,22 +15,20 @@ export const TicketPictureBoard = ({ className = "" }: { className?: string }) =
 
     setAnalysisStatus(`Analyzing images...`);
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (!file) continue;
-
-      const analysisResult = await analyzeImage(file);
-
-      addImage({
-        image_title: analysisResult.caption || `Image ${images.length + 1}`,
-        image_description: analysisResult.extractedText || '',
-      });
-    }
-
-    setAnalysisStatus(`Analysis complete`);
+    // Convert FileList to Array and process with Promise.all for parallel processing
+    await Promise.all(
+      Array.from(files).map(async (file) => {
+        const analysisResult = await analyzeImage(file);
+        
+        addImage({
+          image_title: analysisResult.caption || `Image ${images.length + 1}`,
+          image_description: analysisResult.extractedText || '',
+        });
+      })
+    );
+    
+    setAnalysisStatus(``);
     e.target.value = '';
-
-    setTimeout(() => setAnalysisStatus(""), 3000);
   };
 
   return (

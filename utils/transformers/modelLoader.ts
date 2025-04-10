@@ -49,14 +49,14 @@ export async function initEmbeddingModel() {
 }
 
 /**
- * Initialize and cache the text generation model (distilGPT2)
+ * Initialize and cache the text generation model (flan-t5)
  * @returns The text generation pipeline
  */
 export async function initTextGenerationModel() {
   if (!modelCache.textGenerator) {
     try {
       console.log("Initializing text generation model...");
-      modelCache.textGenerator = await pipeline('text-generation', 'Xenova/distilgpt2');
+      modelCache.textGenerator = await pipeline('text2text-generation', 'Xenova/flan-t5-base');
       console.log("Text generation model initialized successfully");
     } catch (error) {
       console.error("Failed to initialize text generation model:", error);
@@ -67,7 +67,7 @@ export async function initTextGenerationModel() {
 }
 
 /**
- * Generate text based on a prompt using distilGPT2
+ * Generate text based on a prompt using flan-t5-base
  * @param prompt The prompt to generate text from
  * @param options Generation options
  * @returns The generated text
@@ -98,13 +98,8 @@ export async function generateText(
     console.log("Generated Text:", result[0].generated_text);
     
     if (Array.isArray(result) && result.length > 0) {
-      // Return just the generated text, removing the original prompt
-      const fullText = result[0].generated_text;
-      // If the full text starts with the prompt, remove it to get just the new content
-      if (fullText.startsWith(prompt)) {
-        return fullText.substring(prompt.length).trim();
-      }
-      return fullText.trim();
+      // Return the generated text (flan-t5 doesn't include the prompt in output)
+      return result[0].generated_text.trim();
     }
     
     throw new Error('Invalid text generation result format');

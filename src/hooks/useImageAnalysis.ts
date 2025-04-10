@@ -30,11 +30,13 @@ const generateTitle = async (ocrText: string | null, imageCaption: string | null
   }
   
   try {
-    // Create a prompt for the DistilGPT2 model
-    let prompt = "Generate a short, descriptive title for an image based on the following information.\n";
+    // Create a prompt for the flan-t5 model
+    // T5 models work best with task-oriented prefixes
+    let prompt = "Summarize this into a short, descriptive title: ";
     
+    let context = "";
     if (imageCaption) {
-      prompt += `Image caption: ${imageCaption}\n`;
+      context += `Image shows: ${imageCaption}. `;
     }
     
     if (ocrText) {
@@ -42,24 +44,25 @@ const generateTitle = async (ocrText: string | null, imageCaption: string | null
       const truncatedText = ocrText.length > 300 
         ? ocrText.substring(0, 300) + "..." 
         : ocrText;
-      prompt += `Text detected in image: ${truncatedText}\n`;
+      context += `Text in image: ${truncatedText}`;
     }
     
-    prompt += "Title: ";
+    // Full prompt combines the task instruction and context
+    prompt += context;
     
-    // Generate title with DistilGPT2
+    // Generate title with flan-t5
     const title = await generateText(prompt, {
-      maxLength: 20,
-      temperature: 0.7,
+      maxLength: 15,  // T5 is often more concise than GPT-2
+      temperature: 0.3, // Lower temperature for more focused results
     });
     
-    // Clean up the generated title
+    // Clean up and ensure the title is properly formatted
     return title
-      .replace(/^Title:?\s*/i, '')   // Remove any "Title:" prefix
-      .replace(/[\n\r]/g, ' ')       // Replace newlines with spaces
+      .replace(/[\n\r]/g, ' ')  // Replace newlines with spaces
+      .replace(/\s+/g, ' ')     // Normalize spaces
       .trim();
   } catch (error) {
-    console.error("Error generating title with DistilGPT2:", error);
+    console.error("Error generating title with flan-t5:", error);
     
     // Fallback to basic title creation if model fails
     if (imageCaption) {
@@ -129,8 +132,9 @@ export function useImageAnalysis() {
       console.log("OCR Result:", ocrResult);
       console.log("Caption Result:", captionResult);
       
-      // Generate title using DistilGPT2
+      // Generate title using flan-t5
       const title = await generateTitle(ocrResult, captionResult);
+      console.log("Generated Title:", title);
       
       // Clean up URL object if created from File
       if (typeof imageSource !== 'string') {

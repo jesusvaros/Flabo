@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { TicketWithPositionConversion } from '@/types/collections';
 import { useCollection } from '@/app/collections/context/CollectionContext';
-import { createClient } from '@supabase/supabase-js';
 
 interface TicketImage {
   id: string;
@@ -13,17 +12,17 @@ interface TicketImage {
 interface TicketCardState {
   // Text tab state
   textContent: string;
-  
+
   // Link tab state
   linkUrl: string;
   linkMetadata: string;
-  
+
   // Picture tab state
   images: Partial<TicketImage>[];
-  
+
   // Active tab
   activeTab: 'recipe' | 'notes' | 'image' | 'link' | 'text';
-  
+
   // Flag to check if any content has been modified
   isDirty: boolean;
 }
@@ -39,7 +38,7 @@ interface TicketCardContextProps {
   removeImage: (index: number) => void;
   saveChanges: () => Promise<void>;
   resetState: () => void;
-  onClose: () => Promise<void>;
+  onClose: () => void;
 }
 
 const TicketCardContext = createContext<TicketCardContextProps | undefined>(undefined);
@@ -60,67 +59,60 @@ export const TicketCardProvider: React.FC<{
     activeTab: 'recipe',
     isDirty: false,
   });
-  
+
   // Methods to update state
   const setActiveTab = (tab: 'recipe' | 'notes' | 'image' | 'link' | 'text') => {
     setState(prev => ({ ...prev, activeTab: tab }));
   };
-  
+
   const updateTextContent = (content: string) => {
     setState(prev => ({ ...prev, textContent: content, isDirty: true }));
   };
-  
+
   const updateLinkUrl = (url: string) => {
     setState(prev => ({ ...prev, linkUrl: url, isDirty: true }));
   };
-  
+
   const updateLinkMetadata = (metadata: string) => {
     setState(prev => ({ ...prev, linkMetadata: metadata, isDirty: true }));
   };
-  
+
   const addImage = (imageData: { image_title?: string; image_description?: string }) => {
-    // Generate a temporary ID for new images
-    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    
-    setState(prev => ({ 
-      ...prev, 
-      images: [...prev.images, {
-        ...imageData,
-        id: tempId,
-        ticket_id: ticket.id
-      }], 
-      isDirty: true 
+    setState(prev => ({
+      ...prev,
+      images: [...prev.images, imageData],
+      isDirty: true,
     }));
   };
-  
+
   const removeImage = (index: number) => {
     setState(prev => {
       const newImages = [...prev.images];
       newImages.splice(index, 1);
-      return { 
-        ...prev, 
+      return {
+        ...prev,
         images: newImages,
-        isDirty: true 
+        isDirty: true
       };
     });
   };
-  
+
   // Save changes to backend
   const saveChanges = async () => {
     if (!state.isDirty) return;
-    
+
     const updates: Partial<TicketWithPositionConversion> = {};
-    
+
     // Update text content if changed
     if (state.textContent !== ticket.text_content) {
       console.log('Saving text content:', state.textContent);
       updates.text_content = state.textContent;
     }
-    
+
     // Update URL if changed
-    const urlChanged = state.linkUrl !== ticket.ticket_url?.url || 
-                       state.linkMetadata !== ticket.ticket_url?.metadata;
-    
+    const urlChanged = state.linkUrl !== ticket.ticket_url?.url ||
+      state.linkMetadata !== ticket.ticket_url?.metadata;
+
     if (urlChanged) {
       updates.ticket_url = state.linkUrl ? {
         id: ticket.ticket_url?.id || '',
@@ -129,19 +121,19 @@ export const TicketCardProvider: React.FC<{
         metadata: state.linkMetadata
       } : null;
     }
-    
+
     // Update images if changed
     const imagesChanged = JSON.stringify(state.images) !== JSON.stringify(ticket.ticket_images);
     if (imagesChanged) {
       // Make sure all images have the ticket_id and convert to the expected format
       updates.ticket_images = state.images.map(img => ({
-        id: img.id || `temp-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+        id: img.id || '',
         ticket_id: ticket.id,
         image_title: img.image_title || '',
         image_description: img.image_description || ''
       }));
     }
-    
+
     // Only patch if there are changes
     if (Object.keys(updates).length > 0) {
       console.log('Sending updates to patchTicket:', updates);
@@ -149,30 +141,39 @@ export const TicketCardProvider: React.FC<{
         const updatedTicket = await patchTicket(ticket.id, updates);
         if (updatedTicket) {
           console.log('Ticket updates saved successfully:', updatedTicket);
-        } else {
-          console.error('Error saving ticket updates');
+
+          // Refresh ticket data to make sure we have the latest from the server
+          const refreshedTicket = await refetchTicket(ticket.id);
+          if (refreshedTicket) {
+            // Update images array with server data to ensure IDs are correct
+            setState(prev => ({
+              ...prev,
+              isDirty: false,
+              images: refreshedTicket.ticket_images || prev.images
+            }));
+            return;
+          }
         }
       } catch (error) {
         console.error('Exception in saveChanges:', error);
       }
     }
-    
+
     setState(prev => ({ ...prev, isDirty: false }));
   };
-  
-  // Handle close - simple function to save if dirty
+
+  // Handle close - save changes first, then close
   const handleClose = async () => {
-    console.log('Modal closing, isDirty:', state.isDirty);
     if (state.isDirty) {
-      console.log('Changes detected, saving before close');
       await saveChanges();
     }
-    // If parent provides an onClose callback, call it
+    
+    // Call the parent's onClose callback if provided
     if (onClose) {
       onClose();
     }
   };
-  
+
   // Reset state
   const resetState = () => {
     setState({
@@ -184,7 +185,7 @@ export const TicketCardProvider: React.FC<{
       isDirty: false,
     });
   };
-  
+
   const contextValue: TicketCardContextProps = {
     ticket,
     state,
@@ -198,7 +199,7 @@ export const TicketCardProvider: React.FC<{
     resetState,
     onClose: handleClose
   };
-  
+
   return (
     <TicketCardContext.Provider value={contextValue}>
       {children}
@@ -209,10 +210,10 @@ export const TicketCardProvider: React.FC<{
 // Custom hook to use the TicketCard context
 export const useTicketCard = () => {
   const context = useContext(TicketCardContext);
-  
+
   if (!context) {
     throw new Error('useTicketCard must be used within a TicketCardProvider');
   }
-  
+
   return context;
 };

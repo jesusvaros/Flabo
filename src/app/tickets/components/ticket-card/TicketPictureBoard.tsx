@@ -1,91 +1,99 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Image as ImageIcon, Upload, X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ImageIcon, Upload, Loader2 } from "lucide-react";
 import { useTicketCard } from "../../context/TicketCardContext";
+import { useImageAnalysis } from "@/hooks/useImageAnalysis";
 
-interface TicketPictureBoardProps {
-  className?: string;
-}
+export const TicketPictureBoard = ({ className = "" }: { className?: string }) => {
+  const { state, addImage, ticket } = useTicketCard();
+  const { images } = state;
+  const { analyzeImage, isAnalyzing } = useImageAnalysis();
+  const [analysisStatus, setAnalysisStatus] = useState("");
 
-export const TicketPictureBoard = ({ className = "" }: TicketPictureBoardProps) => {
-  // Get ticket data and state management from context
-  const { state, addPicture, removePicture } = useTicketCard();
-  const { pictures } = state;
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    
-    // For now, we'll create object URLs as placeholders
+
+    setAnalysisStatus(`Analyzing images...`);
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const imageUrl = URL.createObjectURL(file);
-      addPicture(imageUrl);
-    }
-  };
+      if (!file) continue;
 
-  const handleRemoveImage = (imageUrl: string) => {
-    removePicture(imageUrl);
+      const analysisResult = await analyzeImage(file);
+
+      addImage({
+        image_title: analysisResult.caption || `Image ${images.length + 1}`,
+        image_description: analysisResult.extractedText || '',
+      });
+    }
+
+    setAnalysisStatus(`Analysis complete`);
+    e.target.value = '';
+
+    setTimeout(() => setAnalysisStatus(""), 3000);
   };
 
   return (
-    <div className={`h-full flex flex-col p-6 ${className}`}>
-      <div className="flex items-center mb-4">
-        <ImageIcon className="h-6 w-6 mr-2 text-gray-600" />
-        <h3 className="text-lg font-medium text-black">Upload Recipe Images</h3>
+    <div className={`flex flex-col p-4 ${className}`}>
+      <div className="flex items-center mb-3">
+        <ImageIcon className="h-5 w-5 mr-2" />
+        <h3 className="text-lg font-medium">Recipe Images</h3>
       </div>
-      
-      <p className="text-sm text-gray-600 mb-4">
-        Upload images of your recipe.
+
+      <p className="text-sm text-muted-foreground mb-3">
+        Upload recipe images for automatic text extraction and food identification.
       </p>
-      
-      <label htmlFor="image-upload" className="cursor-pointer">
-        <div className="w-full max-w-md p-6 border-2 border-dashed rounded-lg text-center hover:bg-gray-50 transition-colors bg-accent">
-          <Upload className="h-8 w-8 mx-auto mb-2 text-gray-600" />
-          <p className="text-sm font-medium text-black">Click to upload or drag and drop</p>
-          <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
+
+      <label className="cursor-pointer mb-3">
+        <div className="border-2 border-dashed rounded p-4 text-center hover:bg-muted/50 transition-colors">
+          {isAnalyzing ? (
+            <div className="flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              <span>Processing...</span>
+            </div>
+          ) : (
+            <>
+              <Upload className="h-6 w-6 mx-auto mb-2" />
+              <p className="text-sm">Click to upload recipe images</p>
+            </>
+          )}
         </div>
-        <input 
-          id="image-upload" 
-          type="file" 
-          accept="image/*" 
-          multiple 
-          className="hidden" 
-          onChange={handleImageUpload} 
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleImageUpload}
+          disabled={isAnalyzing}
         />
       </label>
-      
-      {pictures && pictures.length > 0 && (
-        <div className="mt-4">
-          <h4 className="text-sm font-medium mb-2">Uploaded Images</h4>
-          <div className="grid grid-cols-2 gap-3">
-            {pictures.map((imageUrl, index) => (
-              <div 
-                key={index} 
-                className="relative border rounded-md overflow-hidden"
-              >
-                <img 
-                  src={imageUrl} 
-                  alt={`Uploaded image ${index + 1}`} 
-                  className="w-full h-32 object-cover"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-50 transition-opacity flex items-center justify-center opacity-0 hover:opacity-100">
-                  <Button 
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemoveImage(imageUrl)}
-                    className="text-white"
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
+
+      {analysisStatus && (
+        <div className="mb-3 p-2 bg-muted rounded text-sm">{analysisStatus}</div>
+      )}
+
+      {images.length > 0 ? (
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium">Saved Images ({images.length})</h4>
+          {images.map((image, index) => (
+            <div key={image.id || index} className="border rounded p-3">
+              <h5 className="font-medium">{image.image_title || `Image ${index + 1}`}</h5>
+              {image.image_description && (
+                <div className="mt-2 max-h-40 overflow-y-auto">
+                  <p className="text-sm font-medium">Recipe Text:</p>
+                  <pre className="text-xs font-mono whitespace-pre-line bg-muted p-2 rounded">
+                    {image.image_description}
+                  </pre>
                 </div>
-              </div>
-            ))}
-          </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-muted-foreground p-4">
+          No images have been uploaded yet
         </div>
       )}
     </div>
   );
 };
-
-export default TicketPictureBoard;

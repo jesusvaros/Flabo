@@ -3,7 +3,7 @@ import { TicketWithPositionConversion } from "@/types/collections";
 import { X, Pencil, Image, Link, ChevronLeft } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
 import { AIConversionView } from "./AIConversionView";
-import TicketPictureBoard from "./TicketPictureBoard";
+import { TicketPictureBoard } from "./TicketPictureBoard";
 import TicketLinkBoard from "./TicketLinkBoard";
 import TicketTextBoard from "./TicketTextBoard";
 import { cn } from "@/lib/utils";

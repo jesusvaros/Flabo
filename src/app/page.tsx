@@ -28,10 +28,23 @@ export default async function CollectionPage() {
     .select(`
       id,
       content,
+      text_content,
       created_at,
       creator_id,
       ticket_drawings (
         data
+      ),
+      ticket_urls (
+        id,
+        ticket_id,
+        url,
+        metadata
+      ),
+      ticket_images (
+        id,
+        ticket_id,
+        image_title,
+        image_description
       ),
       recipe_conversions (
         id,
@@ -51,6 +64,7 @@ export default async function CollectionPage() {
   const transformedTickets = tickets?.map(ticket => ({
     id: ticket.id,
     content: ticket.content,
+    text_content: ticket.text_content || '',
     created_at: ticket.created_at,
     creator_id: ticket.creator_id,
     position_x: 0,
@@ -58,6 +72,8 @@ export default async function CollectionPage() {
     z_index: 0,
     position: 0,
     drawing: ticket.ticket_drawings?.data ?? null,
+    ticket_url: ticket.ticket_urls ?? null,
+    ticket_images: ticket.ticket_images ?? [],
     recipe_conversions: ticket.recipe_conversions || [],
   })) || [];
 

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ImageIcon, Upload, Loader2 } from "lucide-react";
 import { useTicketCard } from "../../context/TicketCardContext";
 import { useImageAnalysis } from "@/hooks/useImageAnalysis";
 
 export const TicketPictureBoard = ({ className = "" }: { className?: string }) => {
-  const { state, addImage, ticket } = useTicketCard();
+  const { state, addImage } = useTicketCard();
   const { images } = state;
   const { analyzeImage, isAnalyzing } = useImageAnalysis();
   const [analysisStatus, setAnalysisStatus] = useState("");

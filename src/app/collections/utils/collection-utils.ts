@@ -31,8 +31,17 @@ export async function fetchCollectionWithTickets(
           ticket_drawings (
             data
           ),
-          ticket_drawings_generated (
-            data
+          ticket_urls (
+        id,
+        ticket_id,
+            url,
+            metadata
+          ),
+          ticket_images (
+            id,
+            ticket_id,
+            image_title,
+            image_description
           ),
           recipe_conversions (
             id,
@@ -97,7 +106,6 @@ export function transformCollectionData(
         z_index: position?.z_index ?? 0,
         position: position?.position ?? 0,
         drawing: ticket.ticket_drawings?.data ?? null,
-        drawing_generated: ticket.ticket_drawings_generated?.data ?? null,
         recipe_conversions: ticket.recipe_conversions || [],
       };
     }),
@@ -111,19 +119,29 @@ export async function fetchTicketWithDrawing(
   supabase: SupabaseClient,
   ticketId: string
 ) {
-  // Get the ticket with its drawing and recipe conversions
+  // Get the ticket with all related data in a single query
   const { data: ticket } = (await supabase
     .from("tickets")
     .select(`
       id,
       content,
+      text_content,
       created_at,
       creator_id,
       ticket_drawings (
         data
       ),
-      ticket_drawings_generated (
-        data
+      ticket_urls (
+        id,
+        ticket_id,
+        url,
+        metadata
+      ),
+      ticket_images (
+        id,
+        ticket_id,
+        image_title,
+        image_description
       ),
       recipe_conversions (
         id,
@@ -175,6 +193,7 @@ export function transformTicketData(
   return {
     id: ticket.id,
     content: ticket.content,
+    text_content: ticket.text_content || '',
     created_at: ticket.created_at,
     creator_id: ticket.creator_id,
     position_x: position?.position_x ?? 0,
@@ -182,7 +201,8 @@ export function transformTicketData(
     z_index: position?.z_index ?? 0,
     position: position?.position ?? 0,
     drawing: ticket.ticket_drawings?.data ?? null,
-    drawing_generated: ticket.ticket_drawings_generated?.data ?? null,
+    ticket_url: ticket.ticket_urls ?? null,
+    ticket_images: ticket.ticket_images ?? [],
     recipe_conversions: ticket.recipe_conversions.map(rc => ({
       id: rc.id,
       ticket_id: rc.ticket_id,

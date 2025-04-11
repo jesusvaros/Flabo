@@ -11,7 +11,6 @@ interface TicketDrawingBoardProps {
   ticketId: string;
   className?: string;
   initialDrawing: TLEditorSnapshot | null;
-  onClose: () => void;
   fullHeight?: boolean;
 }
 
@@ -20,7 +19,7 @@ export const TicketDrawingBoard = forwardRef<
   TicketDrawingBoardProps
 >(
   (
-    { ticketId, className, initialDrawing, onClose, fullHeight = false },
+    { ticketId, className, initialDrawing, fullHeight = false },
     ref
   ) => {
     // Create a ref to store the drawing editor instance
@@ -51,7 +50,6 @@ export const TicketDrawingBoard = forwardRef<
           <DrawingEditor
             ticketId={ticketId}
             initialDrawing={initialDrawing}
-            onCloseRequested={onClose}
             ref={drawingEditorRef}
           />
         </Tldraw>

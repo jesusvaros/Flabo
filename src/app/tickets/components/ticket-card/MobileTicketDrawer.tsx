@@ -1,24 +1,23 @@
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { TicketWithPositionConversion } from "@/types/collections";
-import { X, Pencil } from "lucide-react";
+import { X, Pencil, Image, Link, FileEdit, ChevronLeft } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { AIConversionView } from "./AIConversionView";
-import { DISABLE_GENERATED_DRAWING } from "./DesktopTicketCard";
+import {TicketPictureBoard} from "./TicketPictureBoard";
+import TicketLinkBoard from "./TicketLinkBoard";
+import TicketTextBoard from "./TicketTextBoard";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTicketCard } from "../../context/TicketCardContext";
+import { TabType } from "./DesktopTicketCard";
 
 interface MobileTicketDrawerProps {
   ticket: TicketWithPositionConversion;
-  drawerOpen: boolean;
-  onOpenChange: (open: boolean) => void;
   onClose: () => void;
   isDrawingBoardMounted: boolean;
   drawingEditorRef: React.RefObject<{ saveDrawing: () => void }>;
-  showAIView: boolean;
-  handleAIViewToggle: (show: boolean) => void;
-  showGeneratedDrawing: boolean;
-  handleDrawingToggle: (checked: boolean) => void;
   isEditing: boolean;
   editedContent: string;
   onTitleEdit: () => void;
@@ -29,15 +28,9 @@ interface MobileTicketDrawerProps {
 
 export const MobileTicketDrawer = ({
   ticket,
-  drawerOpen,
-  onOpenChange,
   onClose,
   isDrawingBoardMounted,
   drawingEditorRef,
-  showAIView,
-  handleAIViewToggle,
-  showGeneratedDrawing,
-  handleDrawingToggle,
   isEditing,
   editedContent,
   onTitleEdit,
@@ -45,51 +38,96 @@ export const MobileTicketDrawer = ({
   onTitleChange,
   onTitleKeyDown,
 }: MobileTicketDrawerProps) => {
+  // Use the ticket card context for state management
+  const { state, setActiveTab, onClose: contextOnClose } = useTicketCard();
+  const { activeTab } = state;
+
+  const handleTabChange = (tab: string) => {
+    // If we're changing away from the notes tab, save the drawing
+    if (activeTab === 'notes' && tab !== 'notes' && drawingEditorRef.current) {
+      drawingEditorRef.current.saveDrawing();
+    }
+    setActiveTab(tab as TabType);
+  };
+
+  const handleCloseDrawer = async () => {
+    // Save drawing if we're on the notes tab
+    if (activeTab === 'notes' && drawingEditorRef.current) {
+      drawingEditorRef.current.saveDrawing();
+    }
+    // Call context onClose to ensure changes are saved
+    await contextOnClose();
+    // Then call the component's onClose prop
+    onClose();
+  };
+
+  const handleGoToRecipe = () => {
+    // Save drawing if we're on the notes tab
+    if (activeTab === 'notes' && drawingEditorRef.current) {
+      drawingEditorRef.current.saveDrawing();
+    }
+    setActiveTab('recipe');
+  };
+
   return (
-    <Drawer open={drawerOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="p-0 h-auto max-h-[90vh]">
-        <DrawerHeader className="border-b border-muted py-4 px-4 pb-5">
-          <div className="group relative flex items-center mb-2">
-            {isEditing ? (
-              <div className="flex items-center w-full">
-                <Input
-                  value={editedContent}
-                  onChange={onTitleChange}
-                  onKeyDown={onTitleKeyDown}
-                  onBlur={onTitleSave}
-                  autoFocus
-                  className="font-semibold text-xl"
-                />
-              </div>
-            ) : (
-              <div className="flex items-center w-full">
-                <DrawerTitle>{ticket.content}</DrawerTitle>
-                <button
-                  onClick={onTitleEdit}
-                  className="ml-2 p-1 hover:bg-accent rounded-full"
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-              </div>
-            )}
+    <Drawer open onClose={handleCloseDrawer}>
+      <DrawerContent className="p-0 h-auto max-h-[90vh] bg-accent">
+        <DrawerHeader className="border-b py-4 px-4 bg-accent">
+          <div className="flex justify-between items-center">
+            <div className="group relative flex items-center mb-2">
+              {isEditing ? (
+                <div className="flex items-center w-full">
+                  <Input
+                    value={editedContent}
+                    onChange={onTitleChange}
+                    onKeyDown={onTitleKeyDown}
+                    onBlur={onTitleSave}
+                    autoFocus
+                    className="font-semibold text-xl bg-accent"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center w-full">
+                  <DrawerTitle className="font-semibold">{ticket.content}</DrawerTitle>
+                  <button
+                    onClick={onTitleEdit}
+                    className="ml-2 p-1 hover:bg-muted rounded-full"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <Button
+              onClick={handleGoToRecipe}
+              className="rounded-full px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground flex items-center"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              <span className="text-sm font-medium">Recipe</span>
+            </Button>
           </div>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="mobile-ai-mode"
-              checked={showAIView}
-              onCheckedChange={handleAIViewToggle}
-            />
-            <Label htmlFor="mobile-ai-mode">AI Mode</Label>
-          </div>
-          <div className="flex items-center space-x-2 mt-2">
-            <Switch
-              disabled={DISABLE_GENERATED_DRAWING}
-              id="drawing-toggle"
-              checked={showGeneratedDrawing}
-              onCheckedChange={handleDrawingToggle}
-            />
-            <Label htmlFor="drawing-toggle">Generated Drawing</Label>
-          </div>
+
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger value="notes" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+                <Pencil className="mr-2 h-4 w-4" />
+                Notes
+              </TabsTrigger>
+              <TabsTrigger value="image" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+                <Image className="h-4 w-4 mr-2" />
+                Picture
+              </TabsTrigger>
+              <TabsTrigger value="link" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+                <Link className="h-4 w-4 mr-2" />
+                Link
+              </TabsTrigger>
+              <TabsTrigger value="text" className="font-medium data-[state=active]:bg-accent data-[state=active]:text-black">
+                <FileEdit className="h-4 w-4 mr-2" />
+                Text
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </DrawerHeader>
 
         {isDrawingBoardMounted && (
@@ -98,29 +136,45 @@ export const MobileTicketDrawer = ({
             style={{
               height: "80vh",
               overflow: "hidden",
-              transitionDelay: "500ms",
               borderRadius: "0.375rem",
               boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
             }}
           >
-            {showAIView ? (
-              <AIConversionView ticket={ticket} />
-            ) : (
-              <TicketDrawingBoard
-                ticketId={ticket.id}
-                initialDrawing={showGeneratedDrawing ? ticket.drawing_generated : ticket.drawing}
-                onClose={onClose}
-                ref={drawingEditorRef}
-                className="h-full"
-                fullHeight
-              />
-            )}
+            <Tabs value={activeTab} className="h-full">
+              <TabsContent value="recipe" className="h-full m-0">
+                <AIConversionView ticket={ticket} />
+              </TabsContent>
+              <TabsContent value="notes" className="h-full m-0">
+                <TicketDrawingBoard
+                  ticketId={ticket.id}
+                  initialDrawing={ticket.drawing}
+                  ref={drawingEditorRef}
+                  className="h-full"
+                  fullHeight
+                />
+              </TabsContent>
+              <TabsContent value="image" className="h-full m-0">
+                <TicketPictureBoard
+                  className="h-full"
+                />
+              </TabsContent>
+              <TabsContent value="link" className="h-full m-0">
+                <TicketLinkBoard
+                  className="h-full"
+                />
+              </TabsContent>
+              <TabsContent value="text" className="h-full m-0">
+                <TicketTextBoard
+                  className="h-full"
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         )}
       </DrawerContent>
       <button
-        onClick={onClose}
-        className="absolute top-4 right-4 rounded-full p-1 hover:bg-accent"
+        onClick={handleCloseDrawer}
+        className="absolute top-4 right-4 rounded-full p-1 hover:bg-muted"
       >
         <X className="h-4 w-4" />
       </button>

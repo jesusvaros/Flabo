@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useCardAnimation, useDrawerAnimation } from "../hooks/use-ticket-card";
+import React, { useState, useRef, useEffect } from "react";
+import { useCardAnimation } from "../hooks/use-ticket-card";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileTicketDrawer, DesktopTicketCard } from "./ticket-card";
 import { TicketWithPositionConversion } from "@/types/collections";
 import { useCollection } from "@/app/collections/context/CollectionContext";
+import { TicketCardProvider } from "../context/TicketCardContext";
 
 interface BigTicketCardProps {
-  ticket:  TicketWithPositionConversion ;
+  ticket: TicketWithPositionConversion;
   onClose: () => void;
   clickPosition?: { x: number; y: number };
 }
@@ -20,8 +21,6 @@ export const BigTicketCard = ({
 }: BigTicketCardProps) => {
   const isMobile = useIsMobile();
   const [isDrawingBoardMounted, setIsDrawingBoardMounted] = useState(false);
-  const [showAIView, setShowAIView] = useState(false);
-  const [showGeneratedDrawing, setShowGeneratedDrawing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(ticket.content);
   const drawingEditorRef = useRef<{ saveDrawing: () => void }>(null);
@@ -41,14 +40,11 @@ export const BigTicketCard = ({
 
   const handleTitleSave = async () => {
     if (editedContent.trim() !== '') {
-      // First update the local state for immediate UI feedback
       const updatedTicket = {
         ...ticket,
         content: editedContent
       };
       updateTicketInCollection(updatedTicket);
-      
-      // Then save to the database
       await patchTicket(ticket.id, { content: editedContent });
     } else {
       setEditedContent(ticket.content);
@@ -63,77 +59,45 @@ export const BigTicketCard = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleTitleSave();
-    } else if (e.key === 'Escape') {
-      setEditedContent(ticket.content);
-      setIsEditing(false);
     }
   };
-
-  const handleAIViewToggle = (checked: boolean) => {
-    if (checked && drawingEditorRef.current) {
-      drawingEditorRef.current.saveDrawing();
-    }
-    setShowAIView(checked);
-  };
-
-  const handleDrawingToggle = (checked: boolean) => {
-    setShowGeneratedDrawing(checked);
-  };
-
-  const { drawerOpen, onDrawerOpenChange } =
-    useDrawerAnimation(handleCloseRequested);
 
   useEffect(() => {
-    if (isMobile) {
-      setIsDrawingBoardMounted(true);
-    } else {
-      const timer = setTimeout(() => {
-        setIsDrawingBoardMounted(true);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isMobile]);
-
-  if (isMobile) {
-    return (
-      <MobileTicketDrawer
-        ticket={ticket}
-        drawerOpen={drawerOpen}
-        onOpenChange={onDrawerOpenChange}
-        onClose={handleCloseRequested}
-        isDrawingBoardMounted={isDrawingBoardMounted}
-        drawingEditorRef={drawingEditorRef}
-        showAIView={showAIView}
-        handleAIViewToggle={handleAIViewToggle}
-        showGeneratedDrawing={showGeneratedDrawing}
-        handleDrawingToggle={handleDrawingToggle}
-        isEditing={isEditing}
-        editedContent={editedContent}
-        onTitleEdit={handleTitleEdit}
-        onTitleSave={handleTitleSave}
-        onTitleChange={handleTitleChange}
-        onTitleKeyDown={handleKeyDown}
-      />
-    );
-  }
+    setIsDrawingBoardMounted(true);
+  }, []);
 
   return (
-    <DesktopTicketCard
-      ticket={ticket}
-      style={style}
-      onClose={handleCloseRequested}
-      isDrawingBoardMounted={isDrawingBoardMounted}
-      drawingEditorRef={drawingEditorRef}
-      showAIView={showAIView}
-      handleAIViewToggle={handleAIViewToggle}
-      showGeneratedDrawing={showGeneratedDrawing}
-      handleDrawingToggle={handleDrawingToggle}
-      isEditing={isEditing}
-      editedContent={editedContent}
-      onTitleEdit={handleTitleEdit}
-      onTitleSave={handleTitleSave}
-      onTitleChange={handleTitleChange}
-      onTitleKeyDown={handleKeyDown}
-    />
+    <TicketCardProvider ticket={ticket} onClose={onClose}>
+      {isMobile ? (
+        <MobileTicketDrawer
+          ticket={ticket}
+          onClose={handleCloseRequested}
+          isDrawingBoardMounted={isDrawingBoardMounted}
+          drawingEditorRef={drawingEditorRef}
+          isEditing={isEditing}
+          editedContent={editedContent}
+          onTitleEdit={handleTitleEdit}
+          onTitleSave={handleTitleSave}
+          onTitleChange={handleTitleChange}
+          onTitleKeyDown={handleKeyDown}
+        />
+      ) : (
+        <DesktopTicketCard
+          ticket={ticket}
+          onClose={handleCloseRequested}
+          isDrawingBoardMounted={isDrawingBoardMounted}
+          drawingEditorRef={drawingEditorRef}
+          isEditing={isEditing}
+          editedContent={editedContent}
+          onTitleEdit={handleTitleEdit}
+          onTitleSave={handleTitleSave}
+          onTitleChange={handleTitleChange}
+          onKeyDown={handleKeyDown}
+          style={style}
+        />
+      )}
+    </TicketCardProvider>
   );
 };
+
+export default BigTicketCard;

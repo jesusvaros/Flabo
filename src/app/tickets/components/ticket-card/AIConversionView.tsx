@@ -1,16 +1,14 @@
 "use client";
 
-import { Loader2, MessageSquare, Wand2, History } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Loader2, FileText, Link, Image, Wand2, History } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { RecipeDisplay } from "@/app/components/recipe/RecipeDisplay";
 import { TicketWithPositionConversion } from "@/types/collections";
 import { RecipeConversion } from "@/types/recipe-conversions";
 import { cn } from "@/lib/utils";
-import { useCollection } from "@/app/collections/context/CollectionContext";
+import { useTicketCard } from "../../context/TicketCardContext";
+import { useRecipeConversion } from "../../hooks/useRecipeConversion";
 
 interface AIConversionViewProps {
   ticket: TicketWithPositionConversion;
@@ -25,63 +23,58 @@ const NoTicketView = () => (
 const ConversionForm = ({
   isLoading,
   onConvert,
-  showCustomPrompt,
-  setShowCustomPrompt,
-  customPrompt,
-  setCustomPrompt
 }: {
   isLoading: boolean;
   onConvert: () => void;
-  showCustomPrompt: boolean;
-  setShowCustomPrompt: (show: boolean) => void;
-  customPrompt: string;
-  setCustomPrompt: (prompt: string) => void;
-}) => (
-  <div className="p-4 border-b">
-    <div className="flex items-center gap-4 ">
-      <Button onClick={onConvert} disabled={isLoading}>
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Converting Drawing...
-          </>
+}) => {
+  const { state } = useTicketCard();
+  const { textContent, linkUrl, images } = state;
+  
+  const hasContent = textContent.trim() !== '' || linkUrl.trim() !== '' || images.length > 0;
+  
+  // Count sources with content
+  const sourceCount = [
+    textContent.trim() !== '',
+    linkUrl.trim() !== '',
+    images.length > 0
+  ].filter(Boolean).length;
+  
+  return (
+    <div className="p-4 border-b">
+      <div className="flex items-center gap-4">
+        <Button 
+          onClick={onConvert} 
+          disabled={isLoading || !hasContent}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating Recipe...
+            </>
+          ) : (
+            <>
+              <Wand2 className="mr-2 h-4 w-4" />
+              Create Recipe
+            </>
+          )}
+        </Button>
+        
+        {hasContent ? (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {textContent.trim() !== '' && <FileText className="h-3 w-3" />}
+            {linkUrl.trim() !== '' && <Link className="h-3 w-3" />}
+            {images.length > 0 && <Image className="h-3 w-3" />}
+            <span>Using {sourceCount} source{sourceCount !== 1 ? 's' : ''}</span>
+          </div>
         ) : (
-          <>
-            <Wand2 className="mr-2 h-4 w-4" />
-            Convert drawing to Recipe
-          </>
+          <div className="text-xs text-muted-foreground">
+            Add content in text, link, or picture tabs
+          </div>
         )}
-      </Button>
-
-      <div className="flex items-center gap-2">
-        <Label htmlFor="custom-prompt" className="text-sm">
-          <MessageSquare className="mr-1 h-4 w-4 inline" />
-          Custom
-        </Label>
-        <Switch
-          id="custom-prompt"
-          checked={showCustomPrompt}
-          onCheckedChange={setShowCustomPrompt}
-        />
       </div>
     </div>
-
-    {showCustomPrompt && (
-      <>
-        <Textarea
-          placeholder="Add special instructions for the AI"
-          value={customPrompt}
-          onChange={(e) => setCustomPrompt(e.target.value)}
-          className="min-h-[100px] p-2"
-          maxLength={1000}
-        />
-        <div className="text-right text-xs mt-1">
-          {customPrompt.length}/1000
-        </div>
-      </>
-    )}
-  </div>
-);
+  );
+};
 
 const ConversionHistory = ({
   conversions,
@@ -121,10 +114,18 @@ const ConversionHistory = ({
               className="w-full text-left"
               onClick={() => onSelect(conversion)}
             >
-              <span className="truncate">{conversion.title}</span>
+              <div className="flex items-center w-full overflow-hidden">
+                <span className="truncate text-xs">
+                  {new Date(conversion.created_at).toLocaleString()}
+                </span>
+              </div>
             </Button>
           ))}
-
+          {conversions.length === 0 && (
+            <div className="text-xs text-muted-foreground">
+              No previous conversions
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -132,88 +133,59 @@ const ConversionHistory = ({
 );
 
 export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState<RecipeConversion | null>(null);
-  const [showCustomPrompt, setShowCustomPrompt] = useState(false);
-  const [customPrompt, setCustomPrompt] = useState("");
+  const { state } = useTicketCard();
+  const { textContent, linkUrl, images } = state;
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(true);
 
-  const { refetchTicket } = useCollection();
-  const conversions = ticket.recipe_conversions;
-
-  useEffect(() => {
-    if (conversions && conversions.length > 0) {
-      setSelectedRecipe(conversions[0]);
-    }
-  }, [conversions]);
+  const { 
+    isLoading, 
+    recipeConversions, 
+    selectedConversion, 
+    createRecipeFromSources, 
+    selectConversion 
+  } = useRecipeConversion({
+    ticketId: ticket.id,
+    existingConversions: ticket.recipe_conversions || []
+  });
 
   const handleConvertToAI = async () => {
     try {
-      setIsLoading(true);
-      console.log("Converting ticket:", ticket.id);
-      const response = await fetch("/api/ai/convert-recipe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticketId: ticket.id,
-          customPrompt: customPrompt || undefined
-        })
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("API error:", error);
-        throw new Error(error.error || "Failed to convert recipe");
-      }
-
-      const data = await response.json();
-      if (!showCustomPrompt) {
-        setCustomPrompt("");
-      }
-
-      // Refresh the ticket data to update the conversions list
-      const updatedTicket = await refetchTicket(ticket.id);
-      if (updatedTicket && updatedTicket.recipe_conversions) {
-        // Always select the first conversion (latest one) from the updated list
-        setSelectedRecipe(updatedTicket.recipe_conversions[0]);
-      }
+      // Collect data from all tabs
+      const sources = {
+        text: textContent.trim() !== '' ? textContent : undefined,
+        linkUrl: linkUrl.trim() !== '' ? linkUrl : undefined,
+        images: images.length > 0 ? images : undefined
+      };
+      
+      // Create the recipe from all sources
+      await createRecipeFromSources(sources);
     } catch (error) {
-      console.error("Failed to convert recipe:", error);
-    } finally {
-      setIsLoading(false);
+      console.error("Error converting to recipe:", error);
     }
   };
 
-  if (!ticket?.id) {
-    return <NoTicketView />;
-  }
-
   return (
-    <div className="h-full relative">
-      <div className="h-full flex flex-col">
+    <div className="relative flex flex-col h-full">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <ConversionForm
           isLoading={isLoading}
           onConvert={handleConvertToAI}
-          showCustomPrompt={showCustomPrompt}
-          setShowCustomPrompt={setShowCustomPrompt}
-          customPrompt={customPrompt}
-          setCustomPrompt={setCustomPrompt}
         />
-        {selectedRecipe ? (
+        {selectedConversion ? (
           <RecipeDisplay
-            recipe={selectedRecipe}
+            recipe={selectedConversion}
             ticketId={ticket.id}
           />
         ) : (
           <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
-            Convert your drawing to get started
+            Convert your content to get started
           </div>
         )}
       </div>
       <ConversionHistory
-        conversions={conversions}
-        selectedId={selectedRecipe?.id}
-        onSelect={setSelectedRecipe}
+        conversions={recipeConversions}
+        selectedId={selectedConversion?.id}
+        onSelect={selectConversion}
         isCollapsed={isHistoryCollapsed}
         onToggle={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
       />

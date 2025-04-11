@@ -7,13 +7,12 @@ import { useDrawingStorage } from "../hooks/use-drawing-storage";
 interface DrawingEditorProps {
   ticketId: string;
   initialDrawing: TLEditorSnapshot | null;
-  onCloseRequested: () => void;
 }
 
 export const DrawingEditor = forwardRef<
   { saveDrawing: () => void },
   DrawingEditorProps
->(({ ticketId, initialDrawing, onCloseRequested }, ref) => {
+>(({ ticketId, initialDrawing }, ref) => {
   // Get the editor instance directly
   const editor = useEditor();
   const { saveDrawing } = useDrawingStorage(ticketId);
@@ -26,7 +25,7 @@ export const DrawingEditor = forwardRef<
     }
   }, [editor, initialDrawing, ticketId]);
 
-  // Define the save drawing function
+  // Define the save drawing function for explicit saves
   const handleSaveDrawing = useCallback(() => {
     if (!editor) return;
 

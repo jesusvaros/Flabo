@@ -26,11 +26,23 @@ export interface TicketWithPosition extends Ticket {
   z_index: number;
   position: number;
   drawing: TLEditorSnapshot | null;
-  drawing_generated: TLEditorSnapshot | null;
 }
 
 export interface TicketWithPositionConversion extends TicketWithPosition {
   recipe_conversions: RecipeConversion[];
+  text_content?: string;
+  ticket_url?: {
+    id: string;
+    ticket_id: string;
+    url: string;
+    metadata?: string;
+  } | null;
+  ticket_images?: {
+    id: string;
+    ticket_id: string;
+    image_description?: string;
+    image_title?: string;
+  }[];
 }
 
 export interface CollectionProps {

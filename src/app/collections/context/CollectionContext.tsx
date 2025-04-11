@@ -11,6 +11,7 @@ import {
   fetchTicketPosition,
   transformTicketData
 } from "../utils/collection-utils";
+import { updateTicketContent, updateTicketUrl, updateTicketImages, getTicketState } from "@/app/tickets/utils/ticket-db-utils";
 
 interface CollectionContextType {
   collection: CollectionProps | null;
@@ -148,27 +149,47 @@ export function CollectionProvider({
     return updatedTicket;
   }, [collection, tickets, updateTicketInCollection, updateTickets]);
 
-  // Function to update a ticket in the collection
-
-
   // Function to update a ticket in the database and then refetch it
   const patchTicket = useCallback(async (ticketId: string, updates: Partial<TicketWithPositionConversion>): Promise<TicketWithPositionConversion | null> => {
     if (!ticketId) return null;
-    
     const supabase = createClient();
-    
+
     try {
-      const { error } = await supabase
-        .from("tickets")
-        .update({
-          content: updates.content,
-        })
-        .eq("id", ticketId);
+      // Get current ticket state
+      const { data: currentTicket, error: stateError } = await getTicketState(supabase, ticketId);
       
-      if (error) {
-        console.error("Error updating ticket:", error);
+      if (stateError || !currentTicket) {
+        console.error("Error getting ticket state:", stateError);
         return null;
       }
+      
+      // Run operations in parallel
+      const operations = [];
+      
+      // 1. Update main ticket content
+      if (updates.content !== undefined || updates.text_content !== undefined) {
+        operations.push(
+          updateTicketContent(supabase, ticketId, updates.content, updates.text_content)
+        );
+      }
+      
+      // 2. Handle URL data
+      if (updates.ticket_url !== undefined) {
+        const hasUrl = currentTicket.ticket_urls !== null;
+        operations.push(
+          updateTicketUrl(supabase, ticketId, updates.ticket_url, hasUrl)
+        );
+      }
+      
+      // 3. Handle images
+      if (updates.ticket_images !== undefined) {
+        operations.push(
+          updateTicketImages(supabase, ticketId, updates.ticket_images)
+        );
+      }
+      
+      // Execute all operations in parallel
+      await Promise.all(operations);
       
       // Refetch the ticket to get the updated data
       return await refetchTicket(ticketId);
@@ -178,17 +199,17 @@ export function CollectionProvider({
     }
   }, [refetchTicket]);
 
-  return (
-    <CollectionContext.Provider value={{
-      collection,
-      refetchCollection,
-      refetchTicket,
-      updateTicketInCollection,
-      patchTicket,
-      tickets,
-      updateTickets
-    }}>
-      {children}
-    </CollectionContext.Provider>
-  );
+return (
+  <CollectionContext.Provider value={{
+    collection,
+    refetchCollection,
+    refetchTicket,
+    updateTicketInCollection,
+    patchTicket,
+    tickets,
+    updateTickets
+  }}>
+    {children}
+  </CollectionContext.Provider>
+);
 }

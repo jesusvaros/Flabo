@@ -25,7 +25,7 @@ export const IngredientsTable: React.FC<IngredientsTableProps> = ({
   ingredients,
 }) => {
   return (
-    <div className="rounded-lg border bg-white shadow-sm">
+    <div className="rounded-lg border bg-accent shadow-sm">
       <Table>
         <TableHeader>
           <TableRow>

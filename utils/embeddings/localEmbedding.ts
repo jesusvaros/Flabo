@@ -1,25 +1,10 @@
-import { pipeline } from '@xenova/transformers';
+import { initEmbeddingModel } from '../transformers/modelLoader';
 
-let localEmbedder: any;
-
-async function initLocalEmbedder() {
-  if (!localEmbedder) {
-    try {
-      console.log("Initializing local embedder...");
-      localEmbedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
-      console.log("Local embedder initialized successfully");
-    } catch (error) {
-      console.error("Failed to initialize local embedder:", error);
-      throw error;
-    }
-  }
-  return localEmbedder;
-}
 
 export async function getLocalEmbedding(text: string): Promise<number[]> {
   try {
     console.log("Getting embedding for text:", text.substring(0, 50) + "...");
-    const embedder = await initLocalEmbedder();
+    const embedder = await initEmbeddingModel();
     
     // Get the embedding result
     const result = await embedder(text, { pooling: 'mean', normalize: true });
@@ -81,7 +66,7 @@ export async function getLocalEmbedding(text: string): Promise<number[]> {
     console.error('Could not extract embedding data from result:', result);
     throw new Error('Failed to extract embedding data');
   } catch (error) {
-    console.error('Error generating local embedding:', error);
+    console.error('Error generating text embedding:', error);
     throw error;
   }
-}
+};

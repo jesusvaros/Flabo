@@ -9,6 +9,14 @@ export interface RecipeConversion {
   custom_prompt?: string;
   created_at: string;
   updated_at: string;
+  content?: string;
+  type?: 'text' | 'link' | 'image' | 'drawing';
+  processed_content?: {
+    title: string;
+    ingredients: { text: string }[];
+    instructions: { text: string }[];
+    notes: string;
+  };
 }
 
 export interface CreateRecipeConversion {

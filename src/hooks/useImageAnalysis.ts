@@ -18,6 +18,15 @@ interface ImageAnalysisResult {
   success: boolean;
 }
 
+function cleanOCR(text: string): string {
+  return text
+    .replace(/[^\w\sñáéíóúü:,.-]/gi, '')     // remove weird symbols
+    .replace(/\s{2,}/g, ' ')                 // remove extra spaces
+    .replace(/(\r\n|\n|\r)/gm, '\n')         // normalize line breaks
+    .replace(/^\s*\d+\.\s*/gm, match => '\n' + match.trim()) // preserve steps
+    .trim();
+}
+
 /**
  * Generate a title based on OCR text and image caption
  * @param ocrText The cleaned OCR text
@@ -25,37 +34,32 @@ interface ImageAnalysisResult {
  * @returns A suitable title for the image
  */
 const generateTitle = async (ocrText: string | null, imageCaption: string | null): Promise<string> => {
-  if (!ocrText && !imageCaption) {
-    return 'Food Image';
-  }
-  
   try {
     // Create a prompt for the flan-t5 model
     // T5 models work best with task-oriented prefixes
-    let prompt = "Summarize this into a short, descriptive title: ";
-    
+    let prompt = "Here is an OCR scan of a recipe. Please extract a descriptive title: ";
+
     let context = "";
     if (imageCaption) {
       context += `Image shows: ${imageCaption}. `;
     }
-    
+
     if (ocrText) {
-      // Limit OCR text to avoid overwhelming the model
-      const truncatedText = ocrText.length > 300 
-        ? ocrText.substring(0, 300) + "..." 
+      const truncatedText = ocrText.length > 400
+        ? ocrText.substring(0, 400) + "..."
         : ocrText;
-      context += `Text in image: ${truncatedText}`;
+      context += `OCR text: ${truncatedText}`;
     }
-    
+
     // Full prompt combines the task instruction and context
     prompt += context;
-    
+
     // Generate title with flan-t5
     const title = await generateText(prompt, {
       maxLength: 15,  // T5 is often more concise than GPT-2
       temperature: 0.3, // Lower temperature for more focused results
     });
-    
+
     // Clean up and ensure the title is properly formatted
     return title
       .replace(/[\n\r]/g, ' ')  // Replace newlines with spaces
@@ -63,18 +67,7 @@ const generateTitle = async (ocrText: string | null, imageCaption: string | null
       .trim();
   } catch (error) {
     console.error("Error generating title with flan-t5:", error);
-    
-    // Fallback to basic title creation if model fails
-    if (imageCaption) {
-      return imageCaption;
-    } else if (ocrText) {
-      const firstLine = ocrText.split('\n')[0].trim();
-      if (firstLine.length > 0 && firstLine.length <= 50) {
-        return firstLine;
-      }
-    }
-    
-    return 'Food Image';
+    return 'Title';
   }
 };
 
@@ -104,15 +97,15 @@ export function useImageAnalysis() {
     imageSource: File | string
   ): Promise<ImageAnalysisResult> => {
     setState(prev => ({ ...prev, isAnalyzing: true, error: null }));
-    
+
     try {
       // Convert File to URL if needed
-      const imageUrl = typeof imageSource === 'string' 
-        ? imageSource 
+      const imageUrl = typeof imageSource === 'string'
+        ? imageSource
         : URL.createObjectURL(imageSource);
-      
+
       // Run OCR and Image Captioning in parallel
-      const [ocrResult, captionResult] = await Promise.all([
+      const [rawOcrResult, captionResult] = await Promise.all([
         // Run OCR using Tesseract
         Tesseract.recognize(imageUrl, 'eng+spa')
           .then(result => result.data.text)
@@ -120,7 +113,7 @@ export function useImageAnalysis() {
             console.error("OCR error:", error);
             return null;
           }),
-        
+
         // Get image caption using transformer model
         getImageCaption(imageUrl)
           .catch(error => {
@@ -128,28 +121,22 @@ export function useImageAnalysis() {
             return null;
           })
       ]);
-      
-      console.log("OCR Result:", ocrResult);
-      console.log("Caption Result:", captionResult);
-      
-      // Generate title using flan-t5
-      const title = await generateTitle(ocrResult, captionResult);
-      console.log("Generated Title:", title);
-      
-      // Clean up URL object if created from File
-      if (typeof imageSource !== 'string') {
-        URL.revokeObjectURL(imageUrl);
-      }
-      
-      // Set final state
-      setState({ 
-        isAnalyzing: false, 
+
+      console.log("Raw OCR Result:", rawOcrResult, captionResult);
+
+      // Clean the OCR result
+      const ocrResult = rawOcrResult ? cleanOCR(rawOcrResult) : null;
+
+      // Generate title using flan-t5 if the ocr result is long is a recipe if not is a picture
+      const title = ocrResult && ocrResult?.length < 50 ? captionResult : await generateTitle(ocrResult, captionResult);
+
+      setState({
+        isAnalyzing: false,
         caption: title,
         extractedText: ocrResult,
         error: null
       });
-      
-      // Return results with success status
+
       return {
         caption: title,
         extractedText: ocrResult,
@@ -158,16 +145,16 @@ export function useImageAnalysis() {
       };
     } catch (error) {
       console.error("Error analyzing image:", error);
-      
+
       // Set error state
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      setState({ 
-        isAnalyzing: false, 
+      setState({
+        isAnalyzing: false,
         caption: null,
         extractedText: null,
         error: errorObj
       });
-      
+
       // Return error result
       return {
         caption: null,

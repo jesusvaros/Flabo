@@ -33,10 +33,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Call OpenAI with our unified client
-    console.log(recipeData);
-    console.log(ticketId);
-
     const recipeResponse = await makeChatCompletion<RecipeResponse>({
       systemPrompt: SystemPrompts.CONVERT_RECIPE,
       userMessage: recipeData,
@@ -45,6 +41,7 @@ export async function POST(req: Request) {
     });
 
     // Create a new recipe conversion record
+    console.log(recipeResponse,'esqueree')
     const recipeConversion: CreateRecipeConversion = {
       ticket_id: ticketId,
       created_by: user.id,
@@ -60,6 +57,7 @@ export async function POST(req: Request) {
       .insert([recipeConversion])
       .select('id, title, ingredients, instructions, notes')
       .single();
+
 
     return NextResponse.json({
       message: "Recipe converted successfully",

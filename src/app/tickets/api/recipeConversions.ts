@@ -50,7 +50,7 @@ export const createConversion = async ({
       throw new Error(errorData.error || 'Failed to convert recipe');
     }
 
-    return await response.json();;
+    return await response.json().then((data) => data.recipe);
 
   } catch (err) {
     console.error('Error in recipe conversion process:', err);

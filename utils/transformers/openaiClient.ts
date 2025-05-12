@@ -27,7 +27,7 @@ export async function makeChatCompletion<T>(options: ChatCompletionOptions): Pro
   const {
     systemPrompt,
     userMessage,
-    model = 'gpt-3.5-turbo',
+    model = 'gpt-4o-mini',
     temperature = 0.7,
     responseFormat,
     maxTokens = 1000
@@ -104,7 +104,7 @@ IMPORTANT: Your response must be a valid JSON object with the following format:
 If no tickets match, return an empty array: { "matching_ids": [] }`,
 
   CONVERT_RECIPE: `You are a recipe conversion assistant. Convert text and images into structured recipes.
-ALWAYS respond with a JSON object in this exact format AND ALWAYS ON THE SAME LANGUAJE AS THE INPUT TEXT:
+ALWAYS respond with a JSON object in this exact format AND ALWAYS IN THE SAME LANGUAGE AS the userMessage:
 {
   "recipe": {
     "title": "string - The recipe title",
@@ -124,7 +124,15 @@ Rules:
 7. For ingredients, always include units and be specific (e.g., "1 cup all-purpose flour" not just "flour")
 8. For instructions, include cooking times and temperatures when relevant
 9. For notes, include any special tips, substitutions, or storage instructions
-10. The response has to be always in the same language as the input text
+10. The response MUST be in the same language as the userMessage
+11.IF no ingredients or instructions can be found from the sources, THEN generate a plausible recipe based on the image title and context.
+
+
+PRIORITIZATION OF INFORMATION SOURCES:
+1. FIRST prioritize information from the ticket text_content as the primary source
+2. SECOND use information from images to complement or fill in missing details
+3. THIRD use URL content only if needed to complete missing information
+4. When sources conflict, prioritize the ticket text_content over other sources
 
 IMPORTANT HANDLING OCR TEXT ERRORS:
 1. The images may contain text extracted by OCR with errors and typos
@@ -153,6 +161,8 @@ export function processRecipeWithAI(sources: RecipeSource): string {
   // Extract ticket data: use text_content and content
   const ticketContent = sources.ticketData?.content || '';
   const ticketTextContent = sources.ticketData?.text_content || '';
+
+  console.log(ticketContent, ticketTextContent,sources);
   
   // For link source: use placeholder for now
   const linkSource = sources.linkUrl ? `Link source: ${sources.linkUrl}` : 'No link provided';
@@ -162,12 +172,12 @@ export function processRecipeWithAI(sources: RecipeSource): string {
   
   // Add ticket content
   if (ticketContent) {
-    processedRecipe += `## Ticket title\n${ticketContent}\n\n`;
+    processedRecipe += `## Ticket title\n ${ticketContent} \n`;
   }
   
   // Add ticket text content
   if (ticketTextContent) {
-    processedRecipe += `## Ticket additional info\n${ticketTextContent}\n\n`;
+    processedRecipe += `## Ticket additional info\n ${ticketTextContent} \n`;
   }
   
   // Add image data

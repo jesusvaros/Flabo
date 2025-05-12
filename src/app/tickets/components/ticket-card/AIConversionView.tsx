@@ -146,7 +146,7 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
     try {
       // Collect data from all tabs and ticket data
       const sources = {
-        text: textContent.trim() !== '' ? textContent : undefined,
+        text_content: textContent.trim() !== '' ? textContent : undefined,
         linkUrl: linkUrl.trim() !== '' ? linkUrl : undefined,
         images: images.length > 0 ? images : undefined,
         // Include the ticket data (content and text_content)

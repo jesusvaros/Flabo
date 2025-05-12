@@ -42,6 +42,7 @@ export function useRecipeConversion({ ticketId, existingConversions = [] }: UseR
       });
 
       // Update local state if conversion was successful
+      console.log('newConversion', newConversion);
       if (newConversion) {
         setRecipeConversions(prev => [newConversion, ...prev]);
         setSelectedConversion(newConversion);

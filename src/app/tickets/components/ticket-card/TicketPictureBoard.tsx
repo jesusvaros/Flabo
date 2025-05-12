@@ -10,9 +10,10 @@ export const TicketPictureBoard = ({ className = "" }: { className?: string }) =
     isAnalyzing,
     backgroundProcessing,
     handleImageUpload,
-    getImagePreview,
-    isImageProcessing
+    handleDeleteImage
   } = useImageUpload();
+
+  console.log('images',images)
 
   return (
     <div className={`flex flex-col p-4 ${className}`}>
@@ -40,18 +41,19 @@ export const TicketPictureBoard = ({ className = "" }: { className?: string }) =
       )}
 
       {images.length > 0 ? (
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium">Saved Images ({images.length})</h4>
-          {images.map((image, index) => (
-            <ImageCard
-              key={index}
-              index={index}
-              title={image.image_title || ""}
-              imageUrl={image.image_url || getImagePreview(index)}
-              isProcessing={isImageProcessing(index)}
-              ticket_image_id={image.id}
-            />
-          ))}
+        <div className="mt-4">
+          <h4 className="text-sm font-medium mb-2">Saved Images ({images.length})</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {images.map((image, index) => (
+              <ImageCard
+                key={index}
+                index={index}
+                imageUrl={image.image_url}
+                ticket_image_id={image.id}
+                onDelete={handleDeleteImage}
+              />
+            ))}
+          </div>
         </div>
       ) : (
         <div className="text-center text-muted-foreground p-4">

@@ -71,6 +71,8 @@ export async function updateTicketImages(
       ticket_id: ticketId,
       image_title: image.image_title || '',
       image_description: image.image_description || '',
+      image_url: image.image_url || '',
+      storage_path: image.storage_path || '',
     }));
     
     return await supabase

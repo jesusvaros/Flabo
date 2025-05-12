@@ -9,6 +9,8 @@ interface RecipeSource {
     ticket_id?: string;
     image_title?: string;
     image_description?: string;
+    image_url?: string;
+    storage_path?: string;
   }[];
   customPrompt?: string;
 }

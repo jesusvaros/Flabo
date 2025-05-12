@@ -44,7 +44,9 @@ export default async function CollectionPage() {
         id,
         ticket_id,
         image_title,
-        image_description
+        image_description,
+        image_url,
+        storage_path
       ),
       recipe_conversions (
         id,

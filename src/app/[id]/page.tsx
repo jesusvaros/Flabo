@@ -37,6 +37,8 @@ export type SupabaseTicket = {
     ticket_id: string;
     image_description?: string;
     image_title?: string;
+    image_url?: string;
+    storage_path?: string;
   }[];
   recipe_conversions: {
     id: string;

@@ -16,7 +16,6 @@ export const DrawingEditor = forwardRef<
 >(({ ticketId, initialDrawing }, ref) => {
   const editor = useEditor();
   const { saveDrawing } = useDrawingStorage(ticketId);
-  const { analyzeImage } = useImageAnalysis();
 
   useEffect(() => {
     if (editor && initialDrawing) {
@@ -31,40 +30,33 @@ export const DrawingEditor = forwardRef<
     console.log(`Saving drawing for ticket ${ticketId}`);
     const snapshot = getSnapshot(editor.store);
     
-    // Default description
-    let description = {
-      title: "Untitled Drawing",
-      ocrText: ""
-    };
-    
-    try {
-      // Convert to image and analyze in one try block
-      const imageUrl = await convertDrawingToImage(editor,snapshot);
-      if (!imageUrl) throw new Error("Failed to convert drawing to image");
+    // try {
+    //   // Convert to image and analyze in one try block
+    //   const imageUrl = await convertDrawingToImage(editor,snapshot);
+    //   if (!imageUrl) throw new Error("Failed to convert drawing to image");
       
-      console.log("Image conversion successful, length:", imageUrl.length);
+    //   console.log("Image conversion successful, length:", imageUrl.length);
       
-      const analysisResult = await analyzeImage(imageUrl);
-      if (analysisResult.success) {
-        description = {
-          title: analysisResult.caption || "Untitled Drawing",
-          ocrText: analysisResult.extractedText || ""
-        };
-        console.log(`Analysis successful - Title: "${description.title}"`);
-      }
-    } catch (err) {
-      console.error("Error during image analysis:", err);
-      // Using default description already set
-    }
+    //   const analysisResult = await analyzeImage(imageUrl);
+    //   if (analysisResult.success) {
+    //     description = {
+    //       title: analysisResult.caption || "Untitled Drawing",
+    //       ocrText: analysisResult.extractedText || ""
+    //     };
+    //     console.log(`Analysis successful - Title: "${description.title}"`);
+    //   }
+    // } catch (err) {
+    //   console.error("Error during image analysis:", err);
+    // }
     
     // Save drawing with whatever description we have
     try {
-      await saveDrawing(snapshot, description);
+      await saveDrawing(snapshot);
       console.log("Drawing saved successfully");
     } catch (err) {
       console.error("Error saving drawing:", err);
     }
-  }, [editor, saveDrawing, ticketId, analyzeImage]);
+  }, [editor, saveDrawing, ticketId]);
 
   useImperativeHandle(ref, () => ({
     saveDrawing: handleSaveDrawing,

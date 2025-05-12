@@ -80,12 +80,6 @@ export default async function CollectionPage(props: Props) {
     .select("id, title, creator_id")
     .eq("creator_id", user.id);
 
-  // Get all tickets for the user
-  const { data: tickets } = await supabase
-    .from("tickets")
-    .select("*")
-    .eq("creator_id", user.id);
-
   // Get all ingredients for the user
   const { data: ingredients } = await supabase
     .from("ingredients")

@@ -41,8 +41,8 @@ export async function fetchCollectionWithTickets(
             id,
             ticket_id,
             image_title,
-            image_description
-             image_url,
+            image_description,
+            image_url,
         storage_path
           ),
           recipe_conversions (

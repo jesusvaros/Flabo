@@ -83,11 +83,11 @@ export default async function CollectionPage() {
   return (
     <CollectionProvider collection={null}>
       <div className="flex flex-col min-h-screen">
-        <HeaderLoggedIn userEmail={user.email || ""} />
         <div className="flex-1">
           <CollectionsView 
             collections={collections || []} 
             tickets={transformedTickets}
+            userEmail={user.email || ""}
           />
         </div>
       </div>

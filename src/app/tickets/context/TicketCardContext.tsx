@@ -7,6 +7,8 @@ interface TicketImage {
   ticket_id: string;
   image_title?: string;
   image_description?: string;
+  image_url?: string;
+  storage_path?: string;
 }
 
 interface TicketCardState {
@@ -34,7 +36,7 @@ interface TicketCardContextProps {
   updateTextContent: (content: string) => void;
   updateLinkUrl: (url: string) => void;
   updateLinkMetadata: (metadata: string) => void;
-  addImage: (imageData: { image_title?: string; image_description?: string }) => void;
+  addImage: (imageData: { image_title?: string; image_description?: string; image_url?: string; storage_path?: string; id?: string }) => void;
   removeImage: (index: number) => void;
   saveChanges: () => Promise<void>;
   resetState: () => void;

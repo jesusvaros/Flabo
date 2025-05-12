@@ -1,35 +1,18 @@
-import React, { useState } from "react";
-import { ImageIcon, Upload, Loader2 } from "lucide-react";
-import { useTicketCard } from "../../context/TicketCardContext";
-import { useImageAnalysis } from "@/hooks/useImageAnalysis";
+import React from "react";
+import { ImageIcon, Loader2 } from "lucide-react";
+import { useImageUpload } from "../../hooks/use-image-upload";
+import { ImageUploadButton } from "./ImageUploadButton";
+import { ImageCard } from "./ImageCard";
 
 export const TicketPictureBoard = ({ className = "" }: { className?: string }) => {
-  const { state, addImage } = useTicketCard();
-  const { images } = state;
-  const { analyzeImage, isAnalyzing } = useImageAnalysis();
-  const [analysisStatus, setAnalysisStatus] = useState("");
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    setAnalysisStatus(`Analyzing images...`);
-
-    // Convert FileList to Array and process with Promise.all for parallel processing
-    await Promise.all(
-      Array.from(files).map(async (file) => {
-        const analysisResult = await analyzeImage(file);
-        
-        addImage({
-          image_title: analysisResult.caption || `Image ${images.length + 1}`,
-          image_description: analysisResult.extractedText || '',
-        });
-      })
-    );
-    
-    setAnalysisStatus(``);
-    e.target.value = '';
-  };
+  const {
+    images,
+    isAnalyzing,
+    backgroundProcessing,
+    handleImageUpload,
+    getImagePreview,
+    isImageProcessing
+  } = useImageUpload();
 
   return (
     <div className={`flex flex-col p-4 ${className}`}>
@@ -42,49 +25,32 @@ export const TicketPictureBoard = ({ className = "" }: { className?: string }) =
         Upload recipe images for automatic text extraction and food identification.
       </p>
 
-      <label className="cursor-pointer mb-3">
-        <div className="border-2 border-dashed rounded p-4 text-center hover:bg-muted/50 transition-colors">
-          {isAnalyzing ? (
-            <div className="flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin mr-2" />
-              <span>Processing...</span>
-            </div>
-          ) : (
-            <>
-              <Upload className="h-6 w-6 mx-auto mb-2" />
-              <p className="text-sm">Click to upload recipe images</p>
-            </>
-          )}
-        </div>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={handleImageUpload}
-          disabled={isAnalyzing}
-        />
-      </label>
+      <ImageUploadButton 
+        isAnalyzing={isAnalyzing}
+        onChange={handleImageUpload}
+      />
 
-      {analysisStatus && (
-        <div className="mb-3 p-2 bg-muted rounded text-sm">{analysisStatus}</div>
+      {backgroundProcessing > 0 && (
+        <div className="mb-3 p-2 bg-muted rounded text-sm">
+          <div className="flex items-center">
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <span>Analyzing {backgroundProcessing} image{backgroundProcessing !== 1 ? 's' : ''} in the background...</span>
+          </div>
+        </div>
       )}
 
       {images.length > 0 ? (
         <div className="space-y-3">
           <h4 className="text-sm font-medium">Saved Images ({images.length})</h4>
           {images.map((image, index) => (
-            <div key={image.id || index} className="border rounded p-3">
-              <h5 className="font-medium">{image.image_title || `Image ${index + 1}`}</h5>
-              {image.image_description && (
-                <div className="mt-2 max-h-40 overflow-y-auto">
-                  <p className="text-sm font-medium">Recipe Text:</p>
-                  <pre className="text-xs font-mono whitespace-pre-line bg-muted p-2 rounded">
-                    {image.image_description}
-                  </pre>
-                </div>
-              )}
-            </div>
+            <ImageCard
+              key={index}
+              index={index}
+              title={image.image_title || ""}
+              imageUrl={image.image_url || getImagePreview(index)}
+              isProcessing={isImageProcessing(index)}
+              ticket_image_id={image.id}
+            />
           ))}
         </div>
       ) : (

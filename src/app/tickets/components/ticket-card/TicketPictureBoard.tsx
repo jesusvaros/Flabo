@@ -8,13 +8,12 @@ export const TicketPictureBoard = ({ className = "" }: { className?: string }) =
   const {
     images,
     isAnalyzing,
-    backgroundProcessing,
     handleImageUpload,
     handleDeleteImage
   } = useImageUpload();
 
   return (
-    <div className={`flex flex-col p-4 ${className}`}>
+    <div className={`flex flex-col p-4 h-full ${className}`}>
       <div className="flex items-center mb-3">
         <ImageIcon className="h-5 w-5 mr-2" />
         <h3 className="text-lg font-medium">Recipe Images</h3>
@@ -29,28 +28,21 @@ export const TicketPictureBoard = ({ className = "" }: { className?: string }) =
         onChange={handleImageUpload}
       />
 
-      {backgroundProcessing > 0 && (
-        <div className="mb-3 p-2 bg-muted rounded text-sm">
-          <div className="flex items-center">
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            <span>Analyzing {backgroundProcessing} image{backgroundProcessing !== 1 ? 's' : ''} in the background...</span>
-          </div>
-        </div>
-      )}
-
       {images.length > 0 ? (
-        <div className="mt-4">
+        <div className="mt-4 flex-1 overflow-hidden flex flex-col">
           <h4 className="text-sm font-medium mb-2">Saved Images ({images.length})</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {images.map((image, index) => (
-              <ImageCard
-                key={index}
-                index={index}
-                imageUrl={image.image_url}
-                ticket_image_id={image.id}
-                onDelete={handleDeleteImage}
-              />
-            ))}
+          <div className="overflow-y-auto flex-1 pr-1 -mr-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {images.map((image, index) => (
+                <ImageCard
+                  key={index}
+                  index={index}
+                  imageUrl={image.image_url}
+                  ticket_image_id={image.id}
+                  onDelete={handleDeleteImage}
+                />
+              ))}
+            </div>
           </div>
         </div>
       ) : (

@@ -10,6 +10,7 @@ interface ImageCardProps {
 
 export const ImageCard = ({ imageUrl, index = 0, ticket_image_id, onDelete }: ImageCardProps) => {
   const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const handleDelete = () => {
     if (onDelete && ticket_image_id) {
@@ -17,23 +18,27 @@ export const ImageCard = ({ imageUrl, index = 0, ticket_image_id, onDelete }: Im
     }
   };
 
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    setImgLoaded(true);
+  };
+
   return (
-    <div className="relative rounded overflow-hidden h-24 w-full group">
+    <div className="relative rounded overflow-hidden w-full group bg-muted/10">
       {imageUrl && !imgError ? (
-        <>
+        <div className="w-full h-auto">
           <img
             src={imageUrl}
             alt={`Image ${index + 1}`}
-            className="w-full h-full object-cover"
+            className="w-full h-auto object-contain"
             onError={() => {
               console.error(`Failed to load image: ${imageUrl}`);
               setImgError(true);
             }}
+            onLoad={handleImageLoad}
           />
-
-        </>
+        </div>
       ) : (
-        <div className="h-full w-full flex items-center justify-center bg-muted/50">
+        <div className="h-24 w-full flex items-center justify-center">
           <p className="text-xs text-muted-foreground">Failed to load</p>
         </div>
       )}

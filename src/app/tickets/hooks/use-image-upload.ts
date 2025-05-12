@@ -7,7 +7,6 @@ export function useImageUpload() {
   const { ticket, state, addImage, removeImage, saveChanges } = useTicketCard();
   const { images } = state;
   const { analyzeImage, isAnalyzing } = useImageAnalysis();
-  const [backgroundProcessing, setBackgroundProcessing] = useState(0);
   
   // Function to delete an image
   const handleDeleteImage = async (ticket_image_id?: string) => {
@@ -73,8 +72,6 @@ export function useImageUpload() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    // Set loading state
-    setBackgroundProcessing(prev => prev + files.length);
     
     // Auth check - do it once for all files
     const supabase = createClient();
@@ -83,7 +80,6 @@ export function useImageUpload() {
     
     if (!userId) {
       console.error("User not authenticated");
-      setBackgroundProcessing(0);
       return;
     }
     
@@ -146,8 +142,6 @@ export function useImageUpload() {
         });
       } catch (err) {
         console.error("Error processing image:", err);
-      } finally {
-        setBackgroundProcessing(prev => prev - 1);
       }
     }));
     
@@ -161,7 +155,6 @@ export function useImageUpload() {
   return {
     images,
     isAnalyzing,
-    backgroundProcessing,
     handleImageUpload,
     handleDeleteImage
   };

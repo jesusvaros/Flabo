@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     });
 
     // Create a new recipe conversion record
-    console.log(recipeResponse,'esqueree')
+  
     const recipeConversion: CreateRecipeConversion = {
       ticket_id: ticketId,
       created_by: user.id,

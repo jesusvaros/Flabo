@@ -26,13 +26,11 @@ interface CreateConversionParams {
   sources: RecipeSource;
 }
 
-// Create a new recipe conversion
 export const createConversion = async ({
   ticketId,
   sources,
 }: CreateConversionParams): Promise<RecipeConversion | null> => {
   try {
-    // Call the AI endpoint for conversion
     const recipeData = processRecipeWithAI(sources);
     const response = await fetch('/api/ai/convert-recipe', {
       method: 'POST',
@@ -58,9 +56,6 @@ export const createConversion = async ({
   }
 };
 
-
-
-// Get all conversions for a ticket
 export const getConversions = async (ticketId: string): Promise<RecipeConversion[]> => {
   const supabase = createClient();
   const { data, error } = await supabase

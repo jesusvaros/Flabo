@@ -59,7 +59,6 @@ export async function makeChatCompletion<T>(options: ChatCompletionOptions): Pro
 
     const content = response.choices[0].message.content;
     
-    // If we're expecting JSON, parse it
     if (responseFormat?.type === 'json_object') {
       try {
         return JSON.parse(content) as T;
@@ -69,7 +68,6 @@ export async function makeChatCompletion<T>(options: ChatCompletionOptions): Pro
       }
     }
     
-    // Otherwise return the content directly
     return content as unknown as T;
   } catch (error) {
     if (error instanceof Error) {
@@ -150,7 +148,6 @@ IMPORTANT HANDLING OCR TEXT ERRORS:
 
 // Process recipe content with AI (client-side)
 export function processRecipeWithAI(sources: RecipeSource): string {
-  console.log('Processing recipe with AI using multiple sources:', sources);
   
   // Extract image data: only use image_description and image_title
   const imageData = sources.images?.map(img => ({
@@ -161,8 +158,6 @@ export function processRecipeWithAI(sources: RecipeSource): string {
   // Extract ticket data: use text_content and content
   const ticketContent = sources.ticketData?.content || '';
   const ticketTextContent = sources.ticketData?.text_content || '';
-
-  console.log(ticketContent, ticketTextContent,sources);
   
   // For link source: use placeholder for now
   const linkSource = sources.linkUrl ? `Link source: ${sources.linkUrl}` : 'No link provided';
@@ -197,6 +192,5 @@ export function processRecipeWithAI(sources: RecipeSource): string {
     processedRecipe += `## Link Source\n${linkSource}\n\n`;
   }
  
-  console.log('processedRecipe', processedRecipe);
   return processedRecipe;
 }

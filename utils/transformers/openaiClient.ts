@@ -1,3 +1,4 @@
+import { RecipeSource } from '@/app/tickets/api/recipeConversions';
 import { OpenAI } from 'openai';
 
 let openaiClient: OpenAI | null = null;
@@ -29,7 +30,7 @@ export async function makeChatCompletion<T>(options: ChatCompletionOptions): Pro
     model = 'gpt-3.5-turbo',
     temperature = 0.7,
     responseFormat,
-    maxTokens = 10000
+    maxTokens = 1000
   } = options;
 
   try {
@@ -102,8 +103,8 @@ IMPORTANT: Your response must be a valid JSON object with the following format:
 
 If no tickets match, return an empty array: { "matching_ids": [] }`,
 
-  CONVERT_RECIPE: `You are a recipe conversion assistant. Convert drawings into structured recipes.
-ALWAYS respond with a JSON object in this exact format:
+  CONVERT_RECIPE: `You are a recipe conversion assistant. Convert text and images into structured recipes.
+ALWAYS respond with a JSON object in this exact format AND ALWAYS ON THE SAME LANGUAJE AS THE INPUT TEXT:
 {
   "recipe": {
     "title": "string - The recipe title",
@@ -123,5 +124,69 @@ Rules:
 7. For ingredients, always include units and be specific (e.g., "1 cup all-purpose flour" not just "flour")
 8. For instructions, include cooking times and temperatures when relevant
 9. For notes, include any special tips, substitutions, or storage instructions
-10. The response has to be always on the same language as the drawing`
+10. The response has to be always in the same language as the input text
+
+IMPORTANT HANDLING OCR TEXT ERRORS:
+1. The images may contain text extracted by OCR with errors and typos
+2. Try to correct obvious OCR errors in the image descriptions
+3. Focus on extracting meaningful information even when text is fragmented
+4. Identify recipe components (title, ingredients, instructions) even from poorly formatted OCR text
+5. Skip irrelevant or unintelligible parts of the OCR text
+6. If multiple images contain the same recipe information, combine and deduplicate
+7. Prioritize clear, readable information over garbled text
+8. Use additional context from ticket title and ticket info to help with interpretation
+9. If the title appears in multiple places, choose the clearest instance
+10. When extracting quantities, correct obvious OCR errors in numbers and units`
 };
+
+
+// Process recipe content with AI (client-side)
+export function processRecipeWithAI(sources: RecipeSource): string {
+  console.log('Processing recipe with AI using multiple sources:', sources);
+  
+  // Extract image data: only use image_description and image_title
+  const imageData = sources.images?.map(img => ({
+    title: img.image_title || '',
+    description: img.image_description || ''
+  })) || [];
+  
+  // Extract ticket data: use text_content and content
+  const ticketContent = sources.ticketData?.content || '';
+  const ticketTextContent = sources.ticketData?.text_content || '';
+  
+  // For link source: use placeholder for now
+  const linkSource = sources.linkUrl ? `Link source: ${sources.linkUrl}` : 'No link provided';
+  
+  // Format all the data into a structured recipe
+  let processedRecipe = `# Recipe extracted from ticket\n\n`;
+  
+  // Add ticket content
+  if (ticketContent) {
+    processedRecipe += `## Ticket title\n${ticketContent}\n\n`;
+  }
+  
+  // Add ticket text content
+  if (ticketTextContent) {
+    processedRecipe += `## Ticket additional info\n${ticketTextContent}\n\n`;
+  }
+  
+  // Add image data
+  if (imageData.length > 0) {
+    processedRecipe += `## Images\n`;
+    imageData.forEach((img, index) => {
+      if (img.title || img.description) {
+        processedRecipe += `### Image ${index + 1}\n`;
+        if (img.title) processedRecipe += `**Title:** ${img.title}\n`;
+        if (img.description) processedRecipe += `**Description:** ${img.description}\n`;
+        processedRecipe += '\n';
+      }
+    });
+  }
+  
+  if(linkSource) {
+    processedRecipe += `## Link Source\n${linkSource}\n\n`;
+  }
+ 
+  console.log('processedRecipe', processedRecipe);
+  return processedRecipe;
+}

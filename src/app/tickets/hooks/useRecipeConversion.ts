@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { RecipeConversion } from '@/types/recipe-conversions';
-import { createConversion, updateConversion } from '../api/recipeConversions';
+import { createConversion } from '../api/recipeConversions';
 
 interface UseRecipeConversionProps {
   ticketId: string;
@@ -57,38 +57,6 @@ export function useRecipeConversion({ ticketId, existingConversions = [] }: UseR
     }
   };
 
-  // Update an existing conversion
-  const updateRecipeConversion = async (conversionId: string, updates: Partial<RecipeConversion>) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const updatedConversion = await updateConversion({
-        conversionId,
-        updates
-      });
-
-      // Update local state if the update was successful
-      if (updatedConversion) {
-        setRecipeConversions(prev =>
-          prev.map(conv => conv.id === conversionId ? updatedConversion : conv)
-        );
-
-        if (selectedConversion?.id === conversionId) {
-          setSelectedConversion(updatedConversion);
-        }
-      }
-
-      return updatedConversion;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update recipe conversion');
-      console.error('Error updating recipe conversion:', err);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // Select a conversion
   const selectConversion = (conversion: RecipeConversion) => {
     setSelectedConversion(conversion);
@@ -100,7 +68,6 @@ export function useRecipeConversion({ ticketId, existingConversions = [] }: UseR
     recipeConversions,
     selectedConversion,
     createRecipeFromSources,
-    updateRecipeConversion,
     selectConversion,
   };
 }

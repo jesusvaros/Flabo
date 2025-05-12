@@ -14,12 +14,6 @@ interface AIConversionViewProps {
   ticket: TicketWithPositionConversion;
 }
 
-const NoTicketView = () => (
-  <div className="h-full flex items-center justify-center">
-    <p>No ticket selected</p>
-  </div>
-);
-
 const ConversionForm = ({
   isLoading,
   onConvert,
@@ -150,11 +144,17 @@ export const AIConversionView = ({ ticket }: AIConversionViewProps) => {
 
   const handleConvertToAI = async () => {
     try {
-      // Collect data from all tabs
+      // Collect data from all tabs and ticket data
       const sources = {
         text: textContent.trim() !== '' ? textContent : undefined,
         linkUrl: linkUrl.trim() !== '' ? linkUrl : undefined,
-        images: images.length > 0 ? images : undefined
+        images: images.length > 0 ? images : undefined,
+        // Include the ticket data (content and text_content)
+        ticketData: {
+          id: ticket.id,
+          content: ticket.content,
+          text_content: ticket.text_content
+        }
       };
       
       // Create the recipe from all sources

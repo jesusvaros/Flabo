@@ -1,52 +1,42 @@
 import React from "react";
-import { ImageIcon, Loader2 } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import { useImageUpload } from "../../hooks/use-image-upload";
 import { ImageUploadButton } from "./ImageUploadButton";
 import { ImageCard } from "./ImageCard";
 
-export const TicketPictureBoard = ({ className = "" }: { className?: string }) => {
-  const {
-    images,
-    isAnalyzing,
-    handleImageUpload,
-    handleDeleteImage
-  } = useImageUpload();
+export const TicketPictureBoard = () => {
+  const { images, isAnalyzing, handleImageUpload, handleDeleteImage } = useImageUpload();
 
   return (
-    <div className={`flex flex-col p-4 h-full ${className}`}>
+    <div className={`h-full overflow-y-auto p-4 h-full`}>
       <div className="flex items-center mb-3">
         <ImageIcon className="h-5 w-5 mr-2" />
         <h3 className="text-lg font-medium">Recipe Images</h3>
       </div>
-
+      
       <p className="text-sm text-muted-foreground mb-3">
         Upload recipe images for automatic text extraction and food identification.
       </p>
-
-      <ImageUploadButton 
-        isAnalyzing={isAnalyzing}
-        onChange={handleImageUpload}
-      />
-
+      
+      <ImageUploadButton isAnalyzing={isAnalyzing} onChange={handleImageUpload} />
+      
       {images.length > 0 ? (
-        <div className="mt-4 flex-1 overflow-hidden flex flex-col">
+        <div className="mt-4">
           <h4 className="text-sm font-medium mb-2">Saved Images ({images.length})</h4>
-          <div className="overflow-y-auto flex-1 pr-1 -mr-1">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {images.map((image, index) => (
-                <ImageCard
-                  key={index}
-                  index={index}
-                  imageUrl={image.image_url}
-                  ticket_image_id={image.id}
-                  onDelete={handleDeleteImage}
-                />
-              ))}
-            </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {images.map((image, index) => (
+              <ImageCard
+                key={index}
+                index={index}
+                imageUrl={image.image_url}
+                ticket_image_id={image.id}
+                onDelete={handleDeleteImage}
+              />
+            ))}
           </div>
         </div>
       ) : (
-        <div className="text-center text-muted-foreground p-4">
+        <div className="text-center text-muted-foreground mt-4">
           No images have been uploaded yet
         </div>
       )}

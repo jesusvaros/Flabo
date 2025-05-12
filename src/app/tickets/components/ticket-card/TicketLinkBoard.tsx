@@ -4,11 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Link as LinkIcon, ExternalLink } from "lucide-react";
 import { useTicketCard } from "../../context/TicketCardContext";
 
-interface TicketLinkBoardProps {
-  className?: string;
-}
-
-export const TicketLinkBoard = ({ className = "" }: TicketLinkBoardProps) => {
+export const TicketLinkBoard = () => {
 
   const {
     state,
@@ -30,7 +26,7 @@ export const TicketLinkBoard = ({ className = "" }: TicketLinkBoardProps) => {
   };
 
   return (
-    <div className={`h-full flex flex-col p-6 ${className}`}>
+    <div className={`h-full flex flex-col p-6 h-full`}>
       <div className="flex items-center mb-4">
         <LinkIcon className="h-6 w-6 mr-2 text-gray-600" />
         <h3 className="text-lg font-medium text-black">Add Recipe Link</h3>

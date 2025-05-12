@@ -1,10 +1,11 @@
+import React from "react";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { TicketWithPositionConversion } from "@/types/collections";
 import { X, Pencil, Image, Link, FileEdit, ChevronLeft } from "lucide-react";
 import { TicketDrawingBoard } from "../TicketDrawingBoard";
 import { AIConversionView } from "./AIConversionView";
-import {TicketPictureBoard} from "./TicketPictureBoard";
+import { TicketPictureBoard } from "./TicketPictureBoard";
 import TicketLinkBoard from "./TicketLinkBoard";
 import TicketTextBoard from "./TicketTextBoard";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,16 @@ export const MobileTicketDrawer = ({
   const { state, setActiveTab, onClose: contextOnClose } = useTicketCard();
   const { activeTab } = state;
 
+  // Lock body scroll on open
+  const lockBodyScroll = () => {
+    document.body.style.overflow = 'hidden';
+  };
+
+  // Unlock body scroll on close
+  const unlockBodyScroll = () => {
+    document.body.style.overflow = 'auto';
+  };
+
   const handleTabChange = (tab: string) => {
     // If we're changing away from the notes tab, save the drawing
     if (activeTab === 'notes' && tab !== 'notes' && drawingEditorRef.current) {
@@ -55,6 +66,8 @@ export const MobileTicketDrawer = ({
     if (activeTab === 'notes' && drawingEditorRef.current) {
       drawingEditorRef.current.saveDrawing();
     }
+    // Unlock body scroll when drawer closes
+    unlockBodyScroll();
     // Call context onClose to ensure changes are saved
     await contextOnClose();
     // Then call the component's onClose prop
@@ -68,6 +81,11 @@ export const MobileTicketDrawer = ({
     }
     setActiveTab('recipe');
   };
+
+  // Lock the body scroll as soon as the component renders - this runs once when the drawer opens
+  React.useLayoutEffect(() => {
+    lockBodyScroll();
+  }, []);
 
   return (
     <Drawer open onClose={handleCloseDrawer}>
@@ -141,32 +159,25 @@ export const MobileTicketDrawer = ({
             }}
           >
             <Tabs value={activeTab} className="h-full">
-              <TabsContent value="recipe" className="h-full m-0">
+              <TabsContent value="recipe">
                 <AIConversionView ticket={ticket} />
               </TabsContent>
-              <TabsContent value="notes" className="h-full m-0">
+              <TabsContent value="notes">
                 <TicketDrawingBoard
                   ticketId={ticket.id}
                   initialDrawing={ticket.drawing}
                   ref={drawingEditorRef}
-                  className="h-full"
                   fullHeight
                 />
               </TabsContent>
-              <TabsContent value="image" className="h-full m-0">
-                <TicketPictureBoard
-                  className="h-full"
-                />
+              <TabsContent value="image">
+                <TicketPictureBoard />
               </TabsContent>
-              <TabsContent value="link" className="h-full m-0">
-                <TicketLinkBoard
-                  className="h-full"
-                />
+              <TabsContent value="link">
+                <TicketLinkBoard />
               </TabsContent>
-              <TabsContent value="text" className="h-full m-0">
-                <TicketTextBoard
-                  className="h-full"
-                />
+              <TabsContent value="text">
+                <TicketTextBoard />
               </TabsContent>
             </Tabs>
           </div>

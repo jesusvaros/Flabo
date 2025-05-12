@@ -13,8 +13,6 @@ export const TicketPictureBoard = ({ className = "" }: { className?: string }) =
     handleDeleteImage
   } = useImageUpload();
 
-  console.log('images',images)
-
   return (
     <div className={`flex flex-col p-4 ${className}`}>
       <div className="flex items-center mb-3">

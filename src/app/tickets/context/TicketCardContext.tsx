@@ -79,7 +79,7 @@ export const TicketCardProvider: React.FC<{
     setState(prev => ({ ...prev, linkMetadata: metadata, isDirty: true }));
   };
 
-  const addImage = (imageData: { image_title?: string; image_description?: string }) => {
+  const addImage = (imageData: { image_title?: string; image_description?: string; image_url?: string; storage_path?: string; id?: string }) => {
     setState(prev => ({
       ...prev,
       images: [...prev.images, imageData],
@@ -132,7 +132,9 @@ export const TicketCardProvider: React.FC<{
         id: img.id || '',
         ticket_id: ticket.id,
         image_title: img.image_title || '',
-        image_description: img.image_description || ''
+        image_description: img.image_description || '',
+        image_url: img.image_url || '',
+        storage_path: img.storage_path || ''
       }));
     }
 

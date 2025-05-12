@@ -5,7 +5,6 @@ import { createClient } from "../../../../utils/supabase/client";
 
 export function useImageUpload() {
   const { ticket, state, addImage, removeImage, saveChanges } = useTicketCard();
-  console.log('state',state)
   const { images } = state;
   const { analyzeImage, isAnalyzing } = useImageAnalysis();
   const [backgroundProcessing, setBackgroundProcessing] = useState(0);
@@ -77,78 +76,67 @@ export function useImageUpload() {
     // Set loading state
     setBackgroundProcessing(prev => prev + files.length);
     
-    // Process each file in parallel
+    // Auth check - do it once for all files
+    const supabase = createClient();
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+    
+    if (!userId) {
+      console.error("User not authenticated");
+      setBackgroundProcessing(0);
+      return;
+    }
+    
+    // Process each file in parallel with unique timestamps
     await Promise.all(Array.from(files).map(async (file, index) => {
-      // 1. Upload to Supabase immediately
-      const supabase = createClient();
-      const { data: userData } = await supabase.auth.getUser();
-      const userId = userData.user?.id;
-      
-      if (!userId) {
-        console.error("User not authenticated");
-        return;
-      }
-      
-      // Create a unique filename with user ID prefix
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${ticket.id}/${Date.now()}-${index}.${fileExt}`;
-      const filePath = `ticket-images/${fileName}`;
-      
-      // Upload file to storage
-      const { error: uploadError } = await supabase.storage
-        .from('ticket-images')
-        .upload(fileName, file);
-        
-      if (uploadError) {
-        console.error("Error uploading to storage:", uploadError);
-        return;
-      }
-      
-      // Get public URL for display
-      const { data: { publicUrl } } = supabase.storage
-        .from('ticket-images')
-        .getPublicUrl(fileName);
-      
-      // 2. Add image to ticket_images table with initial data
-      const { data: imageData, error: dbError } = await supabase
-        .from('ticket_images')
-        .insert([
-          { 
-            image_url: publicUrl,
-            storage_path: filePath,
-            image_title: file.name || `Image ${images.length + 1}`,
-            image_description: 'Analyzing...',
-            ticket_id: ticket.id
-          }
-        ])
-        .select()
-        .single();
-        
-      if (dbError) {
-        console.error("Error saving to ticket_images:", dbError);
-        return;
-      }
-      
-      // 4. Start analysis in parallel
       try {
+        // Create a truly unique filename with user ID, ticket ID, timestamp and uuid
+        const fileExt = file.name.split('.').pop();
+        const uniqueId = Date.now() + '-' + index + '-' + Math.random().toString(36).substring(2, 10);
+        const fileName = `${userId}/${ticket.id}/${uniqueId}.${fileExt}`;
+        const filePath = `ticket-images/${fileName}`;
+        
+        // Upload file to storage
+        const { error: uploadError } = await supabase.storage
+          .from('ticket-images')
+          .upload(fileName, file);
+          
+        if (uploadError) {
+          console.error("Error uploading to storage:", uploadError);
+          return;
+        }
+        
+        // Get public URL for display
+        const { data: { publicUrl } } = supabase.storage
+          .from('ticket-images')
+          .getPublicUrl(fileName);
+        
+        // Analyze the image
         const analysisResult = await analyzeImage(file);
-        // When analysis completes, update with final data
         const title = analysisResult.caption || file.name || `Image ${index + 1}`;
         const description = analysisResult.extractedText || '';
         
-        // Update the image in the ticket_images table with analysis results
-        const { error: updateError } = await supabase
+        // Add image to ticket_images table with all data at once
+        const { data: imageData, error: dbError } = await supabase
           .from('ticket_images')
-          .update({ 
-            image_title: title,
-            image_description: description
-          })
-          .eq('id', imageData.id);
+          .insert([
+            { 
+              image_url: publicUrl,
+              storage_path: filePath,
+              image_title: title,
+              image_description: description,
+              ticket_id: ticket.id
+            }
+          ])
+          .select()
+          .single();
           
-        if (updateError) {
-          console.error("Error updating ticket_images:", updateError);
+        if (dbError) {
+          console.error("Error saving to ticket_images:", dbError);
+          return;
         }
         
+        // Add to local state
         addImage({
           image_title: title,
           image_description: description,
@@ -156,30 +144,15 @@ export function useImageUpload() {
           storage_path: filePath,
           id: imageData.id
         });
-        
-        // Save changes to persist the updates
-        await saveChanges();
       } catch (err) {
-        console.error("Error analyzing image:", err);
-        
-        // Update with error message
-        const { error: updateError } = await supabase
-          .from('ticket_images')
-          .update({ 
-            image_description: 'Failed to analyze image'
-          })
-          .eq('id', imageData.id);
-          
-        if (updateError) {
-          console.error("Error updating ticket_images with error status:", updateError);
-        }
-        
-        // Save changes
-        await saveChanges();
+        console.error("Error processing image:", err);
       } finally {
         setBackgroundProcessing(prev => prev - 1);
       }
     }));
+    
+    // Save changes once after all images are processed
+    await saveChanges();
     
     // Reset input
     e.target.value = '';

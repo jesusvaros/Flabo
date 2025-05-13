@@ -4,7 +4,7 @@ import { useImageAnalysis } from "@/hooks/useImageAnalysis";
 import { createClient } from "../../../../utils/supabase/client";
 
 export function useImageUpload() {
-  const { ticket, state, addImage, removeImage, saveChanges } = useTicketCard();
+  const { ticket, state, addImage, removeImage } = useTicketCard();
   const { images } = state;
   const { analyzeImage, isAnalyzing } = useImageAnalysis();
   
@@ -86,7 +86,6 @@ export function useImageUpload() {
     // Process each file in parallel with unique timestamps
     await Promise.all(Array.from(files).map(async (file, index) => {
       try {
-        // Create a truly unique filename with user ID, ticket ID, timestamp and uuid
         const fileExt = file.name.split('.').pop();
         const uniqueId = Date.now() + '-' + index + '-' + Math.random().toString(36).substring(2, 10);
         const fileName = `${userId}/${ticket.id}/${uniqueId}.${fileExt}`;
@@ -144,11 +143,7 @@ export function useImageUpload() {
         console.error("Error processing image:", err);
       }
     }));
-    
-    // Save changes once after all images are processed
-    await saveChanges();
-    
-    // Reset input
+
     e.target.value = '';
   };
 

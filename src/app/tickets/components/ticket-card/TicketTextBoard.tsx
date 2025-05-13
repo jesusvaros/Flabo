@@ -2,11 +2,8 @@ import React, { useEffect, useState } from "react";
 import { FileEdit } from "lucide-react";
 import { useTicketCard } from "../../context/TicketCardContext";
 
-interface TicketTextBoardProps {
-  className?: string;
-}
 
-export const TicketTextBoard = ({ className = "" }: TicketTextBoardProps) => {
+export const TicketTextBoard = (  ) => {
   const { state, updateTextContent } = useTicketCard();
   // Use local state to track the textarea value
   const [localText, setLocalText] = useState(state.textContent);
@@ -23,7 +20,7 @@ export const TicketTextBoard = ({ className = "" }: TicketTextBoardProps) => {
   };
 
   return (
-    <div className={`h-full flex flex-col p-6 ${className}`}>
+    <div className={`h-full flex flex-col p-6 h-full`}>
       <div className="flex items-center mb-4">
         <FileEdit className="h-6 w-6 mr-2 text-gray-600" />
         <h3 className="text-lg font-medium text-black">Add Recipe Text</h3>

@@ -37,6 +37,8 @@ export type SupabaseTicket = {
     ticket_id: string;
     image_description?: string;
     image_title?: string;
+    image_url?: string;
+    storage_path?: string;
   }[];
   recipe_conversions: {
     id: string;
@@ -78,12 +80,6 @@ export default async function CollectionPage(props: Props) {
     .select("id, title, creator_id")
     .eq("creator_id", user.id);
 
-  // Get all tickets for the user
-  const { data: tickets } = await supabase
-    .from("tickets")
-    .select("*")
-    .eq("creator_id", user.id);
-
   // Get all ingredients for the user
   const { data: ingredients } = await supabase
     .from("ingredients")
@@ -102,14 +98,12 @@ export default async function CollectionPage(props: Props) {
   return (
     <CollectionProvider collection={transformedCollection}>
       <div className="flex-1">
-
-        <HeaderLoggedIn userEmail={user.email || ""} />
         <CollectionsView
           collections={collections || []}
           selectedCollection={transformedCollection}
           tabsContent={tabsContent}
+          userEmail={user.email || ""}
         />
-
       </div>
     </CollectionProvider>
   );

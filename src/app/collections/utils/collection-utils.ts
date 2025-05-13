@@ -41,7 +41,9 @@ export async function fetchCollectionWithTickets(
             id,
             ticket_id,
             image_title,
-            image_description
+            image_description,
+            image_url,
+        storage_path
           ),
           recipe_conversions (
             id,
@@ -141,7 +143,9 @@ export async function fetchTicketWithDrawing(
         id,
         ticket_id,
         image_title,
-        image_description
+        image_description,
+        image_url,
+        storage_path
       ),
       recipe_conversions (
         id,

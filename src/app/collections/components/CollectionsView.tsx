@@ -16,18 +16,22 @@ import {
   SheetContent,
   SheetTrigger,
   SheetClose,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useCollection } from "../context/CollectionContext";
 import { AITicketFilter } from "@/app/components/AITicketFilter";
+import { HeaderLoggedIn } from "@/app/components/Header";
 
 export const CollectionsView = ({
   collections,
   tabsContent,
   tickets: initialTickets = [],
-}: CollectionViewProps & { tickets?: TicketWithPositionConversion[] }) => {
+  userEmail,
+}: CollectionViewProps & { tickets?: TicketWithPositionConversion[], userEmail: string }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [filteredTicketIds, setFilteredTicketIds] = useState<string[]>([]);
@@ -65,27 +69,27 @@ export const CollectionsView = ({
 
   const renderMainContent = () => (
     <div className="flex-1 p-4 overflow-hidden flex flex-col">
-      {selectedCollection && tabsContent && (
-        <div className="flex justify-end mb-4">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          {selectedCollection ? selectedCollection.title : "All Tickets"}
+          {isUpdating && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Saving
+            </Badge>
+          )}
+          {isFiltered && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Filter className="h-3 w-3 mr-1" />
+              Filtered: {displayedTickets.length} of {selectedCollection ? localTickets.length : tickets.length}
+            </Badge>
+          )}
+        </h1>
+        
+        {selectedCollection && tabsContent && (
           <TabsDrawer>{tabsContent}</TabsDrawer>
-        </div>
-      )}
-
-      <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
-        {selectedCollection ? selectedCollection.title : "All Tickets"}
-        {isUpdating && (
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Saving
-          </Badge>
         )}
-        {isFiltered && (
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <Filter className="h-3 w-3 mr-1" />
-            Filtered: {displayedTickets.length} of {selectedCollection ? localTickets.length : tickets.length}
-          </Badge>
-        )}
-      </h1>
+      </div>
 
       <AITicketFilter
         onFilterResults={setFilteredTicketIds}
@@ -162,33 +166,48 @@ export const CollectionsView = ({
     </div>
   );
 
+  // Botón de menú para móviles integrado en el encabezado
+  const MobileMenuButton = (
+    <Sheet open={showMobileSidebar} onOpenChange={setShowMobileSidebar}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+        >
+          <Menu className="h-6 w-6" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="p-0 w-[280px]">
+        <SheetHeader className="px-4 pt-4">
+          <SheetTitle>Collections</SheetTitle>
+        </SheetHeader>
+        <MobileSidebarContent />
+      </SheetContent>
+    </Sheet>
+  );
+
   return (
     <>
       {isMobile ? (
-        <div className="h">
-          <Sheet open={showMobileSidebar} onOpenChange={setShowMobileSidebar}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="fixed top-4 left-4 z-50"
-              >
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-[280px]">
-              <MobileSidebarContent />
-            </SheetContent>
-          </Sheet>
-          {renderMainContent()}
+        <div className="flex flex-col h-full">
+          <HeaderLoggedIn 
+            userEmail={userEmail} 
+            leftElement={MobileMenuButton} 
+          />
+          <div className="flex-1 overflow-hidden pt-16">
+            {renderMainContent()}
+          </div>
         </div>
       ) : (
-        <div className="flex">
-          <CollectionsSidebar
-            collections={collections}
-            currentCollectionId={selectedCollection?.id}
-          />
-          {renderMainContent()}
+        <div className="flex flex-col h-full">
+          <HeaderLoggedIn userEmail={userEmail} />
+          <div className="flex w-full pt-16">
+            <CollectionsSidebar
+              collections={collections}
+              currentCollectionId={selectedCollection?.id}
+            />
+            {renderMainContent()}
+          </div>
         </div>
       )}
     </>

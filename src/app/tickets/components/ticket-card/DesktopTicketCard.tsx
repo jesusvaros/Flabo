@@ -46,6 +46,16 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
   const { state, setActiveTab, onClose: contextOnClose } = useTicketCard();
   const { activeTab } = state;
 
+  // Lock body scroll on open
+  const lockBodyScroll = () => {
+    document.body.style.overflow = 'hidden';
+  };
+  
+  // Unlock body scroll on close
+  const unlockBodyScroll = () => {
+    document.body.style.overflow = 'auto';
+  };
+
   const handleTabChange = (tab: string) => {
     // If we're changing away from the notes tab, save the drawing
     if (activeTab === 'notes' && tab !== 'notes' && drawingEditorRef.current) {
@@ -56,9 +66,16 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
 
   const handleCloseRequested = async () => {
     handleNotesTabChange();
+    // Unlock body scroll when modal closes
+    unlockBodyScroll();
     await contextOnClose();
     onClose();
   };
+  
+  // Lock the body scroll as soon as the component renders
+  React.useLayoutEffect(() => {
+    lockBodyScroll();
+  }, []);
 
   const handleNotesTabChange = () => {
      if (activeTab === 'notes' && drawingEditorRef.current) {
@@ -151,35 +168,30 @@ export const DesktopTicketCard: React.FC<DesktopTicketCardProps> = ({
             overflow: "hidden",
             borderRadius: "0.375rem",
             boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+            display: "flex",
+            flexDirection: "column"
           }}>
             {isDrawingBoardMounted && (
               <Tabs value={activeTab} className="h-full">
-                <TabsContent value="recipe" className="h-full m-0 bg-accent">
+                <TabsContent value="recipe">
                   <AIConversionView ticket={ticket} />
                 </TabsContent>
-                <TabsContent value="notes" className="h-full m-0 bg-accent">
+                <TabsContent value="notes">
                   <TicketDrawingBoard
                     ticketId={ticket.id}
                     initialDrawing={ticket.drawing}
                     ref={drawingEditorRef}
-                    className="h-full"
                     fullHeight
                   />
                 </TabsContent>
-                <TabsContent value="image" className="h-full m-0 bg-accent">
-                  <TicketPictureBoard
-                    className="h-full"
-                  />
+                <TabsContent value="image">
+                  <TicketPictureBoard />
                 </TabsContent>
-                <TabsContent value="link" className="h-full m-0 bg-accent">
-                  <TicketLinkBoard
-                    className="h-full"
-                  />
+                <TabsContent value="link">
+                  <TicketLinkBoard />
                 </TabsContent>
-                <TabsContent value="text" className="h-full m-0 bg-accent">
-                  <TicketTextBoard
-                    className="h-full"
-                  />
+                <TabsContent value="text">
+                  <TicketTextBoard />
                 </TabsContent>
               </Tabs>
             )}

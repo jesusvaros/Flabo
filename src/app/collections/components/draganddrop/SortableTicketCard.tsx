@@ -65,18 +65,34 @@ export const SortableTicketCard = ({
     setIsExpanded(true);
   };
 
+  // Check if ticket has images 
+  const firstImage = ticket.ticket_images !== undefined && ticket.ticket_images !== null && ticket.ticket_images.length > 0 ? ticket.ticket_images[0] : null;
+  
+  // We'll use a separate div for the background image instead of inline styles
+
   return (
     <div ref={setNodeRef} style={style} className="group relative">
       <Card
         className={cn(
-          "select-none relative cursor-pointer border border-muted bg-accent h-[100px] hover:shadow-md",
+          "select-none relative cursor-pointer border border-muted h-[100px] hover:shadow-md",
           isDragging && "opacity-50",
           disabled && "",
-          "transition-all duration-200 ease-in-out"
+          "transition-all duration-200 ease-in-out",
+          firstImage ? "overflow-hidden" : "bg-accent"
         )}
         onClick={handleCardClick}
       >
-        <CardHeader className="p-4">
+        {firstImage && firstImage.image_url && (
+          <div 
+            className="absolute inset-0 z-0 opacity-20"
+            style={{
+              backgroundImage: `url(${firstImage.image_url})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+        )}
+        <CardHeader className="p-4 relative z-10">
           <div className="space-y-2">
             <CardTitle className="text-base line-clamp-2">
               {ticket.content}

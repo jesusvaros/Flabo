@@ -44,7 +44,9 @@ export default async function CollectionPage() {
         id,
         ticket_id,
         image_title,
-        image_description
+        image_description,
+        image_url,
+        storage_path
       ),
       recipe_conversions (
         id,
@@ -81,11 +83,11 @@ export default async function CollectionPage() {
   return (
     <CollectionProvider collection={null}>
       <div className="flex flex-col min-h-screen">
-        <HeaderLoggedIn userEmail={user.email || ""} />
         <div className="flex-1">
           <CollectionsView 
             collections={collections || []} 
             tickets={transformedTickets}
+            userEmail={user.email || ""}
           />
         </div>
       </div>

@@ -11,7 +11,7 @@ export const useDrawingStorage = (ticketId: string) => {
   const { refetchTicket } = useCollection();
 
   const saveDrawing = useCallback(
-    async (drawing: TLEditorSnapshot) => {
+    async (drawing: TLEditorSnapshot, description?: { title: string; ocrText: string }) => {
       const supabase = createClient();
       const {
         data: { user },
@@ -37,6 +37,7 @@ export const useDrawingStorage = (ticketId: string) => {
             .update({
               data: drawing,
               updated_at: new Date().toISOString(),
+              description: description || undefined,
             })
             .eq("id", existingDrawing.id);
         } else {
@@ -45,6 +46,7 @@ export const useDrawingStorage = (ticketId: string) => {
             ticket_id: ticketId,
             data: drawing,
             created_by: user.id,
+            description: description || undefined,
           });
         }
 

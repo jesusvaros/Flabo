@@ -7,6 +7,8 @@ interface TicketImage {
   ticket_id: string;
   image_title?: string;
   image_description?: string;
+  image_url?: string;
+  storage_path?: string;
 }
 
 interface TicketCardState {
@@ -34,7 +36,7 @@ interface TicketCardContextProps {
   updateTextContent: (content: string) => void;
   updateLinkUrl: (url: string) => void;
   updateLinkMetadata: (metadata: string) => void;
-  addImage: (imageData: { image_title?: string; image_description?: string }) => void;
+  addImage: (imageData: { image_title?: string; image_description?: string; image_url?: string; storage_path?: string; id?: string }) => void;
   removeImage: (index: number) => void;
   saveChanges: () => Promise<void>;
   resetState: () => void;
@@ -77,7 +79,7 @@ export const TicketCardProvider: React.FC<{
     setState(prev => ({ ...prev, linkMetadata: metadata, isDirty: true }));
   };
 
-  const addImage = (imageData: { image_title?: string; image_description?: string }) => {
+  const addImage = (imageData: { image_title?: string; image_description?: string; image_url?: string; storage_path?: string; id?: string }) => {
     setState(prev => ({
       ...prev,
       images: [...prev.images, imageData],
@@ -130,7 +132,9 @@ export const TicketCardProvider: React.FC<{
         id: img.id || '',
         ticket_id: ticket.id,
         image_title: img.image_title || '',
-        image_description: img.image_description || ''
+        image_description: img.image_description || '',
+        image_url: img.image_url || '',
+        storage_path: img.storage_path || ''
       }));
     }
 
